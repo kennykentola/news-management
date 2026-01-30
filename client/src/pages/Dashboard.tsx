@@ -1,4 +1,5 @@
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import SubmitNews from './dashboard/SubmitNews';
 import ReviewNews from './dashboard/ReviewNews';
@@ -31,6 +32,7 @@ const Dashboard = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const handleLogout = async () => {
         await logout();
@@ -40,17 +42,48 @@ const Dashboard = () => {
     const isActive = (path: string) => location.pathname === path;
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--color-bg-primary)' }}>
+        <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--color-bg-primary)', position: 'relative' }}>
+            {/* Mobile Header / Hamburger */}
+            <div style={{
+                display: 'none', // Hidden on desktop, handled by media query
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '60px',
+                backgroundColor: 'var(--color-bg-secondary)',
+                borderBottom: '1px solid var(--color-bg-tertiary)',
+                alignItems: 'center',
+                padding: '0 1rem',
+                zIndex: 40
+            }} className="mobile-header">
+                <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>
+                    ☰
+                </button>
+                <span style={{ marginLeft: '1rem', fontWeight: 'bold' }}>NewsGuard</span>
+            </div>
+
+            {/* Sidebar Overlay for Mobile */}
+            {isSidebarOpen && (
+                <div
+                    onClick={() => setIsSidebarOpen(false)}
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        zIndex: 45
+                    }}
+                    className="mobile-overlay"
+                />
+            )}
+
             {/* Sidebar */}
-            <aside style={{
+            <aside className={`dashboard-sidebar ${isSidebarOpen ? 'open' : ''}`} style={{
                 width: '260px',
                 backgroundColor: 'var(--color-bg-secondary)',
-                borderRight: '1px solid var(--color-bg-tertiary)',
+                // styles handled by class
                 display: 'flex',
                 flexDirection: 'column',
-                position: 'fixed',
-                height: '100vh',
-                zIndex: 10
             }}>
                 <div style={{ padding: '2rem', borderBottom: '1px solid var(--color-bg-tertiary)' }}>
                     <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>NewsGuard</h2>
@@ -112,7 +145,48 @@ const Dashboard = () => {
             </aside>
 
             {/* Main Content */}
-            <main style={{ marginLeft: '260px', flex: 1, padding: '2.5rem' }}>
+            <main className="dashboard-main" style={{
+                flex: 1,
+                padding: '2.5rem',
+                // padding top added for mobile header spacing via CSS or inline logic
+            }}>
+                <style>{`
+                    /* Inline CSS for responsiveness since we are using CSS-in-JS mostly */
+                    @media (max-width: 768px) {
+                        .mobile-header { display: flex !important; }
+                        .dashboard-sidebar {
+                            transform: translateX(-100%);
+                            transition: transform 0.3s ease;
+                            width: 260px;
+                            position: fixed;
+                            height: 100vh;
+                            z-index: 50;
+                            border-right: 1px solid var(--color-bg-tertiary);
+                            background-color: var(--color-bg-secondary);
+                        }
+                        .dashboard-sidebar.open {
+                            transform: translateX(0);
+                        }
+                        .dashboard-main { 
+                            margin-left: 0 !important;
+                            padding-top: 5rem !important; /* Space for mobile header */
+                        }
+                    }
+                    @media (min-width: 769px) {
+                        .dashboard-sidebar {
+                            width: 260px;
+                            background-color: var(--color-bg-secondary);
+                            border-right: 1px solid var(--color-bg-tertiary);
+                            display: flex;
+                            flex-direction: column;
+                            position: fixed;
+                            height: 100vh;
+                            z-index: 10;
+                        }
+                        .dashboard-main { margin-left: 260px; }
+                        .mobile-overlay { display: none; }
+                    }
+                `}</style>
                 <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                     <Routes>
                         <Route path="/" element={<Overview />} />

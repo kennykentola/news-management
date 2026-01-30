@@ -19,6 +19,10 @@ interface AuthContextType {
     signup: (email: string, password: string, name: string, role?: Role) => Promise<void>;
     logout: () => Promise<void>;
     checkAuth: () => Promise<void>;
+    requestPasswordRecovery: (email: string) => Promise<void>;
+    completePasswordRecovery: (userId: string, secret: string, password: string, passwordAgain: string) => Promise<void>;
+    createVerification: () => Promise<void>;
+    updateVerification: (userId: string, secret: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -113,8 +117,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
     };
 
+    const requestPasswordRecovery = async (email: string) => {
+        // Redirect to a reset page in the app, e.g., http://localhost:5173/reset-password
+        // Important: Appwrite requires a valid URL that is whitelisted in the platform settings
+        // For local dev, http://localhost:5173/reset-password is typical.
+        await account.createRecovery(email, `${window.location.origin}/reset-password`);
+    };
+
+    const completePasswordRecovery = async (userId: string, secret: string, password: string, passwordAgain: string) => {
+        await account.updateRecovery(userId, secret, password, passwordAgain);
+    };
+
+    const createVerification = async () => {
+        // Redirect to verify page, e.g., http://localhost:5173/verify-email
+        await account.createVerification(`${window.location.origin}/verify-email`);
+    };
+
+    const updateVerification = async (userId: string, secret: string) => {
+        await account.updateVerification(userId, secret);
+    };
+
     return (
-        <AuthContext.Provider value={{ user, isLoading, login, signup, logout, checkAuth }}>
+        <AuthContext.Provider value={{
+            user,
+            isLoading,
+            login,
+            signup,
+            logout,
+            checkAuth,
+            requestPasswordRecovery,
+            completePasswordRecovery,
+            createVerification,
+            updateVerification
+        }}>
             {children}
         </AuthContext.Provider>
     );

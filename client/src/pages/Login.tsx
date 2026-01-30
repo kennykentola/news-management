@@ -7,6 +7,7 @@ const Login = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -75,23 +76,51 @@ const Login = () => {
                         />
                     </div>
 
+                    const [showPassword, setShowPassword] = useState(false);
+
+                    // ... handle submit ...
+
+                    return (
+                    // ...
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>Password</label>
-                        <input
-                            type="password"
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            style={{
-                                width: '100%',
-                                padding: '0.75rem',
-                                borderRadius: 'var(--radius-md)',
-                                backgroundColor: 'var(--color-bg-secondary)',
-                                border: '1px solid var(--color-bg-tertiary)',
-                                color: 'white',
-                                outline: 'none'
-                            }}
-                        />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                            <label style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>Password</label>
+                            <Link to="/forgot-password" style={{ color: 'var(--color-primary)', fontSize: '0.8rem', textDecoration: 'none' }}>Forgot Password?</Link>
+                        </div>
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    borderRadius: 'var(--radius-md)',
+                                    backgroundColor: 'var(--color-bg-secondary)',
+                                    border: '1px solid var(--color-bg-tertiary)',
+                                    color: 'white',
+                                    outline: 'none'
+                                }}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                style={{
+                                    position: 'absolute',
+                                    right: '10px',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--color-text-secondary)',
+                                    cursor: 'pointer',
+                                    fontSize: '1.2rem'
+                                }}
+                            >
+                                {showPassword ? '👁️' : '🙈'}
+                            </button>
+                        </div>
                     </div>
 
                     <button
