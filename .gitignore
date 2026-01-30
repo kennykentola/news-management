@@ -1,0 +1,15 @@
+# Node
+node_modules/
+dist/
+.env
+.DS_Store
+
+# Python
+__pycache__/
+venv/
+.venv/
+*.pkl
+*.pyc
+
+# Appwrite
+.gemini/
