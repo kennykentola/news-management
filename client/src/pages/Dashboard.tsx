@@ -68,6 +68,7 @@ const Dashboard = () => {
                 </div>
 
                 <nav style={{ padding: '1.5rem 1rem', flex: 1 }}>
+                    <SidebarItem to="/" label="Read News (Reader View)" icon="📰" active={false} />
                     <SidebarItem to="/dashboard" label="Overview" icon="🏠" active={isActive('/dashboard')} />
 
                     {(user?.role === 'WRITER' || user?.role === 'ADMIN') && (
