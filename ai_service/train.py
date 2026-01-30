@@ -8,7 +8,7 @@ import joblib
 import os
 
 # CONFIG
-DATASET_PATH = 'dataset.csv' 
+DATASET_PATH = 'dataset_cleaned.csv' if os.path.exists('dataset_cleaned.csv') else 'dataset.csv' 
 MODEL_PATH = 'model.pkl'
 
 def train_model():
@@ -38,6 +38,20 @@ def train_model():
 
         # Drop NaNs
         df = df.dropna(subset=[text_col, label_col])
+
+        # Standardize Labels
+        # 0 = Reliable (REAL), 1 = Unreliable (FAKE)
+        def map_label(x):
+            try:
+                x = int(x)
+                return 'FAKE' if x == 1 else 'REAL'
+            except:
+                # If already string
+                s = str(x).upper().strip()
+                if 'FAKE' in s: return 'FAKE'
+                return 'REAL'
+
+        df[label_col] = df[label_col].apply(map_label)
         
         X = df[text_col]
         y = df[label_col] 
