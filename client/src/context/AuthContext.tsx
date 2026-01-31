@@ -126,7 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const completePasswordRecovery = async (userId: string, secret: string, password: string, passwordAgain: string) => {
-        await account.updateRecovery(userId, secret, password, passwordAgain);
+        await account.updateRecovery(userId, secret, password);
     };
 
     const createVerification = async () => {
