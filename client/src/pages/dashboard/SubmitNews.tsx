@@ -38,7 +38,18 @@ const SubmitNews = () => {
                 alert("AI Service Connection Failed. Please ensure the backend is running.");
             }
 
-            // 2. Submit to Database
+            // 2. Determine Status based on AI
+            let status = 'PENDING';
+            let userMessage = 'Article submitted successfully! It has been sent for review.';
+            let messageType = 'success';
+
+            if (aiResult.result === 'FAKE' || aiResult.score < 50) {
+                status = 'FLAGGED';
+                userMessage = 'Warning: Our AI detected potential misinformation. Your article has been FLAGGED for manual review.';
+                messageType = 'warning'; // We'll need to handle 'warning' style or just use 'error' color
+            }
+
+            // 3. Submit to Database
             await databases.createDocument(
                 DATABASE_ID,
                 COLLECTION_ID_ARTICLES,
@@ -48,7 +59,7 @@ const SubmitNews = () => {
                     content,
                     authorId: user?.$id,
                     authorName: user?.name,
-                    status: 'PENDING', // Default status for review
+                    status: status,
                     aiLabel: String(aiResult.result || 'UNKNOWN').substring(0, 50),
                     aiScore: aiResult.score,
                     createdAt: new Date().toISOString(),
@@ -58,7 +69,7 @@ const SubmitNews = () => {
                 }
             );
 
-            setMessage({ type: 'success', text: 'Article submitted successfully! It has been sent for review.' });
+            setMessage({ type: messageType === 'warning' ? 'error' : 'success', text: userMessage });
             setTitle('');
             setContent('');
             setSourceUrl('');
