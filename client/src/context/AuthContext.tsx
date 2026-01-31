@@ -44,8 +44,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // If collection doesn't exist yet, this might fail, so we fallback to Reader
             // Or we try/catch specifically the DB call
 
-            // Default to WRITER for development so new/old users can access dashboard
-            let role: Role = 'WRITER';
+            // Default to READER for standard users
+            let role: Role = 'READER';
 
             // Check Preferences first
             if (session.prefs && session.prefs.role) {

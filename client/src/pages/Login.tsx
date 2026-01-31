@@ -18,7 +18,26 @@ const Login = () => {
         setError('');
         try {
             await login(email, password);
-            navigate('/dashboard');
+            // We need to know the role to redirect correctly. 
+            // Since context update is async, we'll fetch the user preferences/account directly to be sure, 
+            // or we could rely on a protected route redirecting them out?
+            // Cleaner UX: Redirect based on role.
+            try {
+                // Determine destination based on role (fetch from Appwrite directly as context might be stale)
+                const { account } = await import('../lib/appwrite');
+                const session = await account.get();
+                const role = session.prefs?.role || 'READER';
+
+                if (role === 'READER') {
+                    navigate('/');
+                } else {
+                    navigate('/dashboard');
+                }
+            } catch (navError) {
+                // Fallback
+                navigate('/');
+            }
+
         } catch (err: any) {
             console.error(err);
             if (err.code === 401) {

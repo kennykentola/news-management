@@ -11,7 +11,7 @@ const Register = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [role, setRole] = useState<Role>('WRITER'); // Default role
+    const [role, setRole] = useState<Role>('READER'); // Default role
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -22,7 +22,11 @@ const Register = () => {
         try {
             if (password.length < 8) throw new Error('Password must be at least 8 characters');
             await signup(email, password, name, role);
-            navigate('/dashboard');
+            if (role === 'READER') {
+                navigate('/');
+            } else {
+                navigate('/dashboard');
+            }
         } catch (err: any) {
             console.error(err);
             if (err.code === 409) {
@@ -98,6 +102,7 @@ const Register = () => {
                             onChange={(e) => setRole(e.target.value as Role)}
                             className="w-full p-3 rounded-md bg-bg-secondary border border-bg-tertiary text-white outline-none cursor-pointer focus:border-primary transition-colors appearance-none"
                         >
+                            <option value="READER">Reader (Read & Comment)</option>
                             <option value="WRITER">Writer (Submit News)</option>
                             <option value="EDITOR">Editor (Review News)</option>
                             <option value="ADMIN">Admin (Publish & Manage)</option>
