@@ -64,19 +64,32 @@ const FactCheck = () => {
                 {result && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {/* Result Header */}
+                        {/* Result Header */}
                         <div className={`p-6 rounded-t-2xl border-b border-white/5 flex items-center justify-between
-                            ${result.result === 'FAKE' ? 'bg-red-500/10' : 'bg-green-500/10'}`}>
+                            ${result.result === 'FAKE' ? 'bg-red-500/10' :
+                                result.result === 'UNKNOWN' ? 'bg-yellow-500/10' : 'bg-green-500/10'}`}>
                             <div className="flex items-center gap-4">
-                                <div className={`p-3 rounded-full ${result.result === 'FAKE' ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>
-                                    {result.result === 'FAKE' ? <AlertOctagon size={32} /> : <CheckCircle size={32} />}
+                                <div className={`p-3 rounded-full ${result.result === 'FAKE' ? 'bg-red-500/20 text-red-400' :
+                                    result.result === 'UNKNOWN' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400'}`}>
+                                    {result.result === 'FAKE' ? <AlertOctagon size={32} /> :
+                                        result.result === 'UNKNOWN' ? <AlertTriangle size={32} /> : <CheckCircle size={32} />}
                                 </div>
                                 <div>
-                                    <h2 className={`text-2xl font-bold ${result.result === 'FAKE' ? 'text-red-400' : 'text-green-400'}`}>
-                                        {result.result === 'FAKE' ? 'Likely Misinformation' : 'Likely Reliable'}
+                                    <h2 className={`text-2xl font-bold ${result.result === 'FAKE' ? 'text-red-400' :
+                                        result.result === 'UNKNOWN' ? 'text-yellow-400' : 'text-green-400'}`}>
+                                        {result.result === 'FAKE' ? 'Likely Misinformation' :
+                                            result.result === 'UNKNOWN' ? 'Analysis Unavailable' : 'Likely Reliable'}
                                     </h2>
-                                    <p className="text-text-secondary text-sm">
-                                        Confidence Score: <span className="font-mono text-white">{result.score}%</span>
-                                    </p>
+                                    {result.result !== 'UNKNOWN' && (
+                                        <p className="text-text-secondary text-sm">
+                                            Confidence Score: <span className="font-mono text-white">{result.score}%</span>
+                                        </p>
+                                    )}
+                                    {result.result === 'UNKNOWN' && (
+                                        <p className="text-text-secondary text-sm">
+                                            {result.message || "Service is not ready."}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </div>

@@ -13,7 +13,7 @@ data = {
         'You will not believe what this celebrity did',
         'Government announces new budget for infrastructure'
     ],
-    'label': [1, 0, 1, 0, 1, 0] # 1=FAKE, 0=REAL
+    'label': ['FAKE', 'REAL', 'FAKE', 'REAL', 'FAKE', 'REAL'] # 1=FAKE, 0=REAL
 }
 
 df = pd.DataFrame(data)
