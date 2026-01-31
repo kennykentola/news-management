@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { useState } from 'react';
 
 const Login = () => {
     const { login } = useAuth();
@@ -31,94 +32,42 @@ const Login = () => {
     };
 
     return (
-        <div style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'var(--color-bg-primary)'
-        }}>
-            <div className="glass-panel" style={{
-                padding: '2.5rem',
-                borderRadius: 'var(--radius-lg)',
-                width: '100%',
-                maxWidth: '400px',
-                border: '1px solid rgba(255, 255, 255, 0.1)'
-            }}>
-                <h2 style={{ textAlign: 'center', marginBottom: '2rem', fontSize: '1.75rem', color: 'var(--color-text-primary)' }}>Welcome Back</h2>
+        <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
+            <div className="w-full max-w-[400px] p-8 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+                <h2 className="text-center mb-8 text-3xl font-bold text-white">Log In</h2>
 
-                {error && <div style={{
-                    padding: '0.75rem',
-                    backgroundColor: 'var(--color-danger)',
-                    color: 'white',
-                    borderRadius: 'var(--radius-md)',
-                    marginBottom: '1rem',
-                    fontSize: '0.875rem'
-                }}>{error}</div>}
+                {error && <div className="p-3 bg-red-600 text-white rounded-md mb-4 text-sm">{error}</div>}
 
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>Email</label>
+                        <label className="block mb-2 text-slate-400 text-sm">Email</label>
                         <input
                             type="email"
                             required
+                            placeholder="e.g., e047472.bello@dlc.ui.edu.ng"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            style={{
-                                width: '100%',
-                                padding: '0.75rem',
-                                borderRadius: 'var(--radius-md)',
-                                backgroundColor: 'var(--color-bg-secondary)',
-                                border: '1px solid var(--color-bg-tertiary)',
-                                color: 'white',
-                                outline: 'none'
-                            }}
+                            className="w-full p-3 rounded-md bg-slate-800 border border-slate-700 text-white outline-none focus:border-blue-500 transition-colors placeholder:text-slate-600"
                         />
                     </div>
-
-                    const [showPassword, setShowPassword] = useState(false);
-
-                    // ... handle submit ...
-
-                    return (
-                    // ...
                     <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                            <label style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>Password</label>
-                            <Link to="/forgot-password" style={{ color: 'var(--color-primary)', fontSize: '0.8rem', textDecoration: 'none' }}>Forgot Password?</Link>
+                        <div className="flex justify-between items-center mb-2">
+                            <label className="text-slate-400 text-sm">Password</label>
                         </div>
-                        <div style={{ position: 'relative' }}>
+                        <div className="relative">
                             <input
                                 type={showPassword ? "text" : "password"}
                                 required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '0.75rem',
-                                    borderRadius: 'var(--radius-md)',
-                                    backgroundColor: 'var(--color-bg-secondary)',
-                                    border: '1px solid var(--color-bg-tertiary)',
-                                    color: 'white',
-                                    outline: 'none'
-                                }}
+                                className="w-full p-3 rounded-md bg-slate-800 border border-slate-700 text-white outline-none focus:border-blue-500 transition-colors"
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                style={{
-                                    position: 'absolute',
-                                    right: '10px',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'var(--color-text-secondary)',
-                                    cursor: 'pointer',
-                                    fontSize: '1.2rem'
-                                }}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 bg-none border-none text-slate-400 cursor-pointer hover:text-white transition-colors"
                             >
-                                {showPassword ? '👁️' : '🙈'}
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
                         </div>
                     </div>
@@ -126,26 +75,39 @@ const Login = () => {
                     <button
                         type="submit"
                         disabled={loading}
-                        style={{
-                            marginTop: '1rem',
-                            padding: '0.75rem',
-                            backgroundColor: 'var(--color-primary)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: 'var(--radius-md)',
-                            fontWeight: 600,
-                            cursor: loading ? 'not-allowed' : 'pointer',
-                            opacity: loading ? 0.7 : 1,
-                            transition: 'background-color 0.2s'
-                        }}
+                        className={`mt-2 w-full p-3 bg-blue-600 text-white border-none rounded-md font-semibold cursor-pointer transition-colors duration-200 ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'}`}
                     >
                         {loading ? 'Signing in...' : 'Sign In'}
                     </button>
                 </form>
 
-                <p style={{ marginTop: '1.5rem', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
-                    Don't have an account? <Link to="/register">Sign up</Link>
-                </p>
+                <div className="flex items-center my-6 gap-4 text-slate-500">
+                    <div className="flex-1 h-px bg-slate-700"></div>
+                    <span className="text-sm">or</span>
+                    <div className="flex-1 h-px bg-slate-700"></div>
+                </div>
+
+                <button
+                    type="button"
+                    className="w-full p-3 bg-white text-slate-900 border-none rounded-md font-semibold cursor-pointer flex items-center justify-center gap-2 mb-6 hover:bg-gray-100 transition-colors"
+                >
+                    <svg width="18" height="18" viewBox="0 0 18 18">
+                        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4" />
+                        <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.836.86-3.048.86-2.344 0-4.328-1.584-5.036-3.715H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853" />
+                        <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05" />
+                        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.157 6.656 3.58 9 3.58z" fill="#EA4335" />
+                    </svg>
+                    Continue with Google
+                </button>
+
+                <div className="text-center flex flex-col gap-2 text-slate-400 text-sm">
+                    <p>
+                        Don't have an Account? <Link to="/register" className="font-semibold text-blue-400 hover:underline">Create an Account</Link>
+                    </p>
+                    <p>
+                        Forgotten password? <Link to="/forgot-password" className="text-blue-500 hover:underline">Reset password</Link>
+                    </p>
+                </div>
             </div>
         </div>
     );

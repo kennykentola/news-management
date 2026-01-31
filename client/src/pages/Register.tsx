@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 
 const Register = () => {
     const { signup } = useAuth();
@@ -27,9 +28,8 @@ const Register = () => {
             if (err.code === 409) {
                 setError('A user with this email already exists.');
             } else if (err.code === 401) {
-                // Should not usually reach here if AuthContext handles active sessions, but just in case
                 if (err.type === 'user_session_already_active') {
-                    navigate('/dashboard'); // Already logged in
+                    navigate('/dashboard');
                 } else {
                     setError('Unauthorized. Please check your details.');
                 }
@@ -42,74 +42,61 @@ const Register = () => {
     };
 
     return (
-        <div style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'var(--color-bg-primary)'
-        }}>
-            <div className="glass-panel" style={{
-                padding: '2.5rem',
-                borderRadius: 'var(--radius-lg)',
-                width: '100%',
-                maxWidth: '450px'
-            }}>
-                <h2 style={{ textAlign: 'center', marginBottom: '2rem', fontSize: '1.75rem' }}>Create Account</h2>
+        <div className="min-h-screen flex items-center justify-center bg-bg-primary">
+            <div className="glass-panel w-full max-w-[450px] p-10 rounded-2xl border border-white/10">
+                <h2 className="text-center mb-8 text-3xl font-bold text-text-primary">Create Account</h2>
 
-                {error && <div style={{
-                    padding: '0.75rem',
-                    backgroundColor: 'var(--color-danger)',
-                    color: 'white',
-                    borderRadius: 'var(--radius-md)',
-                    marginBottom: '1rem',
-                    fontSize: '0.875rem'
-                }}>{error}</div>}
+                {error && <div className="p-3 bg-danger text-white rounded-md mb-4 text-sm">{error}</div>}
 
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>Full Name</label>
-                        <input type="text" required value={name} onChange={(e) => setName(e.target.value)}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)', color: 'white', outline: 'none' }} />
+                        <label className="block mb-2 text-text-secondary text-sm">Full Name</label>
+                        <input
+                            type="text"
+                            required
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full p-3 rounded-md bg-bg-secondary border border-bg-tertiary text-white outline-none focus:border-primary transition-colors"
+                        />
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>Email</label>
-                        <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)', color: 'white', outline: 'none' }} />
+                        <label className="block mb-2 text-text-secondary text-sm">Email</label>
+                        <input
+                            type="email"
+                            required
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full p-3 rounded-md bg-bg-secondary border border-bg-tertiary text-white outline-none focus:border-primary transition-colors"
+                        />
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>Password</label>
-                        <div style={{ position: 'relative' }}>
-                            <input type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
-                                style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)', color: 'white', outline: 'none' }} />
+                        <label className="block mb-2 text-text-secondary text-sm">Password</label>
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full p-3 rounded-md bg-bg-secondary border border-bg-tertiary text-white outline-none focus:border-primary transition-colors"
+                            />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                style={{
-                                    position: 'absolute',
-                                    right: '10px',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'var(--color-text-secondary)',
-                                    cursor: 'pointer',
-                                    fontSize: '1.2rem'
-                                }}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 bg-none border-none text-text-secondary cursor-pointer hover:text-white transition-colors"
                             >
-                                {showPassword ? '👁️' : '🙈'}
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
                         </div>
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>Role</label>
+                        <label className="block mb-2 text-text-secondary text-sm">Role</label>
                         <select
                             value={role}
                             onChange={(e) => setRole(e.target.value as Role)}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)', color: 'white', outline: 'none', cursor: 'pointer' }}
+                            className="w-full p-3 rounded-md bg-bg-secondary border border-bg-tertiary text-white outline-none cursor-pointer focus:border-primary transition-colors appearance-none"
                         >
                             <option value="WRITER">Writer (Submit News)</option>
                             <option value="EDITOR">Editor (Review News)</option>
@@ -120,25 +107,14 @@ const Register = () => {
                     <button
                         type="submit"
                         disabled={loading}
-                        style={{
-                            marginTop: '1rem',
-                            padding: '0.75rem',
-                            backgroundColor: 'var(--color-primary)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: 'var(--radius-md)',
-                            fontWeight: 600,
-                            cursor: loading ? 'not-allowed' : 'pointer',
-                            opacity: loading ? 0.7 : 1,
-                            transition: 'background-color 0.2s'
-                        }}
+                        className={`mt-4 p-3 bg-primary text-white border-none rounded-md font-semibold cursor-pointer transition-opacity duration-200 ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-primary-hover'}`}
                     >
                         {loading ? 'Creating Account...' : 'Sign Up'}
                     </button>
                 </form>
 
-                <p style={{ marginTop: '1.5rem', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
-                    Already have an account? <Link to="/login">Sign in</Link>
+                <p className="mt-6 text-center text-text-secondary text-sm">
+                    Already have an account? <Link to="/login" className="font-semibold text-text-accent hover:underline">Sign in</Link>
                 </p>
             </div>
         </div>

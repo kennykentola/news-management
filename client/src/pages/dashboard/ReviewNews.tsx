@@ -83,10 +83,10 @@ const ReviewNews = () => {
                                 {article.content.substring(0, 200)}...
                             </p>
 
-                            <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                            <div className="flex flex-col md:flex-row gap-4 mt-2">
                                 <button
                                     onClick={() => handleDecision(article.$id, 'APPROVED')}
-                                    style={{ padding: '0.5rem 1rem', flex: 1, backgroundColor: 'var(--color-success)', color: 'white', border: 'none', borderRadius: 'var(--radius-md)', fontWeight: 600 }}
+                                    className="flex-1 py-2 px-4 bg-green-500 text-white rounded-md font-semibold hover:bg-green-600 transition-colors"
                                 >
                                     Approve for Admin
                                 </button>
@@ -97,7 +97,7 @@ const ReviewNews = () => {
                                             handleDecision(article.$id, 'REJECTED', feedback);
                                         }
                                     }}
-                                    style={{ padding: '0.5rem 1rem', flex: 1, backgroundColor: 'transparent', border: '1px solid var(--color-danger)', color: 'var(--color-danger)', borderRadius: 'var(--radius-md)', fontWeight: 600 }}
+                                    className="flex-1 py-2 px-4 bg-transparent border border-danger text-danger rounded-md font-semibold hover:bg-danger/10 transition-colors"
                                 >
                                     Request Changes / Reject
                                 </button>

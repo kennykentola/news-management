@@ -33,44 +33,27 @@ const VerifyEmail = () => {
     }, [userId, secret, updateVerification]);
 
     return (
-        <div style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'var(--color-bg-primary)'
-        }}>
-            <div className="glass-panel" style={{
-                padding: '2.5rem',
-                borderRadius: 'var(--radius-lg)',
-                width: '100%',
-                maxWidth: '400px',
-                textAlign: 'center'
-            }}>
-                <h2 style={{ marginBottom: '1rem' }}>Email Verification</h2>
+        <div className="min-h-screen flex items-center justify-center bg-bg-primary">
+            <div className="glass-panel w-full max-w-[400px] p-10 rounded-2xl border border-white/10 text-center">
+                <h2 className="mb-4 text-2xl font-bold text-text-primary">Email Verification</h2>
 
                 {status === 'verifying' && <p>Verifying your email...</p>}
 
                 {status === 'success' && (
-                    <div style={{ color: 'var(--color-success)' }}>
-                        <p style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Success!</p>
-                        <p style={{ color: 'var(--color-text-secondary)', marginBottom: '1.5rem' }}>Your email has been verified.</p>
-                        <Link to="/dashboard" style={{
-                            display: 'inline-block',
-                            padding: '0.75rem 1.5rem',
-                            backgroundColor: 'var(--color-primary)',
-                            color: 'white',
-                            textDecoration: 'none',
-                            borderRadius: 'var(--radius-md)'
-                        }}>Go to Dashboard</Link>
+                    <div className="text-success">
+                        <p className="text-xl mb-4">Success!</p>
+                        <p className="text-text-secondary mb-6">Your email has been verified.</p>
+                        <Link to="/dashboard" className="inline-block px-6 py-3 bg-primary text-white no-underline rounded-md hover:bg-primary-hover transition-colors">
+                            Go to Dashboard
+                        </Link>
                     </div>
                 )}
 
                 {status === 'error' && (
-                    <div style={{ color: 'var(--color-danger)' }}>
-                        <p style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Error</p>
+                    <div className="text-danger">
+                        <p className="text-xl mb-4">Error</p>
                         <p>{message}</p>
-                        <Link to="/login" style={{ display: 'block', marginTop: '1.5rem', color: 'var(--color-text-secondary)' }}>Back to Login</Link>
+                        <Link to="/login" className="block mt-6 text-text-secondary hover:underline">Back to Login</Link>
                     </div>
                 )}
             </div>

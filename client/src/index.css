@@ -1,72 +1,30 @@
-:root {
-  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-heading: 'Outfit', sans-serif;
-  
-  --color-bg-primary: #0f172a;
-  --color-bg-secondary: #1e293b;
-  --color-bg-tertiary: #334155;
-  
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #94a3b8;
-  --color-text-accent: #38bdf8;
-  
-  --color-primary: #3b82f6;
-  --color-primary-hover: #2563eb;
-  
-  --color-danger: #ef4444;
-  --color-success: #22c55e;
-  --color-warning: #eab308;
+@import "tailwindcss";
 
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  
-  --radius-md: 0.5rem;
-  --radius-lg: 1rem;
+@theme {
+  --font-body: Inter, system-ui, -apple-system, sans-serif;
+  --font-heading: Outfit, sans-serif;
+
+  /* Defining colors as standard CSS vars in theme so they are available as utilities */
+  /* e.g. text-text-primary will resolve to var(--color-text-primary) if defined properly, 
+     but in v4 custom values in @theme become utilities automatically */
+  --color-bg-primary: #0f172a;
+  --color-text-primary: #f8fafc;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* Hardcoded base styles to ensure visibility if tailwind fails partially */
+:root {
+  color-scheme: dark;
 }
 
 body {
-  font-family: var(--font-body);
-  background-color: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  line-height: 1.5;
+  background-color: #0f172a;
+  color: #f8fafc;
+  font-family: Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin-bottom: 1rem;
-}
-
-button {
-  font-family: inherit;
-  cursor: pointer;
-}
-
-a {
-  color: var(--color-text-accent);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-/* Utilities */
-.glass-panel {
-  background: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: var(--shadow-glass);
+@layer components {
+  .glass-panel {
+    @apply bg-slate-800/70 backdrop-blur-md border border-white/10 shadow-lg;
+  }
 }

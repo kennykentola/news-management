@@ -29,9 +29,15 @@ def index():
         'status': 'online',
         'message': 'Fake News Detection API is running.',
         'endpoints': {
-            '/detect': 'POST - {text: string}'
+            '/detect': 'POST - {text: string}',
+            '/reload': 'POST - Reload model'
         }
     })
+
+@app.route('/reload', methods=['POST'])
+def reload_model_route():
+    load_model()
+    return jsonify({'status': 'Model reloaded successfully'})
 
 @app.route('/detect', methods=['POST'])
 def detect():
@@ -62,9 +68,39 @@ def detect():
                 if prediction == 'FAKE':
                     reliability_score = 100 - reliability_score
             
+            # --- Advanced Analysis (Explainable AI) ---
+            from textblob import TextBlob
+            blob = TextBlob(text)
+            sentiment_polarity = blob.sentiment.polarity # -1 (Negative) to 1 (Positive)
+            
+            # Keyword Analysis
+            trigger_words = ['shocking', 'revealed', 'you won\'t believe', 'miracle', 'secret', 'banned', 'exposed']
+            found_triggers = [word for word in trigger_words if word in text.lower()]
+            
+            # Simple Source Check (basic heuristic if URL provided, though here we input text mostly)
+            # We can mock this or check if text contains known unreliable domains
+            
+            # Generate Explanation
+            explanation = []
+            if prediction == 'FAKE':
+                explanation.append("The article pattern matches known misinformation styles.")
+                if abs(sentiment_polarity) > 0.5:
+                    explanation.append(f"The text is highly {'positive' if sentiment_polarity > 0 else 'negative'} ({sentiment_polarity:.2f}), which often indicates bias.")
+                if found_triggers:
+                    explanation.append(f"It uses sensationalist clickbait words: {', '.join(found_triggers)}.")
+            else:
+                explanation.append("The content aligns with patterns found in reliable news sources.")
+                if not found_triggers:
+                    explanation.append("The language is relatively neutral and professional.")
+
             return jsonify({
                 'result': prediction,
-                'score': round(reliability_score, 2)
+                'score': round(reliability_score, 2),
+                'analysis': {
+                    'sentiment': round(sentiment_polarity, 2),
+                    'triggers': found_triggers,
+                    'explanation': " ".join(explanation)
+                }
             })
         except Exception as e:
              return jsonify({'error': str(e)}), 500

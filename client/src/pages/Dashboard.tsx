@@ -6,25 +6,43 @@ import ReviewNews from './dashboard/ReviewNews';
 import MyArticles from './dashboard/MyArticles';
 import EditArticle from './dashboard/EditArticle';
 import PublishNews from './dashboard/PublishNews';
+
 import Overview from './dashboard/Overview';
+import Stats from './dashboard/Stats';
+import NotificationCenter from '../components/NotificationCenter';
+import {
+    Menu,
+    X,
+    LayoutDashboard,
+    Newspaper,
+    FileText,
+    PenTool,
+    CheckSquare,
+    Send,
+    BarChart2,
+    LogOut,
+    Home
+} from 'lucide-react';
 
-const Stats = () => <h2 className="text-2xl font-bold mb-4">Platform Stats</h2>;
+interface SidebarItemProps {
+    to: string;
+    label: string;
+    icon: React.ReactNode;
+    active: boolean;
+    onClick?: () => void;
+}
 
-const SidebarItem = ({ to, label, icon, active }: { to: string, label: string, icon: string, active: boolean }) => (
-    <Link to={to} style={{
-        display: 'flex',
-        alignItems: 'center',
-        padding: '0.75rem 1rem',
-        borderRadius: 'var(--radius-md)',
-        marginBottom: '0.5rem',
-        textDecoration: 'none',
-        color: active ? 'white' : 'var(--color-text-secondary)',
-        backgroundColor: active ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-        borderLeft: active ? '3px solid var(--color-primary)' : '3px solid transparent',
-        transition: 'all 0.2s'
-    }}>
-        <span style={{ marginRight: '0.75rem' }}>{icon}</span>
-        {label}
+const SidebarItem = ({ to, label, icon, active, onClick }: SidebarItemProps) => (
+    <Link
+        to={to}
+        onClick={onClick}
+        className={`flex items-center px-4 py-3 rounded-lg mb-2 transition-all duration-200 ${active
+            ? 'bg-blue-500/10 text-white border-l-4 border-primary'
+            : 'text-text-secondary hover:bg-white/5 border-l-4 border-transparent'
+            }`}
+    >
+        <span className="mr-3">{icon}</span>
+        <span className="font-medium">{label}</span>
     </Link>
 );
 
@@ -40,154 +58,138 @@ const Dashboard = () => {
     };
 
     const isActive = (path: string) => location.pathname === path;
+    const closeSidebar = () => setIsSidebarOpen(false);
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--color-bg-primary)', position: 'relative' }}>
+        <div className="flex min-h-screen bg-bg-primary relative text-text-primary">
             {/* Mobile Header / Hamburger */}
-            <div style={{
-                display: 'none', // Hidden on desktop, handled by media query
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '60px',
-                backgroundColor: 'var(--color-bg-secondary)',
-                borderBottom: '1px solid var(--color-bg-tertiary)',
-                alignItems: 'center',
-                padding: '0 1rem',
-                zIndex: 40
-            }} className="mobile-header">
-                <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>
-                    ☰
-                </button>
-                <span style={{ marginLeft: '1rem', fontWeight: 'bold' }}>NewsGuard</span>
+            <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-bg-secondary border-b border-bg-tertiary flex items-center justify-between px-4 z-40">
+                <div className="flex items-center">
+                    <button
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        className="p-2 text-white hover:bg-white/10 rounded-md transition-colors"
+                    >
+                        {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                    <span className="ml-4 font-bold text-lg">NewsGuard</span>
+                </div>
+                <div className="flex items-center gap-4">
+                    <NotificationCenter />
+                </div>
             </div>
 
             {/* Sidebar Overlay for Mobile */}
             {isSidebarOpen && (
                 <div
-                    onClick={() => setIsSidebarOpen(false)}
-                    style={{
-                        position: 'fixed',
-                        inset: 0,
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                        zIndex: 45
-                    }}
-                    className="mobile-overlay"
+                    onClick={closeSidebar}
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
                 />
             )}
 
             {/* Sidebar */}
-            <aside className={`dashboard-sidebar ${isSidebarOpen ? 'open' : ''}`} style={{
-                width: '260px',
-                backgroundColor: 'var(--color-bg-secondary)',
-                // styles handled by class
-                display: 'flex',
-                flexDirection: 'column',
-            }}>
-                <div style={{ padding: '2rem', borderBottom: '1px solid var(--color-bg-tertiary)' }}>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>NewsGuard</h2>
-                    <div style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
-                        {user?.name} <span style={{
-                            display: 'inline-block',
-                            padding: '0.1rem 0.4rem',
-                            backgroundColor: 'var(--color-bg-tertiary)',
-                            borderRadius: '4px',
-                            fontSize: '0.7rem',
-                            marginLeft: '0.5rem',
-                            color: 'var(--color-text-accent)'
-                        }}>{user?.role}</span>
+            {/* Sidebar */}
+            <aside className={`
+                fixed md:sticky inset-y-0 left-0 z-50 w-64 bg-bg-secondary border-r border-bg-tertiary 
+                transform transition-transform duration-300 ease-in-out flex flex-col h-screen
+                ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+            `}>
+                <div className="p-6 border-b border-bg-tertiary">
+                    <h2 className="text-2xl font-bold text-primary">NewsGuard</h2>
+                    <div className="mt-2 text-sm text-text-secondary flex items-center">
+                        <span className="truncate max-w-[120px]">{user?.name}</span>
+                        <span className="ml-2 px-2 py-0.5 bg-bg-tertiary rounded text-xs text-text-accent font-medium">
+                            {user?.role}
+                        </span>
                     </div>
                 </div>
 
-                <nav style={{ padding: '1.5rem 1rem', flex: 1 }}>
-                    <SidebarItem to="/" label="Read News (Reader View)" icon="📰" active={false} />
-                    <SidebarItem to="/dashboard" label="Overview" icon="🏠" active={isActive('/dashboard')} />
+                <nav className="p-4 flex-1 overflow-y-auto">
+                    <SidebarItem
+                        to="/"
+                        label="Read News"
+                        icon={<Newspaper size={20} />}
+                        active={false}
+                        onClick={closeSidebar}
+                    />
+                    <SidebarItem
+                        to="/dashboard"
+                        label="Overview"
+                        icon={<LayoutDashboard size={20} />}
+                        active={isActive('/dashboard')}
+                        onClick={closeSidebar}
+                    />
 
                     {(user?.role === 'WRITER' || user?.role === 'ADMIN') && (
                         <>
-                            <SidebarItem to="/dashboard/my-articles" label="My Articles" icon="📝" active={isActive('/dashboard/my-articles')} />
-                            <SidebarItem to="/dashboard/submit" label="Submit News" icon="✍️" active={isActive('/dashboard/submit')} />
+                            <SidebarItem
+                                to="/dashboard/my-articles"
+                                label="My Articles"
+                                icon={<FileText size={20} />}
+                                active={isActive('/dashboard/my-articles')}
+                                onClick={closeSidebar}
+                            />
+                            <SidebarItem
+                                to="/dashboard/submit"
+                                label="Submit News"
+                                icon={<PenTool size={20} />}
+                                active={isActive('/dashboard/submit')}
+                                onClick={closeSidebar}
+                            />
                         </>
                     )}
 
                     {(user?.role === 'EDITOR' || user?.role === 'ADMIN') && (
-                        <SidebarItem to="/dashboard/review" label="Review Queue" icon="👀" active={isActive('/dashboard/review')} />
+                        <SidebarItem
+                            to="/dashboard/review"
+                            label="Review Queue"
+                            icon={<CheckSquare size={20} />}
+                            active={isActive('/dashboard/review')}
+                            onClick={closeSidebar}
+                        />
                     )}
 
                     {user?.role === 'ADMIN' && (
                         <>
-                            <SidebarItem to="/dashboard/publish" label="Publish Queue" icon="🚀" active={isActive('/dashboard/publish')} />
-                            <SidebarItem to="/dashboard/stats" label="Analytics" icon="📊" active={isActive('/dashboard/stats')} />
+                            <SidebarItem
+                                to="/dashboard/publish"
+                                label="Publish Queue"
+                                icon={<Send size={20} />}
+                                active={isActive('/dashboard/publish')}
+                                onClick={closeSidebar}
+                            />
+                            <SidebarItem
+                                to="/dashboard/stats"
+                                label="Analytics"
+                                icon={<BarChart2 size={20} />}
+                                active={isActive('/dashboard/stats')}
+                                onClick={closeSidebar}
+                            />
                         </>
                     )}
                 </nav>
 
-                <div style={{ padding: '1.5rem 1rem', borderTop: '1px solid var(--color-bg-tertiary)' }}>
+                <div className="p-4 border-t border-bg-tertiary">
                     <button
                         onClick={handleLogout}
-                        style={{
-                            width: '100%',
-                            padding: '0.75rem',
-                            backgroundColor: 'transparent',
-                            border: '1px solid var(--color-danger)',
-                            color: 'var(--color-danger)',
-                            borderRadius: 'var(--radius-md)',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
-                        }}
-                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'}
-                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        className="w-full flex items-center justify-center gap-2 p-3 bg-transparent border border-danger text-danger rounded-lg hover:bg-danger/10 transition-colors duration-200"
                     >
+                        <LogOut size={18} />
                         Logout
                     </button>
                 </div>
             </aside>
 
             {/* Main Content */}
-            <main className="dashboard-main" style={{
-                flex: 1,
-                padding: '2.5rem',
-                // padding top added for mobile header spacing via CSS or inline logic
-            }}>
-                <style>{`
-                    /* Inline CSS for responsiveness since we are using CSS-in-JS mostly */
-                    @media (max-width: 768px) {
-                        .mobile-header { display: flex !important; }
-                        .dashboard-sidebar {
-                            transform: translateX(-100%);
-                            transition: transform 0.3s ease;
-                            width: 260px;
-                            position: fixed;
-                            height: 100vh;
-                            z-index: 50;
-                            border-right: 1px solid var(--color-bg-tertiary);
-                            background-color: var(--color-bg-secondary);
-                        }
-                        .dashboard-sidebar.open {
-                            transform: translateX(0);
-                        }
-                        .dashboard-main { 
-                            margin-left: 0 !important;
-                            padding-top: 5rem !important; /* Space for mobile header */
-                        }
-                    }
-                    @media (min-width: 769px) {
-                        .dashboard-sidebar {
-                            width: 260px;
-                            background-color: var(--color-bg-secondary);
-                            border-right: 1px solid var(--color-bg-tertiary);
-                            display: flex;
-                            flex-direction: column;
-                            position: fixed;
-                            height: 100vh;
-                            z-index: 10;
-                        }
-                        .dashboard-main { margin-left: 260px; }
-                        .mobile-overlay { display: none; }
-                    }
-                `}</style>
-                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <main className="flex-1 overflow-x-hidden bg-bg-primary pt-16 md:pt-0 min-h-screen">
+                {/* Desktop Header */}
+                <header className="hidden md:flex h-16 bg-bg-primary/50 backdrop-blur-md border-b border-bg-tertiary items-center justify-between px-10 sticky top-0 z-30">
+                    <h2 className="text-xl font-bold text-text-primary capitalize">{location.pathname.split('/').pop() || 'Dashboard'}</h2>
+                    <div className="flex items-center gap-4">
+                        <NotificationCenter />
+                    </div>
+                </header>
+
+                <div className="p-6 md:p-10 max-w-6xl mx-auto">
                     <Routes>
                         <Route path="/" element={<Overview />} />
                         <Route path="/my-articles" element={<MyArticles />} />
@@ -199,7 +201,7 @@ const Dashboard = () => {
                     </Routes>
                 </div>
             </main>
-        </div >
+        </div>
     );
 };
 

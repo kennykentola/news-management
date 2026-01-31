@@ -50,8 +50,8 @@ const MyArticles = () => {
             <div style={{ display: 'grid', gap: '1.5rem' }}>
                 {articles.map(article => (
                     <div key={article.$id} className="glass-panel" style={{ padding: '1.5rem', borderRadius: 'var(--radius-md)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                            <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{article.title}</div>
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-2">
+                            <div className="font-semibold text-lg">{article.title}</div>
                             <div style={{
                                 padding: '0.2rem 0.6rem',
                                 borderRadius: '4px',

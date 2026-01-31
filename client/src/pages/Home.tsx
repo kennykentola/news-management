@@ -41,7 +41,8 @@ const Home = () => {
         <div style={{ minHeight: '100vh', backgroundColor: 'var(--color-bg-primary)', color: 'white' }}>
             <nav style={{ padding: '2rem 5%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-bg-tertiary)' }}>
                 <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>NewsGuard AI</h1>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <Link to="/check" style={{ color: 'var(--color-text-secondary)', textDecoration: 'none', fontWeight: 500, marginRight: '1rem' }}>Instant Check</Link>
                     <Link to="/login" style={{ color: 'white', textDecoration: 'none', fontWeight: 600 }}>Login</Link>
                     <Link to="/register" style={{ padding: '0.5rem 1rem', backgroundColor: 'var(--color-primary)', borderRadius: 'var(--radius-md)', color: 'white', textDecoration: 'none', fontWeight: 600 }}>Get Started</Link>
                 </div>

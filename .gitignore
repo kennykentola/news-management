@@ -13,3 +13,7 @@ venv/
 
 # Appwrite
 .gemini/
+
+# Data
+*.csv
+*.db
