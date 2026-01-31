@@ -105,11 +105,16 @@ def detect():
                 if not found_triggers:
                     explanation.append("The language is relatively neutral and professional.")
 
+            # Ensure types are native Python types for JSON serialization
+            prediction_label = str(prediction)
+            reliability_score_val = float(reliability_score)
+            sentiment_val = float(sentiment_polarity)
+
             return jsonify({
-                'result': prediction,
-                'score': round(reliability_score, 2),
+                'result': prediction_label,
+                'score': round(reliability_score_val, 2),
                 'analysis': {
-                    'sentiment': round(sentiment_polarity, 2),
+                    'sentiment': round(sentiment_val, 2),
                     'triggers': found_triggers,
                     'explanation': " ".join(explanation)
                 }
