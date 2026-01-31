@@ -29,9 +29,13 @@ const SubmitNews = () => {
                 });
                 if (response.ok) {
                     aiResult = await response.json();
+                } else {
+                    console.error("AI Service Error:", response.status, await response.text());
+                    alert("AI Service Warning: The analysis failed. The article will be submitted without AI scoring.");
                 }
             } catch (aiError) {
-                console.warn('AI Service unavailable', aiError);
+                console.error('AI Service Connection Failed:', aiError);
+                alert("AI Service Connection Failed. Please ensure the backend is running.");
             }
 
             // 2. Submit to Database

@@ -12,6 +12,18 @@ MODEL_PATH = 'model.pkl'
 model = None
 vectorizer = None
 
+# Ensure TextBlob corpora are downloaded
+try:
+    from textblob import TextBlob
+    import nltk
+    nltk.download('punkt', quiet=True)
+    nltk.download('brown', quiet=True)
+    nltk.download('wordnet', quiet=True)
+    nltk.download('punkt_tab', quiet=True)
+    print("TextBlob corpora checked/downloaded.")
+except Exception as e:
+    print(f"Warning: Failed to download TextBlob corpora: {e}")
+
 def load_model():
     global model, vectorizer
     if os.path.exists(MODEL_PATH):

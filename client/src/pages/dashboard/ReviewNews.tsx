@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES } from '../../lib/appwrite';
 import { Query } from 'appwrite';
 
@@ -62,7 +63,11 @@ const ReviewNews = () => {
                         <div key={article.$id} className="glass-panel" style={{ padding: '1.5rem', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div>
-                                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>{article.title}</h3>
+                                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>
+                                        <Link to={`/article/${article.$id}`} className="hover:text-primary transition-colors hover:underline">
+                                            {article.title}
+                                        </Link>
+                                    </h3>
                                     <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)', marginTop: '0.25rem' }}>
                                         By {article.authorName} • {new Date(article.createdAt).toLocaleDateString()}
                                     </div>
