@@ -9,6 +9,7 @@ import PublishNews from './dashboard/PublishNews';
 
 import Overview from './dashboard/Overview';
 import Stats from './dashboard/Stats';
+import AIControl from './dashboard/AIControl';
 import NotificationCenter from '../components/NotificationCenter';
 import {
     Menu,
@@ -20,6 +21,7 @@ import {
     CheckSquare,
     Send,
     BarChart2,
+    Cpu,
     Users,
     Settings,
     LogOut,
@@ -168,6 +170,13 @@ const Dashboard = () => {
                                 onClick={closeSidebar}
                             />
                             <SidebarItem
+                                to="/dashboard/ai-control"
+                                label="AI Management"
+                                icon={<Cpu size={20} />}
+                                active={isActive('/dashboard/ai-control')}
+                                onClick={closeSidebar}
+                            />
+                            <SidebarItem
                                 to="/dashboard/stats"
                                 label="Analytics"
                                 icon={<BarChart2 size={20} />}
@@ -208,6 +217,7 @@ const Dashboard = () => {
                         <Route path="/review" element={<ReviewNews />} />
                         <Route path="/publish" element={<PublishNews />} />
                         <Route path="/stats" element={<Stats />} />
+                        <Route path="/ai-control" element={<AIControl />} />
                         <Route path="/users" element={<AdminUsers />} />
                     </Routes>
                 </div>

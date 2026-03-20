@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES } from '../lib/appwrite';
 import { Query } from 'appwrite';
 import { useAuth } from '../context/AuthContext';
-import { Shield, ChevronRight, TrendingUp, Clock, Search, User } from 'lucide-react';
+import { Shield, ChevronRight, TrendingUp, Clock, Search, User, ArrowRight } from 'lucide-react';
+import LoadingScreen from '../components/LoadingScreen';
 
 const Home = () => {
     const { user } = useAuth();
     const [articles, setArticles] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [featuredIndex, setFeaturedIndex] = useState(0);
 
     const fetchNews = async () => {
         try {
@@ -38,17 +40,21 @@ const Home = () => {
         fetchNews();
     }, []);
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-white flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            </div>
-        );
-    }
+    const featuredArticles = articles.slice(0, 3);
+    const sideArticles = articles.slice(3, 7);
+    const bottomArticles = articles.slice(7);
+    const activeFeatured = featuredArticles[featuredIndex];
 
-    const featuredArticle = articles[0];
-    const sideArticles = articles.slice(1, 4);
-    const bottomArticles = articles.slice(4);
+    // Carousel logic
+    useEffect(() => {
+        if (featuredArticles.length <= 1) return;
+        const interval = setInterval(() => {
+            setFeaturedIndex((prev) => (prev + 1) % featuredArticles.length);
+        }, 8000);
+        return () => clearInterval(interval);
+    }, [featuredArticles.length]);
+
+    if (loading) return <LoadingScreen />;
 
     return (
         <div className="min-h-screen bg-white text-black font-sans selection:bg-primary selection:text-white">
@@ -64,6 +70,7 @@ const Home = () => {
                         <Link to="/politics" className="hover:text-primary transition-colors">Politics</Link>
                         <Link to="/tech" className="hover:text-primary transition-colors">Tech</Link>
                         <Link to="/health" className="hover:text-primary transition-colors">Health</Link>
+                        <Link to="/all" className="hover:text-primary transition-colors">All Articles</Link>
                     </div>
                 </div>
 
@@ -106,49 +113,59 @@ const Home = () => {
 
                 {/* Hero Feature Section */}
                 <section className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                    {/* Main Featured */}
-                    <div className="lg:col-span-8 group cursor-pointer">
-                        {featuredArticle && (
-                            <Link to={`/article/${featuredArticle.$id}`} className="block space-y-8">
-                                <div className="relative overflow-hidden rounded-4xl aspect-video shadow-2xl">
+                    {/* Main Featured Carousel */}
+                    <div className="lg:col-span-8 group relative overflow-hidden rounded-4xl bg-white border-2 border-bg-tertiary shadow-2xl">
+                        {activeFeatured && (
+                            <Link to={`/article/${activeFeatured.$id}`} className="block">
+                                <div className="relative overflow-hidden aspect-video">
                                     <img 
-                                        src={featuredArticle.imageUrl || 'https://images.unsplash.com/photo-1585829365234-781fdec3d4e4?auto=format&fit=crop&q=80&w=1200'} 
-                                        alt={featuredArticle.title} 
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                        src={activeFeatured.imageUrl || 'https://images.unsplash.com/photo-1585829365234-781fdec3d4e4?auto=format&fit=crop&q=80&w=1200'} 
+                                        alt={activeFeatured.title} 
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
                                     />
+                                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent hidden md:block" />
                                     <div className="absolute top-6 left-6 flex gap-3">
-                                        <span className="bg-primary text-white px-4 py-2 rounded-xl text-xs font-black uppercase shadow-lg border border-white/20">
-                                            {featuredArticle.category || 'FEATURED'}
+                                        <span className="bg-primary text-white px-4 py-2 rounded-xl text-xs font-black uppercase shadow-lg border border-white/20 animate-pulse">
+                                            {activeFeatured.category || 'BREAKING'}
                                         </span>
                                         <span className="bg-white/90 backdrop-blur-md text-primary-dark px-4 py-2 rounded-xl text-xs font-black uppercase shadow-lg flex items-center gap-2">
-                                            <Shield size={14} /> {featuredArticle.aiScore}% TRUST SCORE
+                                            <Shield size={14} className="text-green-600" /> {activeFeatured.aiScore}% TRUST
                                         </span>
                                     </div>
+
+                                    {/* Indicators */}
+                                    <div className="absolute bottom-6 right-6 flex gap-2">
+                                        {featuredArticles.map((_, i) => (
+                                            <button
+                                                key={i}
+                                                onClick={(e) => { e.preventDefault(); setFeaturedIndex(i); }}
+                                                className={`w-3 h-3 rounded-full transition-all ${i === featuredIndex ? 'bg-primary w-8' : 'bg-white/50 hover:bg-white'}`}
+                                            />
+                                        ))}
+                                    </div>
                                 </div>
-                                <div className="space-y-4">
-                                    <h1 className="text-5xl md:text-7xl font-black leading-[1.05] tracking-tighter text-black group-hover:text-primary transition-colors">
-                                        {featuredArticle.title}
+                                <div className="p-8 space-y-4">
+                                    <h1 className="text-4xl md:text-6xl font-black leading-tight tracking-tighter text-black group-hover:text-primary transition-colors">
+                                        {activeFeatured.title}
                                     </h1>
-                                    <p className="text-xl text-gray-600 font-bold leading-relaxed max-w-4xl line-clamp-3">
-                                        {featuredArticle.content?.replace(/<[^>]*>/g, '') || ''}
+                                    <p className="text-lg text-gray-600 font-bold leading-relaxed line-clamp-2">
+                                        {activeFeatured.content?.replace(/<[^>]*>/g, '') || ''}
                                     </p>
-                                    <div className="flex items-center gap-6 pt-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-black">
-                                                {featuredArticle.authorName?.charAt(0)}
+                                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-black text-primary">
+                                                {activeFeatured.authorName?.charAt(0)}
                                             </div>
-                                            <span className="font-black text-sm uppercase tracking-widest">{featuredArticle.authorName}</span>
+                                            <span className="font-black text-sm uppercase tracking-widest">{activeFeatured.authorName}</span>
                                         </div>
-                                        <div className="flex items-center gap-2 text-gray-400 font-bold text-sm">
-                                            <Clock size={16} /> 5 min read
+                                        <div className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-primary-dark shadow-xl shadow-primary/20 transition-all">
+                                            Read Full Article <ArrowRight size={16} />
                                         </div>
                                     </div>
                                 </div>
                             </Link>
                         )}
                     </div>
-
-                    {/* Side Sidebar Stories */}
                     <div className="lg:col-span-4 space-y-10">
                         <div className="flex items-center gap-4 mb-8">
                             <TrendingUp className="text-primary" size={24} />
@@ -197,25 +214,38 @@ const Home = () => {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
                         {bottomArticles.map(article => (
-                            <Link key={article.$id} to={`/article/${article.$id}`} className="group space-y-6">
-                                <div className="aspect-video rounded-3xl overflow-hidden shadow-xl border border-gray-50">
+                            <Link key={article.$id} to={`/article/${article.$id}`} className="group flex flex-col bg-white rounded-4xl border-2 border-bg-tertiary overflow-hidden shadow-lg hover:shadow-2xl transition-all h-full">
+                                <div className="aspect-16/10 overflow-hidden relative">
                                     <img 
                                         src={article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=800'} 
                                         className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
                                         alt=""
                                     />
+                                    <div className="absolute top-4 left-4">
+                                        <span className="bg-white/90 backdrop-blur-md text-primary-dark px-3 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-md flex items-center gap-1.5">
+                                            <Shield size={12} className="text-green-600" /> {article.aiScore}% TRUST
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="space-y-3">
-                                    <div className="flex justify-between items-center">
+                                <div className="p-8 flex flex-col flex-1">
+                                    <div className="flex justify-between items-center mb-4">
                                         <span className="text-xs font-black text-primary uppercase tracking-widest">{article.category}</span>
                                         <span className="text-xs font-bold text-gray-400">{new Date(article.createdAt).toLocaleDateString()}</span>
                                     </div>
-                                    <h4 className="text-2xl font-black leading-tight group-hover:text-primary transition-all">
+                                    <h4 className="text-2xl font-black leading-tight group-hover:text-primary transition-all mb-4">
                                         {article.title}
                                     </h4>
-                                    <p className="text-sm text-gray-500 font-bold line-clamp-2">
+                                    <p className="text-sm text-gray-500 font-bold line-clamp-3 mb-8 flex-1">
                                         {article.content?.replace(/<[^>]*>/g, '') || ''}
                                     </p>
+                                    <div className="flex items-center justify-between pt-6 border-t border-gray-100">
+                                        <div className="flex items-center gap-2 text-gray-400 font-black text-[10px] uppercase tracking-widest">
+                                            <Clock size={12} /> 4 min read
+                                        </div>
+                                        <div className="text-primary font-black text-xs uppercase tracking-widest flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-xl">
+                                            Read More <ArrowRight size={14} />
+                                        </div>
+                                    </div>
                                 </div>
                             </Link>
                         ))}

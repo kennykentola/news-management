@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import joblib
 import os
+import subprocess
 import numpy as np
 from dotenv import load_dotenv
 
@@ -154,6 +155,58 @@ def get_global_analytics():
         'ai_confidence_avg': 92.4,
         'flagged_content_rate': 0.12
     })
+
+# --- Admin Maintenance Endpoints ---
+
+@app.route('/admin/scrape-social', methods=['POST'])
+def run_scrape_social():
+    try:
+        # Run the fetch_social_trends.py script
+        result = subprocess.run(['python', 'fetch_social_trends.py'], capture_output=True, text=True)
+        return jsonify({
+            'status': 'success' if result.returncode == 0 else 'error',
+            'output': result.stdout,
+            'error': result.stderr
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/scrape', methods=['POST'])
+def run_scrape():
+    try:
+        # Run the fetch_african_facts.py script
+        result = subprocess.run(['python', 'fetch_african_facts.py'], capture_output=True, text=True)
+        return jsonify({
+            'status': 'success' if result.returncode == 0 else 'error',
+            'output': result.stdout,
+            'error': result.stderr
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/clean', methods=['POST'])
+def run_clean():
+    try:
+        result = subprocess.run(['python', 'clean_data.py'], capture_output=True, text=True)
+        return jsonify({
+            'status': 'success' if result.returncode == 0 else 'error',
+            'output': result.stdout,
+            'error': result.stderr
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/train', methods=['POST'])
+def run_train():
+    try:
+        # We start it in the background as it might take time
+        # For simplicity, we'll use a basic train script here or trigger train_model.py
+        # If the user wants afriberta, they should use train_afriberta.py but it needs GPU
+        script = 'train_model.py'
+        subprocess.Popen(['python', script])
+        return jsonify({'status': 'started', 'message': f'Training process started with {script}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

@@ -51,8 +51,9 @@ const EditArticle = () => {
     const handleProofread = async () => {
         if (!content.replace(/<[^>]*>/g, '').trim()) return;
         setProofreading(true);
+        const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:5000';
         try {
-            const response = await fetch('http://127.0.0.1:5000/proofread', {
+            const response = await fetch(`${AI_SERVER_URL}/proofread`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: content.replace(/<[^>]*>/g, '') })
@@ -125,7 +126,7 @@ const EditArticle = () => {
                 </div>
             )}
 
-            <form onSubmit={handleUpdate} className="bg-white p-10 rounded-[2rem] border-2 border-bg-tertiary shadow-2xl space-y-8">
+            <form onSubmit={handleUpdate} className="bg-white p-10 rounded-4xl border-2 border-bg-tertiary shadow-2xl space-y-8">
                 <div>
                     <label className="block mb-2 text-black font-black uppercase text-xs tracking-widest opacity-50">Headline</label>
                     <input

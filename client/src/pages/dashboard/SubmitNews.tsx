@@ -1,10 +1,13 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES, NOTIFICATIONS_COLLECTION_ID } from '../../lib/appwrite';
-import { ID } from 'appwrite';
+import { ID, Query } from 'appwrite';
 import { useAuth } from '../../context/AuthContext';
 import { Sparkles, BarChart3, CheckCheck, AlertCircle } from 'lucide-react';
+import LoadingScreen from '../../components/LoadingScreen';
+
+const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:5000';
 
 const SubmitNews = () => {
     const { user } = useAuth();
@@ -51,8 +54,9 @@ const SubmitNews = () => {
     const handleProofread = async () => {
         if (!content.replace(/<[^>]*>/g, '').trim()) return;
         setProofreading(true);
+        const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:5000';
         try {
-            const response = await fetch('http://127.0.0.1:5000/proofread', {
+            const response = await fetch(`${AI_SERVER_URL}/proofread`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: content.replace(/<[^>]*>/g, '') })
@@ -88,7 +92,7 @@ const SubmitNews = () => {
             // 1. AI Check
             let aiResult = { result: 'UNKNOWN', score: 0 };
             try {
-                const response = await fetch('http://127.0.0.1:5000/detect', {
+                const response = await fetch(`${AI_SERVER_URL}/detect`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text: plainText })
@@ -172,6 +176,8 @@ const SubmitNews = () => {
         ],
     };
 
+
+    if (loading && writerStats.totalSubmitted === 0) return <LoadingScreen message="Aggregating your writing metrics..." />;
 
     return (
         <div className="space-y-10 animate-in fade-in duration-700">

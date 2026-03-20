@@ -11,8 +11,9 @@ const FactCheck = () => {
         setLoading(true);
         setResult(null);
 
+        const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:5000';
         try {
-            const response = await fetch('http://127.0.0.1:5000/detect', {
+            const response = await fetch(`${AI_SERVER_URL}/detect`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text })

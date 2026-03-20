@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
 import ArticleDetail from './pages/ArticleDetail';
 import FactCheck from './pages/FactCheck';
+import CategoryPage from './pages/CategoryPage';
 
 const Unauthorized = () => {
     const { logout } = useAuth();
@@ -43,6 +44,8 @@ function App() {
                         <Route path="/reset-password" element={<ResetPassword />} />
                         <Route path="/verify-email" element={<VerifyEmail />} />
                         <Route path="/article/:id" element={<ArticleDetail />} />
+                        <Route path="/all" element={<CategoryPage />} />
+                        <Route path="/:category" element={<CategoryPage />} />
                         <Route path="/unauthorized" element={<Unauthorized />} />
 
                         <Route

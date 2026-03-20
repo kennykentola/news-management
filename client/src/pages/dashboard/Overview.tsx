@@ -13,6 +13,7 @@ import {
     Clock,
     UserCircle
 } from 'lucide-react';
+import LoadingScreen from '../../components/LoadingScreen';
 
 const StatCard = ({ label, value, color, icon: Icon, trend }: { label: string, value: string | number, color: string, icon: any, trend?: string }) => (
     <div className="bg-white p-8 rounded-4xl border-2 border-bg-tertiary shadow-xl hover:shadow-2xl transition-all group">
@@ -189,6 +190,8 @@ const Overview = () => {
         </div>
     );
 
+    if (loading) return <LoadingScreen message="Syncing with truth database..." />;
+
     return (
         <div className="space-y-12 animate-in fade-in slide-in-from-top-4 duration-700">
             <header>
@@ -216,7 +219,7 @@ const Overview = () => {
                     value={stats.fakeDetected} 
                     color="#ef4444" 
                     icon={ShieldCheck} 
-                    trend="Zero false positives"
+                    trend={stats.fakeDetected > 0 ? "Potential threats flagged" : "Zero false positives"}
                 />
                 <StatCard 
                     label="Content Published" 
