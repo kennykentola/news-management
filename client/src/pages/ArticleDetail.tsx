@@ -83,67 +83,75 @@ const ArticleDetail = () => {
         }
     };
 
-    if (loading) return <div style={{ padding: '2rem', color: 'white' }}>Loading article...</div>;
-    if (error || !article) return <div style={{ padding: '2rem', color: 'var(--color-danger)' }}>{error || 'Article not found'}</div>;
+    if (loading) return <div style={{ padding: '4rem', color: '#000000', textAlign: 'center', fontWeight: 900, fontSize: '1.5rem', animatePulse: 'true' }}>Loading article...</div>;
+    if (error || !article) return <div style={{ padding: '4rem', color: 'var(--color-danger)', textAlign: 'center', fontWeight: 900, fontSize: '1.5rem' }}>{error || 'Article not found'}</div>;
 
     return (
-        <div style={{ minHeight: '100vh', backgroundColor: 'var(--color-bg-primary)', color: 'white', paddingBottom: '3rem' }}>
-            <nav style={{ padding: '2rem 5%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--color-bg-tertiary)' }}>
-                <Link to="/" style={{ color: 'var(--color-text-secondary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    ← Back to News
+        <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', color: '#000000', paddingBottom: '5rem' }}>
+            <nav style={{ padding: '1.5rem 10%', display: 'flex', alignItems: 'center', backgroundColor: '#ffffff', justifyContent: 'space-between', borderBottom: '2px solid var(--color-bg-tertiary)', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                <Link to="/" style={{ color: '#000000', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 900, fontSize: '1.1rem' }}>
+                    <span style={{ fontSize: '1.5rem' }}>←</span> Back to News
                 </Link>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button onClick={handleShare} style={{ background: 'var(--color-primary)', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', color: 'white', fontWeight: 600, cursor: 'pointer' }}>
+                <div style={{ display: 'flex', gap: '1.5rem' }}>
+                    <button onClick={handleShare} style={{ background: 'var(--color-primary)', border: 'none', padding: '0.75rem 1.5rem', borderRadius: 'var(--radius-xl)', color: 'white', fontWeight: 900, cursor: 'pointer', boxShadow: '0 4px 6px -1px rgba(37, 211, 102, 0.4)', fontSize: '1rem' }}>
                         Share Article
                     </button>
                 </div>
             </nav>
 
-            <article style={{ maxWidth: '800px', margin: '3rem auto', padding: '0 1.5rem' }}>
-                <div style={{ marginBottom: '1rem', color: 'var(--color-primary)', fontWeight: 600, display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <span style={{ backgroundColor: 'rgba(56, 189, 248, 0.1)', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>{article.category || 'News'}</span>
-                    <span>{new Date(article.createdAt).toLocaleDateString()}</span>
+            <article style={{ maxWidth: '900px', margin: '4rem auto', padding: '4rem', backgroundColor: '#ffffff', borderRadius: '2rem', border: '2px solid var(--color-bg-tertiary)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.08)' }}>
+                <div style={{ marginBottom: '2rem', display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                    <span style={{ backgroundColor: '#e7ffed', color: 'var(--color-primary-dark)', padding: '0.5rem 1.25rem', borderRadius: '999px', fontSize: '0.9rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{article.category || 'News'}</span>
+                    <span style={{ fontSize: '1rem', color: '#4b5563', fontWeight: 700 }}>📅 {new Date(article.createdAt).toLocaleDateString()}</span>
                 </div>
 
-                <h1 style={{ fontSize: '2.5rem', fontWeight: 800, lineHeight: 1.2, marginBottom: '1.5rem' }}>
+                <h1 style={{ fontSize: '3.5rem', fontWeight: 900, lineHeight: 1.1, marginBottom: '2.5rem', color: '#000000', letterSpacing: '-0.04em' }}>
                     {article.title}
                 </h1>
 
                 {article.imageUrl && (
-                    <img src={article.imageUrl} alt={article.title} style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', borderRadius: 'var(--radius-lg)', marginBottom: '2rem' }} />
+                    <img src={article.imageUrl} alt={article.title} style={{ width: '100%', maxHeight: '500px', objectFit: 'cover', borderRadius: '1.5rem', marginBottom: '3rem', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
                 )}
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2.5rem', borderBottom: '1px solid var(--color-bg-tertiary)', paddingBottom: '1.5rem' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                        <span style={{ fontSize: '1rem', color: 'white' }}>By {article.authorName}</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4rem', borderBottom: '3px solid var(--color-bg-tertiary)', paddingBottom: '2rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{ width: '48px', height: '48px', backgroundColor: 'var(--color-primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: '1.2rem' }}>
+                            {article.authorName?.charAt(0)}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+                            <span style={{ fontSize: '1.1rem', color: '#000000', fontWeight: 900 }}>By {article.authorName}</span>
+                            <span style={{ fontSize: '0.9rem', color: '#6b7280', fontWeight: 600 }}>Verified Journalist</span>
+                        </div>
                     </div>
 
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                         <span style={{
-                            padding: '0.4rem 1rem',
+                            padding: '0.75rem 1.5rem',
                             borderRadius: '999px',
-                            fontSize: '0.875rem',
-                            fontWeight: 600,
-                            backgroundColor: article.aiScore > 70 ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                            color: article.aiScore > 70 ? 'var(--color-success)' : 'var(--color-danger)',
+                            fontSize: '1rem',
+                            fontWeight: 900,
+                            backgroundColor: article.aiScore > 70 ? '#e7ffed' : '#fee2e2',
+                            color: article.aiScore > 70 ? 'var(--color-primary-dark)' : '#b91c1c',
+                            border: `2px solid ${article.aiScore > 70 ? 'var(--color-primary)' : '#ef4444'}`,
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '0.4rem'
+                            gap: '0.6rem',
+                            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
                         }}>
-                            {article.aiScore > 70 ? '🛡️ Verified Safe' : '⚠️ Low Reliability'}
+                            {article.aiScore > 70 ? '✅ Verified Reliability' : '❌ Low Reliability'}
                             ({article.aiScore}%)
                         </span>
                     </div>
                 </div>
 
-                <div style={{ fontSize: '1.125rem', lineHeight: 1.8, color: '#e2e8f0', whiteSpace: 'pre-wrap' }}>
+                <div style={{ fontSize: '1.25rem', lineHeight: 1.8, color: '#000000', whiteSpace: 'pre-wrap', fontWeight: 500 }}>
                     {article.content}
                 </div>
 
                 {article.sourceUrl && (
-                    <div style={{ marginTop: '3rem', padding: '1.5rem', backgroundColor: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-bg-tertiary)' }}>
-                        <h4 style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Source / Citation</h4>
-                        <a href={article.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)', wordBreak: 'break-all' }}>
+                    <div style={{ marginTop: '5rem', padding: '2rem', backgroundColor: '#f9fafb', borderRadius: '1rem', border: '2px solid var(--color-bg-tertiary)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
+                        <h4 style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 900 }}>Original Source / Citations</h4>
+                        <a href={article.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary-dark)', fontWeight: 800, wordBreak: 'break-all', fontSize: '1.1rem', textDecoration: 'underline' }}>
                             {article.sourceUrl}
                         </a>
                     </div>
@@ -151,43 +159,54 @@ const ArticleDetail = () => {
             </article>
 
             {/* Comment Section */}
-            <section style={{ maxWidth: '800px', margin: '0 auto', padding: '0 1.5rem', borderTop: '1px solid var(--color-bg-tertiary)', paddingTop: '3rem' }}>
-                <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Comments ({comments.length})</h3>
+            <section style={{ maxWidth: '900px', margin: '0 auto', padding: '0 1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '3rem' }}>
+                    <h3 style={{ fontSize: '2rem', color: '#000000', fontWeight: 900, letterSpacing: '-0.02em' }}>Reader Insights ({comments.length})</h3>
+                    <div style={{ flex: 1, height: '3px', backgroundColor: 'var(--color-bg-tertiary)', borderRadius: '999px' }}></div>
+                </div>
 
                 {user ? (
-                    <form onSubmit={handleCommentSubmit} style={{ marginBottom: '2rem' }}>
+                    <form onSubmit={handleCommentSubmit} style={{ marginBottom: '4rem', backgroundColor: '#ffffff', padding: '2.5rem', borderRadius: '1.5rem', border: '2px solid var(--color-bg-tertiary)', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05)' }}>
+                        <label style={{ display: 'block', marginBottom: '1rem', color: '#000000', fontWeight: 800, fontSize: '1.1rem' }}>Your Perspective</label>
                         <textarea
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}
-                            placeholder="Add to the conversation..."
-                            style={{ width: '100%', padding: '1rem', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)', color: 'white', marginBottom: '0.5rem', minHeight: '100px' }}
+                            placeholder="Share your thoughts on this story..."
+                            style={{ width: '100%', padding: '1.5rem', borderRadius: '1rem', backgroundColor: '#ffffff', border: '2px solid var(--color-bg-tertiary)', color: '#000000', marginBottom: '1.5rem', minHeight: '150px', outline: 'none', transition: 'all 0.2s', fontSize: '1.1rem', fontWeight: 500, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
                         />
                         <div style={{ textAlign: 'right' }}>
-                            <button type="submit" style={{ backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', padding: '0.5rem 1.5rem', borderRadius: '4px', fontWeight: 600, cursor: 'pointer' }}>
-                                Post Comment
+                            <button type="submit" style={{ backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', padding: '1rem 3rem', borderRadius: 'var(--radius-xl)', fontWeight: 900, cursor: 'pointer', transition: 'all 0.2s', fontSize: '1.1rem', boxShadow: '0 4px 6px -1px rgba(37, 211, 102, 0.4)' }}>
+                                Publish Comment
                             </button>
                         </div>
                     </form>
                 ) : (
-                    <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-                        <p>Please <Link to="/login" style={{ color: 'var(--color-primary)' }}>login</Link> to post a comment.</p>
+                    <div style={{ marginBottom: '4rem', padding: '3rem', backgroundColor: '#f9fafb', border: '2px solid var(--color-bg-tertiary)', borderRadius: '1.5rem', textAlign: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                        <p style={{ color: '#4b5563', fontSize: '1.2rem', fontWeight: 700 }}>Want to join the conversation? <Link to="/login" style={{ color: 'var(--color-primary-dark)', fontWeight: 900, textDecoration: 'underline' }}>Sign in now</Link></p>
                     </div>
                 )}
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                     {comments.map(comment => (
-                        <div key={comment.$id} style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                <span style={{ fontWeight: 600, color: 'var(--color-primary)' }}>{comment.authorName}</span>
-                                <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>{new Date(comment.createdAt).toLocaleDateString()}</span>
+                        <div key={comment.$id} style={{ padding: '2rem', backgroundColor: '#ffffff', border: '2px solid var(--color-bg-tertiary)', borderRadius: '1.5rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', transition: 'transform 0.2s' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <div style={{ width: '32px', height: '32px', backgroundColor: '#e7ffed', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-primary-dark)', fontWeight: 900, fontSize: '0.9rem' }}>
+                                        {comment.authorName?.charAt(0)}
+                                    </div>
+                                    <span style={{ fontWeight: 900, color: '#000000', fontSize: '1.1rem' }}>{comment.authorName}</span>
+                                </div>
+                                <span style={{ fontSize: '0.9rem', color: '#6b7280', fontWeight: 700 }}>{new Date(comment.createdAt).toLocaleDateString()}</span>
                             </div>
-                            <p style={{ lineHeight: 1.5 }}>{comment.content}</p>
+                            <p style={{ lineHeight: 1.6, color: '#000000', fontSize: '1.05rem', fontWeight: 500 }}>{comment.content}</p>
                         </div>
                     ))}
-                    {comments.length === 0 && <p style={{ color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>No comments yet. Be the first to say something!</p>}
+                    {comments.length === 0 && <p style={{ color: '#6b7280', fontStyle: 'italic', textAlign: 'center', padding: '4rem', fontSize: '1.1rem', fontWeight: 600 }}>No readers have commented yet. Be the first to share your insight!</p>}
                 </div>
             </section>
         </div>
+
+
     );
 };
 

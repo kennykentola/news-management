@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { account, databases } from '../lib/appwrite';
-import { ID, Models } from 'appwrite';
+import { ID, Models, OAuthProvider } from 'appwrite';
 
 // Define roles
 export type Role = 'WRITER' | 'EDITOR' | 'ADMIN' | 'READER';
@@ -23,6 +23,7 @@ interface AuthContextType {
     completePasswordRecovery: (userId: string, secret: string, password: string, passwordAgain: string) => Promise<void>;
     createVerification: () => Promise<void>;
     updateVerification: (userId: string, secret: string) => Promise<void>;
+    loginWithGoogle: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -138,6 +139,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await account.updateVerification(userId, secret);
     };
 
+    const loginWithGoogle = async () => {
+        try {
+            // Failure and Success URLs - redirect back to home/dashboard
+            // Using window.location.origin to handle localhost vs production automatically
+            await account.createOAuth2Session(
+                OAuthProvider.Google,
+                `${window.location.origin}/`, // Success
+                `${window.location.origin}/login` // Failure
+            );
+        } catch (error) {
+            console.error("Google Login Failed:", error);
+            throw error;
+        }
+    };
+
     return (
         <AuthContext.Provider value={{
             user,
@@ -149,7 +165,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             requestPasswordRecovery,
             completePasswordRecovery,
             createVerification,
-            updateVerification
+            updateVerification,
+            loginWithGoogle
         }}>
             {children}
         </AuthContext.Provider>

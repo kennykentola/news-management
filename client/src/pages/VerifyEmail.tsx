@@ -33,8 +33,8 @@ const VerifyEmail = () => {
     }, [userId, secret, updateVerification]);
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-bg-primary">
-            <div className="glass-panel w-full max-w-[400px] p-10 rounded-2xl border border-white/10 text-center">
+        <div className="min-h-screen flex items-center justify-center bg-bg-secondary">
+            <div className="bg-bg-primary w-full max-w-[400px] p-10 rounded-2xl border border-bg-tertiary shadow-xl text-center">
                 <h2 className="mb-4 text-2xl font-bold text-text-primary">Email Verification</h2>
 
                 {status === 'verifying' && <p>Verifying your email...</p>}

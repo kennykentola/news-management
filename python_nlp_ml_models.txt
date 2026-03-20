@@ -1,0 +1,26 @@
+Summary of Python NLP & ML models used in TONIA
+
+- Feature extraction:
+  - TF-IDF vectorization (e.g., `sklearn.feature_extraction.text.TfidfVectorizer`) used to convert article text into numeric features.
+
+- Classification model:
+  - Naive Bayes classifier (commonly `sklearn.naive_bayes.MultinomialNB`) used to classify text as REAL or FAKE.
+  - Model persisted as a pickle file and loaded by the Flask AI service.
+
+- Reliability score:
+  - Use classifier probabilities (e.g., `predict_proba`) to derive a reliability/confidence score for predictions.
+
+- Sentiment analysis:
+  - Lightweight sentiment analyzer (rule-based or pretrained) such as VADER (`nltk.sentiment.vader`) or TextBlob for polarity/subjectivity checks.
+
+- Trigger-word / heuristic checks:
+  - Keyword-based scanning for specific "trigger" words or patterns (simple rule/regex checks) to add explainability flags.
+
+- Typical stack / libraries:
+  - scikit-learn (TF-IDF, Naive Bayes, pipelines)
+  - NLTK / VADER or TextBlob (sentiment)
+  - pandas (data handling), Flask (AI service), joblib/pickle (model serialization)
+
+Notes:
+- The pipeline is usually: preprocessing (TF-IDF) -> model (Naive Bayes) -> post-processing (probability -> reliability score) + sentiment and trigger-word heuristics for explanation.
+- This design favors lightweight, interpretable models suitable for quick inference in a microservice.

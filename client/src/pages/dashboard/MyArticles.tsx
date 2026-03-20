@@ -45,20 +45,24 @@ const MyArticles = () => {
     };
 
     return (
-        <div>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>My Articles</h2>
-            <div style={{ display: 'grid', gap: '1.5rem' }}>
+        <div style={{ maxWidth: '1200px' }}>
+            <h2 style={{ fontSize: '2.5rem', marginBottom: '2.5rem', fontWeight: 900, color: '#000000', letterSpacing: '-0.025em' }}>My Articles</h2>
+            <div style={{ display: 'grid', gap: '2rem' }}>
                 {articles.map(article => (
-                    <div key={article.$id} className="glass-panel" style={{ padding: '1.5rem', borderRadius: 'var(--radius-md)' }}>
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-2">
-                            <div className="font-semibold text-lg">{article.title}</div>
+                    <div key={article.$id} className="bg-white" style={{ padding: '2.5rem', borderRadius: 'var(--radius-xl)', border: '2px solid var(--color-bg-tertiary)', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05)', transition: 'transform 0.2s ease-in-out' }}>
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                            <div className="font-extrabold text-2xl text-black tracking-tight">{article.title}</div>
                             <div style={{
-                                padding: '0.2rem 0.6rem',
-                                borderRadius: '4px',
-                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                padding: '0.4rem 1rem',
+                                borderRadius: '999px',
+                                backgroundColor: '#ffffff',
+                                border: '2px solid var(--color-bg-tertiary)',
                                 color: getStatusColor(article.status),
-                                fontSize: '0.8rem',
-                                fontWeight: 700
+                                fontSize: '0.85rem',
+                                fontWeight: 900,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                             }}>
                                 {article.status}
                             </div>
@@ -66,30 +70,38 @@ const MyArticles = () => {
 
                         {article.status === 'REJECTED' && article.editorFeedback && (
                             <div style={{
-                                padding: '1rem',
-                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                                border: '1px solid var(--color-danger)',
-                                borderRadius: 'var(--radius-md)',
-                                marginTop: '1rem',
-                                marginBottom: '1rem',
-                                color: '#fca5a5'
+                                padding: '1.5rem',
+                                backgroundColor: '#fee2e2',
+                                border: '2px solid #ef4444',
+                                borderRadius: 'var(--radius-lg)',
+                                marginTop: '1.5rem',
+                                marginBottom: '1.5rem',
+                                color: '#b91c1c',
+                                fontWeight: 600
                             }}>
-                                <strong>Editor Feedback:</strong> {article.editorFeedback}
+                                <strong style={{ fontWeight: 900, textTransform: 'uppercase', marginRight: '0.5rem' }}>Editor Feedback:</strong> {article.editorFeedback}
                             </div>
                         )}
 
-                        <div style={{ display: 'flex', gap: '1rem', fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>
-                            <span>{new Date(article.createdAt).toLocaleDateString()}</span>
-                            <span>Category: {article.category || 'General'}</span>
+                        <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.95rem', color: '#4b5563', fontWeight: 600, marginBottom: '2rem' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>📅 {new Date(article.createdAt).toLocaleDateString()}</span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>📁 {article.category || 'General'}</span>
                         </div>
 
-                        <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
+                        <div style={{ marginTop: 'auto', display: 'flex', gap: '1.5rem' }}>
                             <Link
                                 to={`/dashboard/edit/${article.$id}`}
                                 style={{
-                                    color: 'var(--color-primary)',
-                                    fontWeight: 600,
-                                    textDecoration: 'none'
+                                    backgroundColor: 'var(--color-primary)',
+                                    color: 'white',
+                                    padding: '0.75rem 1.5rem',
+                                    borderRadius: 'var(--radius-lg)',
+                                    fontWeight: 800,
+                                    textDecoration: 'none',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    boxShadow: '0 4px 6px -1px rgba(37, 211, 102, 0.3)'
                                 }}
                             >
                                 ✏️ Edit
@@ -98,9 +110,17 @@ const MyArticles = () => {
                             <Link
                                 to={`/article/${article.$id}`}
                                 style={{
-                                    color: 'var(--color-text-secondary)',
-                                    fontWeight: 600,
-                                    textDecoration: 'none'
+                                    backgroundColor: '#ffffff',
+                                    color: '#000000',
+                                    padding: '0.75rem 1.5rem',
+                                    borderRadius: 'var(--radius-lg)',
+                                    fontWeight: 800,
+                                    textDecoration: 'none',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    border: '2px solid var(--color-bg-tertiary)',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                                 }}
                             >
                                 📄 View
@@ -108,9 +128,10 @@ const MyArticles = () => {
                         </div>
                     </div>
                 ))}
-                {articles.length === 0 && <p>No articles found. Start writing!</p>}
+                {articles.length === 0 && <p style={{ textAlign: 'center', padding: '4rem', fontSize: '1.2rem', fontWeight: 700, color: '#6b7280' }}>No articles found. Start writing your first story!</p>}
             </div>
         </div>
+
     );
 };
 

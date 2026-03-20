@@ -86,78 +86,88 @@ const Stats = () => {
         { name: 'Sun', checks: 3 },
     ];
 
-    if (loading) return <div className="text-white">Loading stats...</div>;
+    if (loading) return <div className="text-black font-bold p-10 text-center animate-pulse">Loading statistics...</div>;
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <h2 className="text-3xl font-bold text-white mb-6">Analytics Overview</h2>
+        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 max-w-6xl mx-auto">
+            <h2 className="text-4xl font-black text-black mb-8 tracking-tight">Analytics Overview</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="glass-panel p-6 rounded-xl border border-white/10">
-                    <h3 className="text-sm font-bold text-text-secondary uppercase mb-2">Total Articles Scanned</h3>
-                    <p className="text-4xl font-bold text-white">{metrics.total}</p>
-                    <span className="text-xs text-green-400">Live Data</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="bg-white p-8 rounded-2xl border-2 border-bg-tertiary shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                    <h3 className="text-xs font-black text-gray-500 uppercase mb-3 tracking-widest">Total Articles Scanned</h3>
+                    <p className="text-5xl font-black text-black">{metrics.total}</p>
+                    <span className="text-[10px] text-primary-dark font-black uppercase tracking-widest mt-4 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+                        Live Data Streaming
+                    </span>
                 </div>
-                <div className="glass-panel p-6 rounded-xl border border-white/10">
-                    <h3 className="text-sm font-bold text-text-secondary uppercase mb-2">Fake Detected</h3>
-                    <p className="text-4xl font-bold text-red-400">{metrics.fake}</p>
-                    <span className="text-xs text-red-400">High Volume Alert</span>
+                <div className="bg-white p-8 rounded-2xl border-2 border-bg-tertiary shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                    <h3 className="text-xs font-black text-gray-500 uppercase mb-3 tracking-widest">Fake Detected</h3>
+                    <p className="text-5xl font-black text-danger">{metrics.fake}</p>
+                    <span className="text-[10px] text-danger font-black uppercase tracking-widest mt-4 block opacity-80">High Volume Alert</span>
                 </div>
-                <div className="glass-panel p-6 rounded-xl border border-white/10">
-                    <h3 className="text-sm font-bold text-text-secondary uppercase mb-2">Approx. Accuracy</h3>
-                    <p className="text-4xl font-bold text-blue-400">{metrics.accuracy.toFixed(1)}%</p>
-                    <span className="text-xs text-text-secondary">Based on Confidence</span>
+                <div className="bg-white p-8 rounded-2xl border-2 border-bg-tertiary shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                    <h3 className="text-xs font-black text-gray-500 uppercase mb-3 tracking-widest">AI Accuracy Index</h3>
+                    <p className="text-5xl font-black text-primary-dark">{metrics.accuracy.toFixed(1)}%</p>
+                    <span className="text-[10px] text-gray-600 font-black uppercase tracking-widest mt-4 block opacity-80">Based on Confidence</span>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="glass-panel p-6 rounded-xl border border-white/10 h-[400px]">
-                    <h3 className="text-xl font-bold text-white mb-4">Detection Outcomes</h3>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={pieData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={60}
-                                outerRadius={100}
-                                fill="#8884d8"
-                                paddingAngle={5}
-                                dataKey="value"
-                            >
-                                {pieData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip
-                                contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#fff' }}
-                                itemStyle={{ color: '#fff' }}
-                            />
-                        </PieChart>
-                    </ResponsiveContainer>
-                    <div className="flex justify-center gap-4 mt-2 text-sm text-text-secondary">
-                        <span className="flex items-center gap-1"><span className="w-3 h-3 bg-red-400 rounded-full"></span> Fake</span>
-                        <span className="flex items-center gap-1"><span className="w-3 h-3 bg-green-400 rounded-full"></span> Verified</span>
-                        <span className="flex items-center gap-1"><span className="w-3 h-3 bg-yellow-400 rounded-full"></span> Unsure</span>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="bg-white p-8 rounded-2xl border-2 border-bg-tertiary shadow-2xl h-[450px] flex flex-col">
+                    <h3 className="text-2xl font-black text-black mb-6 tracking-tight">Detection Outcomes</h3>
+                    <div className="flex-1 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={pieData}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={80}
+                                    outerRadius={120}
+                                    fill="var(--color-primary)"
+                                    paddingAngle={8}
+                                    dataKey="value"
+                                    stroke="#ffffff"
+                                    strokeWidth={4}
+                                >
+                                    {pieData.map((_entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#ffffff', border: '2px solid var(--color-bg-tertiary)', borderRadius: '12px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', fontWeight: 800, color: '#000000' }}
+                                    itemStyle={{ color: '#000000' }}
+                                />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                    <div className="flex justify-center gap-8 mt-8 text-sm font-black text-gray-700 uppercase tracking-wider">
+                        <span className="flex items-center gap-2"><span className="w-4 h-4 bg-red-500 rounded-full shadow-sm"></span> Fake</span>
+                        <span className="flex items-center gap-2"><span className="w-4 h-4 bg-green-500 rounded-full shadow-sm"></span> Verified</span>
+                        <span className="flex items-center gap-2"><span className="w-4 h-4 bg-yellow-500 rounded-full shadow-sm"></span> Unsure</span>
                     </div>
                 </div>
 
-                <div className="glass-panel p-6 rounded-xl border border-white/10 h-[400px]">
-                    <h3 className="text-xl font-bold text-white mb-4">Weekly Activity</h3>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={activityData}>
-                            <XAxis dataKey="name" stroke="#94a3b8" />
-                            <YAxis stroke="#94a3b8" />
-                            <Tooltip
-                                cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#fff' }}
-                            />
-                            <Bar dataKey="checks" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
+                <div className="bg-white p-8 rounded-2xl border-2 border-bg-tertiary shadow-2xl h-[450px]">
+                    <h3 className="text-2xl font-black text-black mb-6 tracking-tight">Weekly Activity</h3>
+                    <div className="h-[320px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={activityData}>
+                                <XAxis dataKey="name" stroke="#000000" fontSize={12} tickLine={false} axisLine={false} fontWeight={800} dy={10} />
+                                <YAxis stroke="#000000" fontSize={12} tickLine={false} axisLine={false} fontWeight={800} dx={-10} />
+                                <Tooltip
+                                    cursor={{ fill: '#f3f4f6' }}
+                                    contentStyle={{ backgroundColor: '#ffffff', border: '2px solid var(--color-bg-tertiary)', borderRadius: '12px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', fontWeight: 800 }}
+                                />
+                                <Bar dataKey="checks" fill="var(--color-primary)" radius={[8, 8, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
             </div>
         </div>
+
     );
 };
 

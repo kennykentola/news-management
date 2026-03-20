@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES } from '../../lib/appwrite';
 import { useAuth } from '../../context/AuthContext';
+import { Sparkles, ArrowLeft, Save } from 'lucide-react';
 
 const EditArticle = () => {
     const { id } = useParams<{ id: string }>();
@@ -10,13 +13,13 @@ const EditArticle = () => {
 
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const [category, setCategory] = useState({ value: 'General', label: 'General' }); // Simplify state
     const [catValue, setCatValue] = useState('General');
     const [imageUrl, setImageUrl] = useState('');
     const [sourceUrl, setSourceUrl] = useState('');
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [proofreading, setProofreading] = useState(false);
     const [feedback, setFeedback] = useState('');
 
     useEffect(() => {
@@ -31,7 +34,6 @@ const EditArticle = () => {
                 setSourceUrl(doc.sourceUrl || '');
                 setFeedback(doc.editorFeedback || '');
 
-                // Security check: only author can edit
                 if (user && doc.authorId !== user.$id) {
                     alert("You can only edit your own articles.");
                     navigate('/dashboard/my-articles');
@@ -45,6 +47,26 @@ const EditArticle = () => {
         };
         fetchArticle();
     }, [id, user, navigate]);
+
+    const handleProofread = async () => {
+        if (!content.replace(/<[^>]*>/g, '').trim()) return;
+        setProofreading(true);
+        try {
+            const response = await fetch('http://127.0.0.1:5000/proofread', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: content.replace(/<[^>]*>/g, '') })
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.corrected && window.confirm("AI suggested some improvements. Apply them?")) {
+                    setContent(data.corrected);
+                }
+            }
+        } finally {
+            setProofreading(false);
+        }
+    };
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -62,11 +84,10 @@ const EditArticle = () => {
                     category: catValue,
                     imageUrl,
                     sourceUrl,
-                    status: 'PENDING', // Reset status to PENDING so Editor reviews it again
-                    // aiScore: // Optionally re-run AI check here or on backend function
+                    status: 'PENDING',
                 }
             );
-            alert("Article updated and resubmitted for review!");
+            alert("Article updated and resubmitted!");
             navigate('/dashboard/my-articles');
         } catch (e) {
             console.error(e);
@@ -76,81 +97,117 @@ const EditArticle = () => {
         }
     };
 
-    if (loading) return <div>Loading editor...</div>;
+    const modules = {
+        toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline'],
+            [{ 'color': [] }, { 'align': [] }],
+            ['link', 'image'],
+            ['clean']
+        ],
+    };
+
+    if (loading) return <div className="p-10 text-center font-black">Loading premium editor...</div>;
 
     return (
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Edit Article</h2>
+        <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
+            <div className="flex items-center gap-4">
+                <button onClick={() => navigate('/dashboard/my-articles')} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                    <ArrowLeft size={24} />
+                </button>
+                <h2 className="text-3xl font-black text-black tracking-tighter">Refine Your Article</h2>
+            </div>
 
             {feedback && (
-                <div style={{ padding: '1rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-md)', marginBottom: '2rem', color: '#fca5a5' }}>
-                    <strong>Editor Feedback:</strong> {feedback}
-                    <div style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>Please address these points and resubmit.</div>
+                <div className="p-6 bg-red-50 border-2 border-red-200 rounded-2xl shadow-sm">
+                    <p className="text-red-900 font-black mb-1 uppercase tracking-widest text-xs">Editor Feedback</p>
+                    <p className="text-red-800 font-bold">{feedback}</p>
                 </div>
             )}
 
-            <form onSubmit={handleUpdate} style={{ display: 'grid', gap: '1.5rem' }}>
+            <form onSubmit={handleUpdate} className="bg-white p-10 rounded-[2rem] border-2 border-bg-tertiary shadow-2xl space-y-8">
                 <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Title</label>
+                    <label className="block mb-2 text-black font-black uppercase text-xs tracking-widest opacity-50">Headline</label>
                     <input
                         value={title} onChange={e => setTitle(e.target.value)} required
-                        style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)', color: 'white', outline: 'none' }}
+                        className="w-full p-4 rounded-xl bg-white border-2 border-bg-tertiary text-black font-black text-xl focus:border-primary outline-none transition-all"
                     />
                 </div>
 
-                <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Category</label>
-                    <select
-                        value={catValue}
-                        onChange={(e) => setCatValue(e.target.value)}
-                        style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)', color: 'white', outline: 'none' }}
-                    >
-                        <option value="General">General</option>
-                        <option value="Politics">Politics</option>
-                        <option value="Technology">Technology</option>
-                        <option value="Health">Health</option>
-                        <option value="Sports">Sports</option>
-                        <option value="Entertainment">Entertainment</option>
-                    </select>
+                <div className="grid grid-cols-2 gap-6">
+                    <div>
+                        <label className="block mb-2 text-black font-black uppercase text-xs tracking-widest opacity-50">Category</label>
+                        <select
+                            value={catValue}
+                            onChange={(e) => setCatValue(e.target.value)}
+                            className="w-full p-4 rounded-xl bg-white border-2 border-bg-tertiary text-black font-bold outline-none cursor-pointer"
+                        >
+                            <option value="General">General</option>
+                            <option value="Politics">Politics</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Health">Health</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Entertainment">Entertainment</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block mb-2 text-black font-black uppercase text-xs tracking-widest opacity-50">AI Proofing</label>
+                        <button
+                            type="button"
+                            onClick={handleProofread}
+                            disabled={proofreading}
+                            className="w-full p-4 rounded-xl bg-black text-white font-black flex items-center justify-center gap-2 hover:bg-gray-800 transition-all disabled:opacity-50"
+                        >
+                            <Sparkles size={18} className={proofreading ? 'animate-spin' : ''} />
+                            {proofreading ? 'Proofing...' : 'Quick Proofread'}
+                        </button>
+                    </div>
                 </div>
 
                 <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Main Content</label>
-                    <textarea
-                        value={content} onChange={e => setContent(e.target.value)} required rows={12}
-                        style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)', color: 'white', outline: 'none' }}
-                    />
+                    <label className="block mb-4 text-black font-black uppercase text-xs tracking-widest opacity-50">Article Core Content</label>
+                    <div className="rich-text-editor">
+                        <ReactQuill 
+                            theme="snow"
+                            value={content}
+                            onChange={setContent}
+                            modules={modules}
+                        />
+                    </div>
                 </div>
 
-                <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Image URL</label>
-                    <input
-                        value={imageUrl} onChange={e => setImageUrl(e.target.value)}
-                        style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)', color: 'white', outline: 'none' }}
-                    />
-                </div>
-                <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Source URL</label>
-                    <input
-                        value={sourceUrl} onChange={e => setSourceUrl(e.target.value)}
-                        style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)', color: 'white', outline: 'none' }}
-                    />
+                <div className="grid grid-cols-2 gap-6">
+                    <div>
+                        <label className="block mb-2 text-black font-black uppercase text-xs tracking-widest opacity-50">Cover Image URL</label>
+                        <input
+                            value={imageUrl} onChange={e => setImageUrl(e.target.value)}
+                            className="w-full p-4 rounded-xl bg-white border-2 border-bg-tertiary text-black font-bold outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="block mb-2 text-black font-black uppercase text-xs tracking-widest opacity-50">Primary Source</label>
+                        <input
+                            value={sourceUrl} onChange={e => setSourceUrl(e.target.value)}
+                            className="w-full p-4 rounded-xl bg-white border-2 border-bg-tertiary text-black font-bold outline-none"
+                        />
+                    </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+                <div className="flex justify-end gap-4 pt-6">
                     <button
                         type="button"
                         onClick={() => navigate('/dashboard/my-articles')}
-                        style={{ padding: '0.75rem 1.5rem', backgroundColor: 'transparent', color: 'white', border: '1px solid var(--color-bg-tertiary)', borderRadius: 'var(--radius-md)', cursor: 'pointer' }}
+                        className="px-8 py-3 rounded-xl border-2 border-bg-tertiary font-black hover:bg-gray-50 transition-all"
                     >
-                        Cancel
+                        Discard Changes
                     </button>
                     <button
                         type="submit"
                         disabled={saving}
-                        style={{ padding: '0.75rem 1.5rem', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-md)', fontWeight: 600, cursor: saving ? 'wait' : 'pointer' }}
+                        className="px-10 py-3 bg-primary text-white rounded-xl font-black shadow-xl shadow-primary/20 hover:scale-105 transition-all flex items-center gap-2"
                     >
-                        {saving ? 'Saving...' : 'Update & Resubmit'}
+                        <Save size={20} />
+                        {saving ? 'Saving...' : 'Publish Update'}
                     </button>
                 </div>
             </form>
@@ -159,3 +216,4 @@ const EditArticle = () => {
 };
 
 export default EditArticle;
+

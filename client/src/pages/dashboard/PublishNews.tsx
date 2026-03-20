@@ -49,16 +49,16 @@ const PublishNews = () => {
             <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Ready for Publication</h2>
             <div style={{ display: 'grid', gap: '1.5rem' }}>
                 {articles.map(article => (
-                    <div key={article.$id} className="glass-panel" style={{ padding: '1.5rem', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div key={article.$id} className="bg-bg-primary shadow-sm border border-bg-tertiary" style={{ padding: '1.5rem', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
-                            <h3 style={{ fontSize: '1.1rem', fontWeight: 600 }}>{article.title}</h3>
+                            <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text-primary)' }}>{article.title}</h3>
                             <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
-                                By {article.authorName} • AI Reliability: <span style={{ color: article.aiScore > 70 ? 'var(--color-success)' : 'var(--color-warning)' }}>{article.aiScore}%</span>
+                                By {article.authorName} • AI Reliability: <span style={{ color: article.aiScore > 70 ? 'var(--color-primary-dark)' : 'var(--color-warning)', fontWeight: 700 }}>{article.aiScore}%</span>
                             </div>
                         </div>
                         <button
                             onClick={() => handlePublish(article.$id)}
-                            style={{ padding: '0.5rem 1.5rem', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-md)', fontWeight: 600 }}
+                            style={{ padding: '0.5rem 1.5rem', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-md)', fontWeight: 600, cursor: 'pointer' }}
                         >
                             Publish Live
                         </button>

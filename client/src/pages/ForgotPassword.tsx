@@ -22,8 +22,8 @@ const ForgotPassword = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-bg-primary">
-            <div className="glass-panel w-full max-w-[400px] p-10 rounded-2xl border border-white/10">
+        <div className="min-h-screen flex items-center justify-center bg-bg-secondary">
+            <div className="bg-bg-primary w-full max-w-[400px] p-10 rounded-2xl border border-bg-tertiary shadow-xl">
                 <h2 className="text-center mb-6 text-2xl font-bold text-text-primary">Reset Password</h2>
 
                 {message && <div className={`p-3 text-white rounded-md mb-4 text-sm ${status === 'error' ? 'bg-danger' : 'bg-success'}`}>
@@ -39,7 +39,7 @@ const ForgotPassword = () => {
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full p-3 rounded-md bg-bg-secondary border border-bg-tertiary text-white outline-none focus:border-primary transition-colors"
+                                className="w-full p-3 rounded-md bg-bg-secondary border border-bg-tertiary text-text-primary outline-none focus:border-primary transition-colors"
                             />
                         </div>
                         <button

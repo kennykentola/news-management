@@ -2,27 +2,26 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES } from '../../lib/appwrite';
 import { Query } from 'appwrite';
+import { CheckCircle, XCircle, Eye, Search, Filter, ShieldCheck, FileText } from 'lucide-react';
 
 const ReviewNews = () => {
     const [articles, setArticles] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const fetchPendingArticles = async () => {
         try {
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID_ARTICLES,
-                [
-                    Query.equal('status', 'PENDING')
-                ]
+                [Query.equal('status', 'PENDING')]
             );
             setArticles(response.documents);
         } catch (error) {
             console.error('Failed to fetch articles', error);
-            // Mock data for demo if DB fails
             setArticles([
-                { $id: '1', title: 'Suspicious Alien Sighting', content: 'Aliens confirm landing...', aiLabel: 'FAKE', aiScore: 9, authorName: 'John Doe', createdAt: new Date().toISOString() },
-                { $id: '2', title: 'City Council Meeting Notes', content: 'The council discussed...', aiLabel: 'REAL', aiScore: 92, authorName: 'Jane Smith', createdAt: new Date().toISOString() }
+                { $id: '1', title: 'Suspicious Alien Sighting', content: 'Aliens confirm landing in central London suburbs...', aiLabel: 'FAKE', aiScore: 9, authorName: 'John Doe', createdAt: new Date().toISOString() },
+                { $id: '2', title: 'Economic Growth 2026', content: 'The treasury department released new figures showing...', aiLabel: 'REAL', aiScore: 92, authorName: 'Jane Smith', createdAt: new Date().toISOString() }
             ]);
         } finally {
             setLoading(false);
@@ -39,73 +38,98 @@ const ReviewNews = () => {
                 status: decision,
                 editorFeedback: feedback || ''
             });
-
-            // Optimistic update
             setArticles(articles.filter(a => a.$id !== id));
-            alert(decision === 'APPROVED' ? 'Article Approved!' : 'Changes Requested.');
+            alert(decision === 'APPROVED' ? 'Article Approved for Admin!' : 'Changes Requested.');
         } catch (e) {
             console.error(e);
             alert('Action failed');
         }
     };
 
-    if (loading) return <div>Loading queue...</div>;
+    const filteredArticles = articles.filter(a => a.title.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    if (loading) return (
+        <div className="flex flex-col items-center justify-center p-20 space-y-4">
+            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <p className="font-black text-black tracking-widest uppercase text-sm">Loading Review Queue...</p>
+        </div>
+    );
 
     return (
-        <div>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Editorial Review Queue</h2>
+        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div>
+                    <h2 className="text-4xl font-black text-black tracking-tighter">Editorial Review</h2>
+                    <p className="text-gray-500 font-bold mt-2">Verify and validate articles before they go live.</p>
+                </div>
+                <div className="flex items-center gap-4 bg-white p-2 rounded-2xl border-2 border-bg-tertiary shadow-sm focus-within:border-primary transition-all">
+                    <Search className="text-gray-400 ml-2" size={20} />
+                    <input 
+                        placeholder="Search queue..." 
+                        className="bg-transparent border-none outline-none font-bold text-black p-2"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    <button className="p-2 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                        <Filter size={18} className="text-gray-500" />
+                    </button>
+                </div>
+            </div>
 
-            {articles.length === 0 ? (
-                <p className="text-gray-400">No pending articles to review.</p>
+            {filteredArticles.length === 0 ? (
+                <div className="bg-white p-20 rounded-4xl border-2 border-dashed border-bg-tertiary text-center">
+                    <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <CheckCircle className="text-gray-300" size={40} />
+                    </div>
+                    <p className="text-gray-400 font-black text-xl tracking-tight">Queue is empty. Great job!</p>
+                </div>
             ) : (
-                <div style={{ display: 'grid', gap: '1.5rem' }}>
-                    {articles.map(article => (
-                        <div key={article.$id} className="glass-panel" style={{ padding: '1.5rem', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <div>
-                                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>
-                                        <Link to={`/article/${article.$id}`} className="hover:text-primary transition-colors hover:underline">
+                <div className="grid gap-8">
+                    {filteredArticles.map(article => (
+                        <div key={article.$id} className="bg-white p-8 rounded-4xl border-2 border-bg-tertiary shadow-xl hover:shadow-2xl transition-all group flex flex-col md:flex-row gap-8">
+                            <div className="flex-1 space-y-4">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-1">
+                                        <h3 className="text-2xl font-black text-black tracking-tight leading-tight group-hover:text-primary transition-colors">
                                             {article.title}
-                                        </Link>
-                                    </h3>
-                                    <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)', marginTop: '0.25rem' }}>
-                                        By {article.authorName} • {new Date(article.createdAt).toLocaleDateString()}
+                                        </h3>
+                                        <div className="flex items-center gap-2 text-sm font-bold text-gray-500">
+                                            <FileText size={14} />
+                                            By {article.authorName} • {new Date(article.createdAt).toLocaleDateString()}
+                                        </div>
+                                    </div>
+                                    <div className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 border shadow-sm
+                                        ${article.aiLabel === 'REAL' ? 'bg-primary/10 text-primary-dark border-primary/20' : 'bg-danger/10 text-danger border-danger/20'}
+                                    `}>
+                                        <ShieldCheck size={14} />
+                                        AI Score: {article.aiScore}% ({article.aiLabel})
                                     </div>
                                 </div>
-                                <div style={{
-                                    padding: '0.25rem 0.75rem',
-                                    borderRadius: '999px',
-                                    fontSize: '0.75rem',
-                                    fontWeight: 700,
-                                    backgroundColor: article.aiLabel === 'REAL' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                                    color: article.aiLabel === 'REAL' ? 'var(--color-success)' : 'var(--color-danger)',
-                                }}>
-                                    AI: {article.aiLabel} ({article.aiScore}%)
+
+                                <p className="text-gray-600 font-medium leading-relaxed">
+                                    {article.content.substring(0, 250).replace(/<[^>]*>/g, '')}...
+                                </p>
+
+                                <div className="flex flex-wrap gap-4 pt-4 border-t border-gray-50">
+                                    <button
+                                        onClick={() => handleDecision(article.$id, 'APPROVED')}
+                                        className="bg-primary text-white px-8 py-3 rounded-2xl font-black flex items-center gap-2 shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
+                                    >
+                                        <CheckCircle size={20} /> Approve & Send to Admin
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const feedback = prompt("Reason for rejection / Changes needed:");
+                                            if (feedback !== null) handleDecision(article.$id, 'REJECTED', feedback);
+                                        }}
+                                        className="bg-white text-danger px-8 py-3 rounded-2xl font-black flex items-center gap-2 border-2 border-danger/20 hover:bg-danger/5 transition-all"
+                                    >
+                                        <XCircle size={20} /> Request Changes
+                                    </button>
+                                    <Link to={`/article/${article.$id}`} className="ml-auto p-4 bg-gray-50 rounded-2xl text-black hover:bg-black hover:text-white transition-all shadow-sm">
+                                        <Eye size={20} />
+                                    </Link>
                                 </div>
-                            </div>
-
-                            <p style={{ color: '#cbd5e1', lineHeight: '1.6' }}>
-                                {article.content.substring(0, 200)}...
-                            </p>
-
-                            <div className="flex flex-col md:flex-row gap-4 mt-2">
-                                <button
-                                    onClick={() => handleDecision(article.$id, 'APPROVED')}
-                                    className="flex-1 py-2 px-4 bg-green-500 text-white rounded-md font-semibold hover:bg-green-600 transition-colors"
-                                >
-                                    Approve for Admin
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        const feedback = prompt("Reason for rejection / Changes needed:");
-                                        if (feedback !== null) { // If user didn't cancel
-                                            handleDecision(article.$id, 'REJECTED', feedback);
-                                        }
-                                    }}
-                                    className="flex-1 py-2 px-4 bg-transparent border border-danger text-danger rounded-md font-semibold hover:bg-danger/10 transition-colors"
-                                >
-                                    Request Changes / Reject
-                                </button>
                             </div>
                         </div>
                     ))}
@@ -116,3 +140,4 @@ const ReviewNews = () => {
 };
 
 export default ReviewNews;
+

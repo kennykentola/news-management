@@ -20,9 +20,13 @@ import {
     CheckSquare,
     Send,
     BarChart2,
+    Users,
+    Settings,
     LogOut,
     Home
 } from 'lucide-react';
+import AdminUsers from './dashboard/AdminUsers';
+
 
 interface SidebarItemProps {
     to: string;
@@ -36,13 +40,13 @@ const SidebarItem = ({ to, label, icon, active, onClick }: SidebarItemProps) => 
     <Link
         to={to}
         onClick={onClick}
-        className={`flex items-center px-4 py-3 rounded-lg mb-2 transition-all duration-200 ${active
-            ? 'bg-blue-500/10 text-white border-l-4 border-primary'
-            : 'text-text-secondary hover:bg-white/5 border-l-4 border-transparent'
+        className={`flex items-center px-4 py-3 rounded-lg mb-2 transition-all duration-200 border-l-4 ${active
+            ? 'bg-primary text-white border-primary shadow-md font-bold'
+            : 'text-black hover:bg-black/5 border-transparent font-semibold shadow-sm'
             }`}
     >
         <span className="mr-3">{icon}</span>
-        <span className="font-medium">{label}</span>
+        <span className="">{label}</span>
     </Link>
 );
 
@@ -61,17 +65,17 @@ const Dashboard = () => {
     const closeSidebar = () => setIsSidebarOpen(false);
 
     return (
-        <div className="flex min-h-screen bg-bg-primary relative text-text-primary">
+        <div className="flex min-h-screen bg-white relative text-black">
             {/* Mobile Header / Hamburger */}
-            <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-bg-secondary border-b border-bg-tertiary flex items-center justify-between px-4 z-40">
+            <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b-2 border-bg-tertiary flex items-center justify-between px-4 z-40 shadow-sm">
                 <div className="flex items-center">
                     <button
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="p-2 text-white hover:bg-white/10 rounded-md transition-colors"
+                        className="p-2 text-black hover:bg-gray-100 rounded-md transition-colors"
                     >
                         {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
-                    <span className="ml-4 font-bold text-lg">NewsGuard</span>
+                    <span className="ml-4 font-extrabold text-xl text-primary-dark tracking-tight">NewsGuard</span>
                 </div>
                 <div className="flex items-center gap-4">
                     <NotificationCenter />
@@ -82,22 +86,21 @@ const Dashboard = () => {
             {isSidebarOpen && (
                 <div
                     onClick={closeSidebar}
-                    className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
+                    className="fixed inset-0 bg-black/40 z-40 md:hidden backdrop-blur-[2px]"
                 />
             )}
 
             {/* Sidebar */}
-            {/* Sidebar */}
             <aside className={`
-                fixed md:sticky inset-y-0 left-0 z-50 w-64 bg-bg-secondary border-r border-bg-tertiary 
-                transform transition-transform duration-300 ease-in-out flex flex-col h-screen
+                fixed md:sticky inset-y-0 left-0 z-50 w-64 sidebar-gradient border-r-2 border-bg-tertiary 
+                transform transition-transform duration-300 ease-in-out flex flex-col h-screen shadow-2xl md:shadow-lg
                 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
             `}>
-                <div className="p-6 border-b border-bg-tertiary">
-                    <h2 className="text-2xl font-bold text-primary">NewsGuard</h2>
-                    <div className="mt-2 text-sm text-text-secondary flex items-center">
-                        <span className="truncate max-w-[120px]">{user?.name}</span>
-                        <span className="ml-2 px-2 py-0.5 bg-bg-tertiary rounded text-xs text-text-accent font-medium">
+                <div className="p-6 border-b-2 border-bg-tertiary/50">
+                    <h2 className="text-2xl font-black text-black tracking-tighter">NewsGuard</h2>
+                    <div className="mt-2 text-xs text-gray-700 flex items-center">
+                        <span className="truncate max-w-[120px] font-bold uppercase">{user?.name}</span>
+                        <span className="ml-2 px-2 py-0.5 bg-primary text-white rounded text-[10px] font-black uppercase tracking-widest shadow-sm">
                             {user?.role}
                         </span>
                     </div>
@@ -151,6 +154,13 @@ const Dashboard = () => {
                     {user?.role === 'ADMIN' && (
                         <>
                             <SidebarItem
+                                to="/dashboard/users"
+                                label="User Management"
+                                icon={<Users size={20} />}
+                                active={isActive('/dashboard/users')}
+                                onClick={closeSidebar}
+                            />
+                            <SidebarItem
                                 to="/dashboard/publish"
                                 label="Publish Queue"
                                 icon={<Send size={20} />}
@@ -180,11 +190,11 @@ const Dashboard = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-x-hidden bg-bg-primary pt-16 md:pt-0 min-h-screen">
+            <main className="flex-1 overflow-x-hidden bg-white pt-16 md:pt-0 min-h-screen">
                 {/* Desktop Header */}
-                <header className="hidden md:flex h-16 bg-bg-primary/50 backdrop-blur-md border-b border-bg-tertiary items-center justify-between px-10 sticky top-0 z-30">
-                    <h2 className="text-xl font-bold text-text-primary capitalize">{location.pathname.split('/').pop() || 'Dashboard'}</h2>
-                    <div className="flex items-center gap-4">
+                <header className="hidden md:flex h-20 bg-white/90 backdrop-blur-md border-b-2 border-bg-tertiary/50 items-center justify-between px-10 sticky top-0 z-30 shadow-sm">
+                    <h2 className="text-2xl font-black text-black capitalize tracking-tight">{location.pathname.split('/').pop() || 'Dashboard'}</h2>
+                    <div className="flex items-center gap-6">
                         <NotificationCenter />
                     </div>
                 </header>
@@ -198,6 +208,7 @@ const Dashboard = () => {
                         <Route path="/review" element={<ReviewNews />} />
                         <Route path="/publish" element={<PublishNews />} />
                         <Route path="/stats" element={<Stats />} />
+                        <Route path="/users" element={<AdminUsers />} />
                     </Routes>
                 </div>
             </main>

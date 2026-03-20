@@ -1,7 +1,10 @@
-import { useState } from 'react';
-import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES } from '../../lib/appwrite';
+import { useState, useCallback } from 'react';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
+import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES, NOTIFICATIONS_COLLECTION_ID } from '../../lib/appwrite';
 import { ID } from 'appwrite';
 import { useAuth } from '../../context/AuthContext';
+import { Sparkles, BarChart3, CheckCheck, AlertCircle } from 'lucide-react';
 
 const SubmitNews = () => {
     const { user } = useAuth();
@@ -11,34 +14,93 @@ const SubmitNews = () => {
     const [category, setCategory] = useState('General');
     const [imageUrl, setImageUrl] = useState('');
     const [loading, setLoading] = useState(false);
+    const [proofreading, setProofreading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [writerStats, setWriterStats] = useState({
+        totalSubmitted: 0,
+        avgAccuracy: 0,
+        approvedRate: 0
+    });
+
+    const fetchWriterStats = useCallback(async () => {
+        if (!user?.$id) return;
+        try {
+            const response = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTION_ID_ARTICLES,
+                [Query.equal('authorId', user.$id)]
+            );
+            const total = response.total;
+            const approved = response.documents.filter(d => d.status === 'PUBLISHED').length;
+            const avgAcc = response.documents.reduce((acc, d) => acc + (d.aiScore || 0), 0) / (total || 1);
+            
+            setWriterStats({
+                totalSubmitted: total,
+                avgAccuracy: Math.round(avgAcc),
+                approvedRate: total > 0 ? Math.round((approved / total) * 100) : 0
+            });
+        } catch (err) {
+            console.error("Failed to fetch writer stats:", err);
+        }
+    }, [user?.$id]);
+
+    useEffect(() => {
+        fetchWriterStats();
+    }, [fetchWriterStats]);
+
+    const handleProofread = async () => {
+        if (!content.replace(/<[^>]*>/g, '').trim()) return;
+        setProofreading(true);
+        try {
+            const response = await fetch('http://127.0.0.1:5000/proofread', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: content.replace(/<[^>]*>/g, '') })
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.corrected) {
+                    // In a real app, we'd show diffs, but for now we'll just suggest or auto-apply
+                    if (window.confirm("AI suggested some improvements. Apply them?")) {
+                        setContent(data.corrected_html || data.corrected);
+                    }
+                } else {
+                    alert("Your writing looks great! No significant issues found.");
+                }
+            }
+        } catch (err) {
+            console.error("Proofread failed:", err);
+            alert("AI Proofreading service is currently unavailable.");
+        } finally {
+            setProofreading(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const plainText = content.replace(/<[^>]*>/g, '');
+        if (!plainText.trim()) return alert("Please provide article content.");
+        
         setLoading(true);
         setMessage({ type: '', text: '' });
 
         try {
-            // 1. AI Check (Call Python Service)
+            // 1. AI Check
             let aiResult = { result: 'UNKNOWN', score: 0 };
             try {
                 const response = await fetch('http://127.0.0.1:5000/detect', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: content })
+                    body: JSON.stringify({ text: plainText })
                 });
                 if (response.ok) {
                     aiResult = await response.json();
-                } else {
-                    console.error("AI Service Error:", response.status, await response.text());
-                    alert("AI Service Warning: The analysis failed. The article will be submitted without AI scoring.");
                 }
             } catch (aiError) {
                 console.error('AI Service Connection Failed:', aiError);
-                alert("AI Service Connection Failed. Please ensure the backend is running.");
             }
 
-            // 2. Determine Status based on AI
+            // 2. Determine Status
             let status = 'PENDING';
             let userMessage = 'Article submitted successfully! It has been sent for review.';
             let messageType = 'success';
@@ -46,7 +108,23 @@ const SubmitNews = () => {
             if (aiResult.result === 'FAKE' || aiResult.score < 50) {
                 status = 'FLAGGED';
                 userMessage = 'Warning: Our AI detected potential misinformation. Your article has been FLAGGED for manual review.';
-                messageType = 'warning'; // We'll need to handle 'warning' style or just use 'error' color
+                messageType = 'warning';
+
+                try {
+                    await databases.createDocument(
+                        DATABASE_ID,
+                        NOTIFICATIONS_COLLECTION_ID,
+                        ID.unique(),
+                        {
+                            userId: user?.$id,
+                            title: 'Article Flagged',
+                            message: `Your article "${title}" was flagged by AI as potential misinformation.`,
+                            type: 'warning',
+                            isRead: false,
+                            createdAt: new Date().toISOString()
+                        }
+                    );
+                } catch (e) {}
             }
 
             // 3. Submit to Database
@@ -56,7 +134,7 @@ const SubmitNews = () => {
                 ID.unique(),
                 {
                     title,
-                    content,
+                    content, // Save HTML content
                     authorId: user?.$id,
                     authorName: user?.name,
                     status: status,
@@ -73,116 +151,172 @@ const SubmitNews = () => {
             setTitle('');
             setContent('');
             setSourceUrl('');
+            setImageUrl('');
 
         } catch (error: any) {
             console.error(error);
-            setMessage({ type: 'error', text: 'Failed to submit article. Please try again.' });
+            setMessage({ type: 'error', text: 'Failed to submit article.' });
         } finally {
             setLoading(false);
         }
     };
 
+    const modules = {
+        toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'align': [] }],
+            ['link', 'image', 'video'],
+            ['clean']
+        ],
+    };
+
+
     return (
-        <div className="glass-panel" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)' }}>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--color-bg-tertiary)', paddingBottom: '0.5rem' }}>Submit News Article</h2>
-
-            {message.text && (
-                <div style={{
-                    padding: '1rem',
-                    borderRadius: 'var(--radius-md)',
-                    marginBottom: '1.5rem',
-                    backgroundColor: message.type === 'success' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                    color: message.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)',
-                    border: `1px solid ${message.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)'}`
-                }}>
-                    {message.text}
+        <div className="space-y-10 animate-in fade-in duration-700">
+            {/* Writer Analytics Section */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white p-6 rounded-2xl border-2 border-bg-tertiary shadow-xl flex items-center gap-6">
+                    <div className="p-4 bg-primary/10 rounded-xl text-primary-dark">
+                        <BarChart3 size={32} />
+                    </div>
+                    <div>
+                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Total Works</p>
+                        <p className="text-3xl font-black text-black">{writerStats.totalSubmitted}</p>
+                    </div>
                 </div>
-            )}
-
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>Article Headline</label>
-                    <input
-                        type="text"
-                        required
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="e.g. Local Community Center Opens New Wing"
-                        style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)', color: 'white', outline: 'none' }}
-                    />
+                <div className="bg-white p-6 rounded-2xl border-2 border-bg-tertiary shadow-xl flex items-center gap-6">
+                    <div className="p-4 bg-emerald-100 rounded-xl text-emerald-700">
+                        <CheckCheck size={32} />
+                    </div>
+                    <div>
+                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest">AI Accuracy</p>
+                        <p className="text-3xl font-black text-black">{writerStats.avgAccuracy}%</p>
+                    </div>
                 </div>
-
-                <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>Main Content</label>
-                    <textarea
-                        required
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        rows={10}
-                        placeholder="Write your article here..."
-                        style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)', color: 'white', outline: 'none', resize: 'vertical' }}
-                    />
+                <div className="bg-white p-6 rounded-2xl border-2 border-bg-tertiary shadow-xl flex items-center gap-6">
+                    <div className="p-4 bg-amber-100 rounded-xl text-amber-700">
+                        <AlertCircle size={32} />
+                    </div>
+                    <div>
+                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Approval Rate</p>
+                        <p className="text-3xl font-black text-black">{writerStats.approvedRate}%</p>
+                    </div>
                 </div>
+            </div>
 
-                <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>Category</label>
-                    <select
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)', color: 'white', outline: 'none' }}
-                    >
-                        <option value="General">General</option>
-                        <option value="Politics">Politics</option>
-                        <option value="Technology">Technology</option>
-                        <option value="Health">Health</option>
-                        <option value="Sports">Sports</option>
-                        <option value="Entertainment">Entertainment</option>
-                    </select>
-                </div>
+            <div className="bg-white shadow-2xl border-2 border-bg-tertiary p-10 rounded-4xl">
+                <h2 className="text-4xl font-black mb-10 border-b-4 border-bg-tertiary pb-4 text-black tracking-tighter">Submit News Article</h2>
 
-                <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>Image URL (Optional)</label>
-                    <input
-                        type="text"
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        placeholder="e.g. https://example.com/image.jpg"
-                        style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)', color: 'white', outline: 'none' }}
-                    />
-                </div>
+                {message.text && (
+                    <div style={{
+                        padding: '1.5rem',
+                        borderRadius: '1.5rem',
+                        marginBottom: '3rem',
+                        backgroundColor: message.type === 'success' ? '#e7ffed' : '#fee2e2',
+                        color: message.type === 'success' ? 'var(--color-primary-dark)' : 'var(--color-danger)',
+                        border: `3px solid ${message.type === 'success' ? 'var(--color-primary)' : 'var(--color-danger)'}`,
+                        fontWeight: 900,
+                        fontSize: '1.1rem'
+                    }}>
+                        {message.text}
+                    </div>
+                )}
 
-                <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>Source URL / Citation (Optional)</label>
-                    <input
-                        type="text"
-                        value={sourceUrl}
-                        onChange={(e) => setSourceUrl(e.target.value)}
-                        placeholder="e.g. https://official-government-site.gov/news/123"
-                        style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)', color: 'white', outline: 'none' }}
-                    />
-                </div>
+                <form onSubmit={handleSubmit} className="space-y-10">
+                    <div>
+                        <label className="block mb-3 text-black text-xl font-black tracking-tight">Article Headline</label>
+                        <input
+                            type="text"
+                            required
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder="Enticing and factual headline..."
+                            className="w-full p-5 rounded-2xl bg-white border-2 border-bg-tertiary color-black outline-none font-black text-2xl shadow-inner focus:border-primary transition-all"
+                        />
+                    </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        style={{
-                            padding: '0.75rem 2rem',
-                            backgroundColor: 'var(--color-primary)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: 'var(--radius-md)',
-                            fontWeight: 600,
-                            cursor: loading ? 'not-allowed' : 'pointer',
-                            opacity: loading ? 0.7 : 1
-                        }}
-                    >
-                        {loading ? 'Analyzing & Submitting...' : 'Submit Article'}
-                    </button>
-                </div>
-            </form>
+                    <div>
+                        <div className="flex justify-between items-center mb-4">
+                            <label className="text-black text-xl font-black tracking-tight">Main Content</label>
+                            <button
+                                type="button"
+                                onClick={handleProofread}
+                                disabled={proofreading}
+                                className="flex items-center gap-2 px-6 py-2 bg-black text-white rounded-xl font-black text-sm hover:bg-gray-800 transition-all disabled:opacity-50"
+                            >
+                                <Sparkles size={18} className={proofreading ? 'animate-spin' : ''} />
+                                {proofreading ? 'AI Proofreading...' : 'Proofread with AI'}
+                            </button>
+                        </div>
+                        <div className="rich-text-editor">
+                            <ReactQuill 
+                                theme="snow"
+                                value={content}
+                                onChange={setContent}
+                                modules={modules}
+                                placeholder="Tell the world what's happening..."
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        <div>
+                            <label className="block mb-3 text-black text-xl font-black tracking-tight">Category</label>
+                            <select
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                                className="w-full p-5 rounded-2xl bg-white border-2 border-bg-tertiary color-black outline-none font-black text-lg cursor-pointer"
+                            >
+                                <option value="General">General</option>
+                                <option value="Politics">Politics</option>
+                                <option value="Technology">Technology</option>
+                                <option value="Health">Health</option>
+                                <option value="Sports">Sports</option>
+                                <option value="Entertainment">Entertainment</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block mb-3 text-black text-xl font-black tracking-tight">Image URL (Optional)</label>
+                            <input
+                                type="text"
+                                value={imageUrl}
+                                onChange={(e) => setImageUrl(e.target.value)}
+                                placeholder="https://image-source.com/photo.jpg"
+                                className="w-full p-5 rounded-2xl bg-white border-2 border-bg-tertiary color-black outline-none font-bold text-lg"
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block mb-3 text-black text-xl font-black tracking-tight">Source URL / Citation (Optional)</label>
+                        <input
+                            type="text"
+                            value={sourceUrl}
+                            onChange={(e) => setSourceUrl(e.target.value)}
+                            placeholder="Link to official reports or primary sources..."
+                            className="w-full p-5 rounded-2xl bg-white border-2 border-bg-tertiary color-black outline-none font-bold text-lg"
+                        />
+                    </div>
+
+                    <div className="flex justify-end pt-6">
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className={`px-12 py-5 rounded-4xl font-black text-2xl text-white shadow-2xl transition-all active:scale-95
+                                ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-primary-dark shadow-primary/30'}
+                            `}
+                        >
+                            {loading ? 'AI Analysis in Progress...' : 'Submit to Editorial'}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };
 
 export default SubmitNews;
+
