@@ -1,0 +1,19 @@
+# Full Project Environment Reference
+# This file contains all the active environment variables for the News Management / TONIA project.
+
+### Frontend (.env in /client)
+VITE_APPWRITE_ENDPOINT=https://fra.cloud.appwrite.io/v1
+VITE_APPWRITE_PROJECT_ID=697c7f9c00327290c59b
+VITE_APPWRITE_DATABASE_ID=main
+VITE_APPWRITE_COLLECTION_ID_ARTICLES=articles
+VITE_AI_SERVER_URL=http://localhost:5000
+
+### Backend AI Service (.env in /ai_service)
+APPWRITE_ENDPOINT=https://fra.cloud.appwrite.io/v1
+APPWRITE_PROJECT_ID=697c7f9c00327290c59b
+APPWRITE_API_KEY=******** (Redacted for security, see the actual .env file)
+DATABASE_ID=main
+COLLECTION_ID_ARTICLES=articles
+COLLECTION_ID_USERS_METADATA=users_metadata
+COLLECTION_ID_NOTIFICATIONS=notifications
+PORT=5000
