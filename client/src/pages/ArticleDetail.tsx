@@ -260,7 +260,7 @@ const ArticleDetail = () => {
                 borderTop: '8px solid var(--color-primary)'
             }}>
                 <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '4rem' }}>
-                    <div style={{ spaceY: '2rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <h2 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '1.5rem' }}>NewsGuard <span style={{ color: 'var(--color-primary)' }}>AI</span></h2>
                         <p style={{ color: '#9ca3af', fontWeight: 600, lineHeight: 1.6, maxWidth: '350px' }}>
                             Nigeria's leading AI-powered news verification platform. Ensuring the truth reaches every corner of the federation.

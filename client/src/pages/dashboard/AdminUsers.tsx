@@ -122,8 +122,8 @@ const AdminUsers = () => {
             </div>
 
             {isAddingUser && (
-                <div className="fixed inset-0 z-60 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white w-full max-w-md rounded-4xl p-10 border-2 border-bg-tertiary shadow-2xl space-y-8 animate-in zoom-in duration-300">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white w-full max-w-md rounded-[2rem] p-10 border-2 border-bg-tertiary shadow-2xl space-y-8 animate-in zoom-in duration-300">
                         <div className="flex justify-between items-center">
                             <h3 className="text-3xl font-black tracking-tighter">Invite Team Member</h3>
                             <button onClick={() => setIsAddingUser(false)} className="text-gray-400 hover:text-black">
@@ -201,7 +201,7 @@ const AdminUsers = () => {
             </div>
 
             {error && (
-                <div className="bg-red-50 border-2 border-red-200 p-6 rounded-4xl flex items-center gap-4 text-red-700 animate-in shake active">
+                <div className="bg-red-50 border-2 border-red-200 p-6 rounded-[2rem] flex items-center gap-4 text-red-700 animate-in shake active">
                     <AlertCircle />
                     <div>
                         <p className="font-black text-xs uppercase tracking-widest">Database Sync Error</p>
@@ -210,8 +210,8 @@ const AdminUsers = () => {
                 </div>
             )}
 
-            <div className="bg-white rounded-4xl border-2 border-bg-tertiary shadow-2xl overflow-hidden">
-                <table className="w-full text-left border-collapse">
+            <div className="bg-white rounded-[2rem] border-2 border-bg-tertiary shadow-2xl overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
                         <tr className="bg-gray-50/50 border-b-2 border-bg-tertiary">
                             <th className="p-8 text-xs font-black text-gray-400 uppercase tracking-widest">User Profile</th>
@@ -224,7 +224,7 @@ const AdminUsers = () => {
                         {filteredUsers.map(user => (
                             <tr key={user.$id} className="border-b border-bg-tertiary hover:bg-gray-50 transition-colors">
                                 <td className="p-8 flex items-center gap-4">
-                                    <div className="w-14 h-14 bg-linear-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white font-black text-2xl shadow-lg">
+                                    <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white font-black text-2xl shadow-lg shrink-0">
                                         {user.name.charAt(0)}
                                     </div>
                                     <div>
