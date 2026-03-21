@@ -10,7 +10,45 @@ const AIControl = () => {
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
     const addLog = (msg: string) => {
-        setLogs(prev => [msg, ...prev].slice(0, 50));
+        setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev].slice(0, 50));
+    };
+
+    const handleDataClean = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setLoading('Starting AI System...');
+        addLog(`🧹 Starting One-Click Clean for: ${file.name}`);
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch(`${AI_SERVER_URL}/admin/clean-data`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `cleaned_${file.name.split('.')[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                addLog(`✅ Cleaning complete! Downloaded cleaned_${file.name.split('.')[0]}.csv`);
+            } else {
+                const data = await response.json();
+                addLog(`❌ Cleaning failed: ${data.error}`);
+            }
+        } catch (err: any) {
+            addLog(`❌ Error connecting to cleaning service: ${err.message}`);
+        } finally {
+            setLoading(null);
+            if (e.target) e.target.value = '';
+        }
     };
 
     const handleAction = async (endpoint: string, actionName: string) => {
@@ -91,22 +129,30 @@ const AIControl = () => {
                                 {loading === '/admin/scrape' ? <RefreshCw className="animate-spin text-primary" /> : <Zap size={20} className="text-gray-200" />}
                             </button>
 
-                            <button
-                                onClick={() => handleAction('/admin/clean', 'Dataset Cleaning')}
-                                disabled={!!loading}
-                                className="flex items-center justify-between p-6 rounded-3xl border-2 border-gray-50 hover:border-green-500/30 group transition-all"
-                            >
-                                <div className="flex items-center gap-6 text-left">
-                                    <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center text-green-600 group-hover:scale-110 transition-all">
-                                        <Database size={24} />
+                            {/* One-Click Cleaner */}
+                            <div className="relative group p-6 rounded-3xl border-2 border-green-500/20 bg-green-50/50 hover:bg-green-50 transition-all border-dashed">
+                                <input
+                                    type="file"
+                                    accept=".csv,.xlsx,.xls"
+                                    onChange={handleDataClean}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                    disabled={!!loading}
+                                />
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-14 h-14 rounded-2xl bg-white border-2 border-green-200 flex items-center justify-center text-green-600 shadow-sm">
+                                            <RefreshCw className={loading === 'Starting AI System...' ? 'animate-spin' : ''} size={24} />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-black text-lg text-green-800">One-Click Data Cleaner</h4>
+                                            <p className="text-xs font-bold text-green-600/70">Upload CSV/Excel to auto-clean & download</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h4 className="font-black text-lg">Clean Dataset</h4>
-                                        <p className="text-xs font-bold text-gray-400">Remove duplicates and normalize for Nigerian context</p>
+                                    <div className="bg-green-600 text-white p-2 rounded-xl">
+                                        <Download size={20} />
                                     </div>
                                 </div>
-                                {loading === '/admin/clean' ? <RefreshCw className="animate-spin text-primary" /> : <Zap size={20} className="text-gray-200" />}
-                            </button>
+                            </div>
 
                             <button
                                 onClick={() => handleAction('/admin/train', 'Core Training')}

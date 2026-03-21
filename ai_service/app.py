@@ -1,5 +1,6 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
+from data_cleaner import clean_news_data
 import joblib
 import os
 import subprocess
@@ -207,6 +208,31 @@ def run_train():
         return jsonify({'status': 'started', 'message': f'Training process started with {script}'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/clean-data', methods=['POST'])
+def clean_data():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    try:
+        file_content = file.read()
+        output, stats = clean_news_data(file_content, file.filename)
+        
+        if output is None:
+            return jsonify({"error": stats}), 400
+
+        return send_file(
+            output,
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name=f"cleaned_{file.filename.split('.')[0]}.csv"
+        ), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

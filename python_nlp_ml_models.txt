@@ -24,3 +24,169 @@ Summary of Python NLP & ML models used in TONIA
 Notes:
 - The pipeline is usually: preprocessing (TF-IDF) -> model (Naive Bayes) -> post-processing (probability -> reliability score) + sentiment and trigger-word heuristics for explanation.
 - This design favors lightweight, interpretable models suitable for quick inference in a microservice.
+
+ 4. Hugging Face Spaces Deployment (AI Backend)
+As requested, I have prepared the files to move your AI backend to Hugging Face Spaces for better RAM (16GB) and faster processing.
+
+The Process to Follow:
+
+Create Space: Go to Hugging Face Spaces and click "Create new Space".
+Name & License: Give it a name (e.g., newsguard-ai) and choose Docker as the SDK.
+Upload Files: Upload everything in your ai_service folder, including the new [
+
+Dockerfile
+](file:///c:/Users/dell/Downloads/TONIA/ai_service/Dockerfile) I created.
+Configuration: HF will automatically build the container. Make sure your 
+
+app.py
+ is configured to use port 7860.
+
+
+
+
+
+ Spaces
+Hugging Face's logo
+kennykentola
+/
+newsguard-ai
+
+
+like
+0
+
+App
+Files
+Community
+Settings
+
+Hugging Face is way more fun with friends and colleagues! 🤗 Join an organization
+🐳 Get started with your Docker Space!
+Your new Space has been created, follow these steps to get started (or read the full documentation)
+
+Start by cloning this repo by using:
+
+Use an access token as git password/credential
+
+
+# When prompted for a password, use an access token with write permissions.
+# Generate one from your settings: https://huggingface.co/settings/tokens
+git clone https://huggingface.co/spaces/kennykentola/newsguard-ai
+
+# Make sure the hf CLI is installed
+powershell -ExecutionPolicy ByPass -c "irm https://hf.co/cli/install.ps1 | iex"
+
+# Download the Space
+hf download kennykentola/newsguard-ai --repo-type=space
+Let's create a simple Python app using FastAPI:
+
+requirements.txt
+
+
+fastapi
+uvicorn[standard]
+Hint You can also create the requirements file file directly in your browser.
+app.py
+
+
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def greet_json():
+    return {"Hello": "World!"}
+Hint You can also create the app file file directly in your browser.
+Create your Dockerfile:
+
+
+# Read the doc: https://huggingface.co/docs/hub/spaces-sdks-docker
+# you will also find guides on how best to write your Dockerfile
+
+FROM python:3.9
+
+RUN useradd -m -u 1000 user
+USER user
+ENV PATH="/home/user/.local/bin:$PATH"
+
+WORKDIR /app
+
+COPY --chown=user ./requirements.txt requirements.txt
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
+
+COPY --chown=user . /app
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860"]
+Hint Alternatively, you can create the Dockerfile file directly in your browser.
+Then commit and push:
+
+
+git add requirements.txt app.py Dockerfile
+git commit -m "Add application file"
+git push
+Finally, your Space should be running on this page after a few moments!
+
+App port
+
+Your Docker Space needs to listen on port 7860.
+
+Personalize your Space
+
+Make your Space stand out by customizing its emoji, colors, and description by editing metadata in its README.md file.
+
+Documentation
+
+Read the full documentation for Docker Spaces here.
+
+
+
+Hugging Face's logo
+Hugging Face
+Models
+Datasets
+Spaces
+Buckets
+new
+Docs
+Pricing
+
+
+Please check your email address for a confirmation link
+Create a new Space
+Spaces are Git repositories that host application code for Machine Learning demos.
+You can build Spaces with Python libraries like Gradio, or using Docker images.
+
+Owner
+
+kennykentola
+/
+space name
+newsguard-ai
+Short description
+A comprehensive news platform with AI-powered fake news dete
+License
+apache-2.0
+Select the Space SDK
+
+You can choose between Gradio, Docker, or Static to host your Space.
+
+Choose a Docker template:
+
+Space hardware
+Free
+You can switch to a different hardware at any time in your Space settings.
+Space Dev Mode
+BETA
+PRO subscribers
+Dev mode allows you to remotely access your Space using SSH or VS Code. Learn more.
+
+Enable dev mode
+ Subscribe to PRO to use dev mode.
+Public
+Anyone on the internet can see this Space. Only you can commit.
+Protected
+PRO subscribers
+The app is publicly accessible via its URL, but the code and repo are private. Only you can see and commit to the code.
+ Subscribe to PRO to use protected Spaces.
+Private
+Only you can see and commit to this Space.
+Tip: Install the official HF CLI Skill so your AI agents can manage Spaces directly.
