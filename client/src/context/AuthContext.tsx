@@ -35,8 +35,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Helper to fetch user role from DB - Assumes a 'users' collection exists
     // For MVP, we might simple use prefs or checking a collection
     // IMPORTANT: Created via Appwrite Console: Database 'main', Collection 'users'
-    const DATABASE_ID = 'main'; // Placeholder
-    const COLLECTION_ID = 'users'; // Placeholder
+    const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID || 'main';
+    const METADATA_COLLECTION_ID = 'users_metadata';
 
     const checkAuth = async () => {
         try {
@@ -45,18 +45,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // If collection doesn't exist yet, this might fail, so we fallback to Reader
             // Or we try/catch specifically the DB call
 
-            // Default to READER for standard users
+            // Default to READER
             let role: Role = 'READER';
 
-            // Check Preferences first
+            // 1. Check Preferences (Fastest)
             if (session.prefs && session.prefs.role) {
                 role = session.prefs.role;
             } else {
-                // Fallback for initial demo without DB:
-                // If email contains 'admin', role = ADMIN, etc.
-                if (session.email.includes('admin')) role = 'ADMIN';
-                else if (session.email.includes('editor')) role = 'EDITOR';
-                else if (session.email.includes('writer')) role = 'WRITER';
+                // 2. Check Database (Source of Truth)
+                try {
+                    const metaDocs = await databases.listDocuments(
+                        DATABASE_ID,
+                        METADATA_COLLECTION_ID,
+                        [Query.equal('email', session.email)]
+                    );
+                    if (metaDocs.total > 0) {
+                        role = metaDocs.documents[0].role as Role;
+                        // Sync back to prefs if missing
+                        await account.updatePrefs({ role });
+                    }
+                } catch (metaErr) {
+                    console.error("Meta fetch failed:", metaErr);
+                }
             }
 
             setUser({
@@ -103,13 +113,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Login to create session
         try {
             await account.createEmailPasswordSession(email, password);
+            
+            // 2. Create Metadata Document for Admin Management
+            try {
+                await databases.createDocument(
+                    DATABASE_ID,
+                    METADATA_COLLECTION_ID,
+                    ID.unique(),
+                    {
+                        name,
+                        email,
+                        role,
+                        createdAt: new Date().toISOString()
+                    }
+                );
+            } catch (dbErr) {
+                console.error("Metadata creation failed:", dbErr);
+            }
+
+            // 3. Save Role to Preferences so it persists locally
+            await account.updatePrefs({ role });
+
         } catch (e) {
-            // Should not happen on new account, but safer
             console.error(e);
         }
-
-        // Save Role to Preferences so it persists
-        await account.updatePrefs({ role });
 
         await checkAuth();
     };

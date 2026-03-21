@@ -98,19 +98,7 @@ const Register = () => {
                         </div>
                     </div>
 
-                    <div>
-                        <label className="block mb-2 text-black text-sm font-bold">Role</label>
-                        <select
-                            value={role}
-                            onChange={(e) => setRole(e.target.value as Role)}
-                            className="w-full p-4 rounded-lg bg-white border-2 border-bg-tertiary text-black outline-none cursor-pointer focus:border-primary transition-all shadow-sm appearance-none font-medium"
-                        >
-                            <option value="READER">Reader (Read & Comment)</option>
-                            <option value="WRITER">Writer (Submit News)</option>
-                            <option value="EDITOR">Editor (Review News)</option>
-                            <option value="ADMIN">Admin (Publish & Manage)</option>
-                        </select>
-                    </div>
+                    {/* Role is always READER for public registration */}
 
                     <button
                         type="submit"
