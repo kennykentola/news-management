@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES, COMMENTS_COLLECTION_ID } from '../lib/appwrite';
+import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES, COMMENTS_COLLECTION_ID, COLLECTION_ID_USERS_METADATA } from '../lib/appwrite';
 import { ID, Query } from 'appwrite';
 import { useAuth } from '../context/AuthContext';
 import LoadingScreen from '../components/LoadingScreen';
@@ -31,6 +31,29 @@ const ArticleDetail = () => {
                     ]
                 );
                 setComments(commentsRes.documents);
+
+                // Track interest if logged in
+                if (user && doc.category) {
+                    try {
+                        const metadata = await databases.listDocuments(
+                            DATABASE_ID,
+                            COLLECTION_ID_USERS_METADATA,
+                            [Query.equal('email', user.email)]
+                        );
+                        if (metadata.documents.length > 0) {
+                            const meta = metadata.documents[0];
+                            const currentInterests = (meta.interests || "").split(',').filter(Boolean);
+                            if (!currentInterests.includes(doc.category)) {
+                                const newInterests = [...currentInterests, doc.category].slice(-5).join(',');
+                                await databases.updateDocument(DATABASE_ID, COLLECTION_ID_USERS_METADATA, meta.$id, {
+                                    interests: newInterests
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Metadata interest update failed', e);
+                    }
+                }
             } catch (err) {
                 console.error(err);
                 setError('Failed to load article.');
@@ -100,13 +123,22 @@ const ArticleDetail = () => {
                 </div>
             </nav>
 
-            <article style={{ maxWidth: '900px', margin: '4rem auto', padding: '4rem', backgroundColor: '#ffffff', borderRadius: '2rem', border: '2px solid var(--color-bg-tertiary)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.08)' }}>
-                <div style={{ marginBottom: '2rem', display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-                    <span style={{ backgroundColor: '#e7ffed', color: 'var(--color-primary-dark)', padding: '0.5rem 1.25rem', borderRadius: '999px', fontSize: '0.9rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{article.category || 'News'}</span>
-                    <span style={{ fontSize: '1rem', color: '#4b5563', fontWeight: 700 }}>📅 {new Date(article.createdAt).toLocaleDateString()}</span>
+            <article style={{ 
+                maxWidth: '1000px', 
+                margin: '2rem auto', 
+                padding: '5%', 
+                backgroundColor: '#ffffff', 
+                borderRadius: '2rem', 
+                border: '2px solid var(--color-bg-tertiary)', 
+                boxShadow: '0 25px 50px -12px rgba(0,0,0,0.08)',
+                overflowX: 'hidden'
+            }}>
+                <div style={{ marginBottom: '2rem', display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <span style={{ backgroundColor: '#e7ffed', color: 'var(--color-primary-dark)', padding: '0.5rem 1.25rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{article.category || 'News'}</span>
+                    <span style={{ fontSize: '0.9rem', color: '#4b5563', fontWeight: 700 }}>📅 {new Date(article.createdAt).toLocaleDateString()}</span>
                 </div>
 
-                <h1 style={{ fontSize: '3.5rem', fontWeight: 900, lineHeight: 1.1, marginBottom: '2.5rem', color: '#000000', letterSpacing: '-0.04em' }}>
+                <h1 style={{ fontSize: 'clamp(2rem, 8vw, 3.5rem)', fontWeight: 900, lineHeight: 1.1, marginBottom: '2.5rem', color: '#000000', letterSpacing: '-0.04em' }}>
                     {article.title}
                 </h1>
 
@@ -147,8 +179,15 @@ const ArticleDetail = () => {
                 </div>
 
                 <div 
-                    style={{ fontSize: '1.25rem', lineHeight: 1.8, color: '#000000', fontWeight: 500 }}
-                    dangerouslySetInnerHTML={{ __html: (article.content || article.text || article.body || article.summary || article.description) || 'No core content available in document.' }}
+                    style={{ 
+                        fontSize: 'clamp(1rem, 4vw, 1.25rem)', 
+                        lineHeight: 1.8, 
+                        color: '#000000', 
+                        fontWeight: 500,
+                        overflowWrap: 'anywhere',
+                        wordBreak: 'normal'
+                    }}
+                    dangerouslySetInnerHTML={{ __html: ((article.content || article.text || article.body || article.summary || article.description) || 'No core content available in document.').replace(/&nbsp;/g, ' ') }}
                 />
 
                 {article.sourceUrl && (
