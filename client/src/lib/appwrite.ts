@@ -20,4 +20,5 @@ export const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID || 'main'; 
 export const COLLECTION_ID_ARTICLES = import.meta.env.VITE_APPWRITE_COLLECTION_ID_ARTICLES || 'articles';
 export const COMMENTS_COLLECTION_ID = 'comments';
 export const NOTIFICATIONS_COLLECTION_ID = 'notifications';
+export const COLLECTION_ID_USERS_METADATA = 'users_metadata';
 

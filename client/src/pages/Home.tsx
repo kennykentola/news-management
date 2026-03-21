@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES } from '../lib/appwrite';
+import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES, COLLECTION_ID_USERS_METADATA } from '../lib/appwrite';
 import { Query } from 'appwrite';
 import { useAuth } from '../context/AuthContext';
-import { Shield, ChevronRight, TrendingUp, Clock, Search, User, ArrowRight, Menu, X } from 'lucide-react';
+import { Shield, ChevronRight, TrendingUp, Clock, Search, User, ArrowRight, Menu, X, Sparkles } from 'lucide-react';
 import LoadingScreen from '../components/LoadingScreen';
 
 const Home = () => {
@@ -13,6 +13,7 @@ const Home = () => {
     const [featuredIndex, setFeaturedIndex] = useState(0);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [stats, setStats] = useState({ total: 2450, accuracy: 99.4 });
+    const [recommended, setRecommended] = useState<any[]>([]);
 
     const fetchNews = async () => {
         try {
@@ -33,6 +34,34 @@ const Home = () => {
                 ? (response.documents.reduce((acc, curr) => acc + (curr.aiScore || 85), 0) / response.documents.length).toFixed(1)
                 : 99.4;
             setStats({ total, accuracy: Number(avgScore) });
+
+            // 4. Recommendation Logic
+            if (user) {
+                try {
+                    const metadata = await databases.listDocuments(
+                        DATABASE_ID,
+                        COLLECTION_ID_USERS_METADATA,
+                        [Query.equal('email', user.email)]
+                    );
+                    if (metadata.documents.length > 0) {
+                        const interests = (metadata.documents[0].interests || "").split(',').filter(Boolean);
+                        if (interests.length > 0) {
+                            const recRes = await databases.listDocuments(
+                                DATABASE_ID,
+                                COLLECTION_ID_ARTICLES,
+                                [
+                                    Query.equal('category', interests),
+                                    Query.equal('status', 'PUBLISHED'),
+                                    Query.limit(4)
+                                ]
+                            );
+                            setRecommended(recRes.documents);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to fetch recommendations', e);
+                }
+            }
         } catch (error) {
             console.error('Failed to fetch news', error);
             setArticles([
@@ -138,6 +167,45 @@ const Home = () => {
                         Stay informed with articles that have been fact-checked and analyzed for reliability.
                     </p>
                 </div>
+
+                {/* Recommended Section (Only if user has interests) */}
+                {recommended.length > 0 && (
+                    <section className="bg-black/5 p-8 md:p-12 rounded-4xl border-2 border-bg-tertiary space-y-12 shadow-2xl animate-in fade-in slide-in-from-bottom-10 duration-1000">
+                        <div className="flex justify-between items-end">
+                            <div className="space-y-4">
+                                <div className="inline-flex items-center gap-2 bg-primary/10 text-primary-dark px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border border-primary/20">
+                                    <Sparkles size={14} /> Personalized for you
+                                </div>
+                                <h2 className="text-4xl md:text-5xl font-black text-black tracking-tighter">Recommended News</h2>
+                                <p className="text-gray-500 font-bold max-w-2xl text-sm md:text-base">Based on your reading history and interests.</p>
+                            </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+                            {recommended.map((article) => (
+                                <Link key={article.$id} to={`/article/${article.$id}`} className="group bg-white p-6 rounded-3xl border-2 border-bg-tertiary shadow-xl hover:shadow-2xl transition-all space-y-4">
+                                    <div className="relative aspect-video rounded-2xl overflow-hidden">
+                                        <img src={article.imageUrl} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur px-3 py-1 rounded-lg text-[10px] font-black uppercase text-primary border border-primary/10">
+                                            {article.category}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h3 className="text-xl font-black leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                                            {article.title}
+                                        </h3>
+                                        <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{new Date(article.createdAt).toLocaleDateString()}</span>
+                                            <div className="flex items-center gap-1 text-[10px] font-black text-primary-dark">
+                                                <Shield size={12} /> {article.aiScore}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+                )}
 
                 {/* CNN-Style Hero Grid */}
                 <section className="grid grid-cols-1 lg:grid-cols-12 gap-12">

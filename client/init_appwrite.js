@@ -108,6 +108,7 @@ async function init() {
             { key: 'name', type: 'string', size: 255, required: true },
             { key: 'email', type: 'string', size: 255, required: true },
             { key: 'role', type: 'string', size: 50, required: true },
+            { key: 'interests', type: 'string', size: 2000, required: false },
             { key: 'createdAt', type: 'datetime', required: false }
         ];
 
