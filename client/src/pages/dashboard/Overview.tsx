@@ -168,13 +168,7 @@ const Overview = () => {
 
             } catch (error) {
                 console.error("Failed to fetch stats:", error);
-                setStats({
-                    totalSubmitted: 142,
-                    fakeDetected: 18,
-                    published: 92,
-                    realPercent: 87,
-                    fakePercent: 13
-                });
+                // No more hardcoded fake data!
             } finally {
                 setLoading(false);
             }
@@ -212,7 +206,6 @@ const Overview = () => {
                     value={stats.totalSubmitted} 
                     color="#25D366" 
                     icon={FileWarning} 
-                    trend="+14% vs last week"
                 />
                 <StatCard 
                     label="Fake News Neutralized" 
@@ -241,7 +234,7 @@ const Overview = () => {
                             <p className="text-gray-500 font-bold">Real-time verification breakdown of the entire platform.</p>
                         </div>
                         <div className="bg-primary/10 text-primary-dark px-4 py-2 rounded-xl font-black text-sm flex items-center gap-2 border border-primary/20">
-                            <Activity size={16} /> 99.2% Accuracy
+                            <Activity size={16} /> {stats.realPercent}% Dynamic Accuracy
                         </div>
                     </div>
 
