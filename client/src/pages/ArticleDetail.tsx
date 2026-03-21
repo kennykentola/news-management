@@ -250,6 +250,7 @@ const ArticleDetail = () => {
                     ))}
                     {comments.length === 0 && <p style={{ color: '#6b7280', fontStyle: 'italic', textAlign: 'center', padding: '4rem', fontSize: '1.1rem', fontWeight: 600 }}>No readers have commented yet. Be the first to share your insight!</p>}
                 </div>
+            </section>
             {/* Premium Footer */}
             <footer style={{ 
                 marginTop: '10rem', 

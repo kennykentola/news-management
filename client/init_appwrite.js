@@ -73,13 +73,16 @@ async function init() {
             }
         }
 
-        // Increase size for content in articles - Need to delete and recreate if exists
-        console.log('Updating Article content size...');
-        try {
-            await databases.deleteAttribute(DATABASE_ID, ARTICLES_COLLECTION_ID, 'content');
-            console.log('Old content attribute deleted.');
-            await new Promise(r => setTimeout(r, 2000)); // Wait for deletion to propagate
-        } catch (e) { }
+        // Resize strategy: Delete large ones to fit everything
+        console.log('Optimizing storage layout (Resizing attributes)...');
+        const toResize = ['content', 'aiReason', 'editorFeedback', 'imageUrl', 'sourceUrl', 'aiEdgeCases'];
+        for (const key of toResize) {
+            try {
+                await databases.deleteAttribute(DATABASE_ID, ARTICLES_COLLECTION_ID, key);
+                console.log(`Attribute "${key}" deleted for resizing.`);
+                await new Promise(r => setTimeout(r, 2000)); 
+            } catch (e) { }
+        }
 
         const articleAttrs = [
             { key: 'title', type: 'string', size: 500, required: true },
@@ -91,10 +94,10 @@ async function init() {
             { key: 'aiScore', type: 'double', required: false },
             { key: 'createdAt', type: 'datetime', required: false },
             { key: 'category', type: 'string', size: 50, required: false },
-            { key: 'imageUrl', type: 'string', size: 2000, required: false },
-            { key: 'sourceUrl', type: 'string', size: 1000, required: false },
-            { key: 'editorFeedback', type: 'string', size: 5000, required: false },
-            { key: 'aiReason', type: 'string', size: 10000, required: false },
+            { key: 'imageUrl', type: 'string', size: 1000, required: false },
+            { key: 'sourceUrl', type: 'string', size: 500, required: false },
+            { key: 'editorFeedback', type: 'string', size: 2000, required: false },
+            { key: 'aiReason', type: 'string', size: 5000, required: false },
             { key: 'aiCredibility', type: 'double', required: false },
             { key: 'aiClassification', type: 'string', size: 50, required: false },
             { key: 'aiEdgeCases', type: 'string', size: 2000, required: false }
