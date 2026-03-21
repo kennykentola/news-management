@@ -1,8 +1,8 @@
-import { Client, Databases, Permission, Role, ID } from 'node-appwrite';
+import { Client, Databases, Users, Permission, Role, ID, Query } from 'node-appwrite';
 import dotenv from 'dotenv';
 import path from 'path';
 
-dotenv.config({ path: path.resolve('./ai_service/.env') });
+dotenv.config({ path: path.resolve('../ai_service/.env') });
 
 // Config
 const ENDPOINT = process.env.APPWRITE_ENDPOINT || 'https://fra.cloud.appwrite.io/v1';
@@ -15,6 +15,7 @@ const client = new Client()
     .setKey(API_KEY);
 
 const databases = new Databases(client);
+const usersService = new Users(client);
 
 const DATABASE_ID = 'main';
 const ARTICLES_COLLECTION_ID = 'articles';
@@ -78,7 +79,7 @@ async function init() {
             await databases.deleteAttribute(DATABASE_ID, ARTICLES_COLLECTION_ID, 'content');
             console.log('Old content attribute deleted.');
             await new Promise(r => setTimeout(r, 2000)); // Wait for deletion to propagate
-        } catch (e) {}
+        } catch (e) { }
 
         const articleAttrs = [
             { key: 'title', type: 'string', size: 500, required: true },
@@ -92,7 +93,8 @@ async function init() {
             { key: 'category', type: 'string', size: 50, required: false },
             { key: 'imageUrl', type: 'string', size: 2000, required: false },
             { key: 'sourceUrl', type: 'string', size: 1000, required: false },
-            { key: 'editorFeedback', type: 'string', size: 5000, required: false }
+            { key: 'editorFeedback', type: 'string', size: 5000, required: false },
+            { key: 'aiReason', type: 'string', size: 10000, required: false }
         ];
 
         const notificationAttrs = [
@@ -121,7 +123,33 @@ async function init() {
         console.log('Syncing User Metadata Attributes...');
         for (const attr of userMetadataAttrs) await createAttribute(USERS_METADATA_COLLECTION_ID, attr);
 
-        console.log('Setup Complete!');
+        // --- NEW: Sync Existing Auth Users to Metadata ---
+        console.log('Syncing Auth Users to Database Metadata...');
+        try {
+            const authUsers = await usersService.list();
+            console.log(`Found ${authUsers.total} users in Auth service.`);
+
+            for (const user of authUsers.users) {
+                // Check if meta exists
+                const existing = await databases.listDocuments(DATABASE_ID, USERS_METADATA_COLLECTION_ID, [
+                    Query.equal('email', user.email)
+                ]);
+
+                if (existing.total === 0) {
+                    console.log(`Creating metadata for ${user.email}...`);
+                    await databases.createDocument(DATABASE_ID, USERS_METADATA_COLLECTION_ID, ID.unique(), {
+                        name: user.name || 'User',
+                        email: user.email,
+                        role: (user.email.includes('admin') || user.email.includes('kenny')) ? 'ADMIN' : 'READER',
+                        createdAt: user.$createdAt
+                    });
+                } else {
+                    console.log(`Metadata for ${user.email} already exists.`);
+                }
+            }
+        } catch (syncErr) {
+            console.log('User sync failed (might be missing indices):', syncErr.message);
+        }
     } catch (error) {
         console.error('Error initializing Appwrite:', error);
     }
