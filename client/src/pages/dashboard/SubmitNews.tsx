@@ -90,7 +90,7 @@ const SubmitNews = () => {
 
         try {
             // 1. AI Check
-            let aiResult = { result: 'UNKNOWN', score: 0 };
+            let aiResult: any = { result: 'OFFLINE', score: 0 };
             try {
                 const response = await fetch(`${AI_SERVER_URL}/detect`, {
                     method: 'POST',
@@ -99,20 +99,30 @@ const SubmitNews = () => {
                 });
                 if (response.ok) {
                     aiResult = await response.json();
+                } else {
+                    aiResult.result = 'OFFLINE';
                 }
             } catch (aiError) {
                 console.error('AI Service Connection Failed:', aiError);
+                aiResult.result = 'OFFLINE';
             }
 
             // 2. Determine Status
             let status = 'PENDING';
             let userMessage = 'Article submitted successfully! It has been sent for review.';
             let messageType = 'success';
+            let finalAiReason = aiResult.analysis?.explanation || '';
 
-            if (aiResult.result === 'FAKE' || aiResult.score < 50) {
+            if (aiResult.result === 'OFFLINE') {
+                status = 'PENDING';
+                userMessage = 'AI Service is currently offline. Your article has been submitted for manual verification by our editors.';
+                messageType = 'info';
+                finalAiReason = "AI Service was unavailable at time of submission. Manual check required.";
+            } else if (aiResult.result === 'FAKE' || aiResult.score < 50) {
                 status = 'FLAGGED';
                 userMessage = 'Warning: Our AI detected potential misinformation. Your article has been FLAGGED for manual review.';
                 messageType = 'warning';
+                finalAiReason = aiResult.analysis?.explanation || "AI detected triggers associated with misinformation.";
 
                 try {
                     await databases.createDocument(
@@ -144,6 +154,7 @@ const SubmitNews = () => {
                     status: status,
                     aiLabel: String(aiResult.result || 'UNKNOWN').substring(0, 50),
                     aiScore: aiResult.score,
+                    aiReason: aiResult.analysis?.explanation || 'Automatic AI verification check.',
                     createdAt: new Date().toISOString(),
                     sourceUrl: sourceUrl,
                     category: category,

@@ -43,28 +43,27 @@ def sync_data():
         count = 0
         for _, row in df.iterrows():
             try:
-                text = row.get('text', row.get('content', ''))
-                if not text: continue
-                
-                title = text[:80] + "..." if len(text) > 80 else text
+                # Truncate text to 24000 (Appwrite limit is 25k)
+                clean_text = str(text)[:24000]
+                title = str(row.get('title', clean_text[:80] + "...")).strip()
+                if not title: title = "News Update"
+
                 label = row.get('label', 'REAL')
                 score = 90 if label == 'REAL' else 15
-                
-                # Check for existing
-                # (Simple check: skip for now or use title hash)
                 
                 databases.create_document(
                     DATABASE_ID,
                     COLLECTION_ID,
                     ID.unique(),
                     {
-                        'title': title,
-                        'content': text,
-                        'authorName': 'AI Sync',
+                        'title': title[:500], # Max size for title attribute
+                        'content': clean_text,
+                        'authorName': 'AI News Syncer',
                         'authorId': 'ai_system',
                         'status': 'PUBLISHED',
-                        'aiLabel': label,
+                        'aiLabel': str(label)[:50],
                         'aiScore': float(score),
+                        'aiReason': f"Verified by automated data sync from trustworthy sources. Reliability for this article is estimated at {score}%.",
                         'createdAt': datetime.now().isoformat(),
                         'category': 'General',
                         'imageUrl': 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=800'

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES } from '../../lib/appwrite';
 import { Query } from 'appwrite';
-import { CheckCircle, XCircle, Eye, Search, Filter, ShieldCheck, FileText } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Search, Filter, ShieldCheck, FileText, AlertTriangle } from 'lucide-react';
 
 const ReviewNews = () => {
     const [articles, setArticles] = useState<any[]>([]);
@@ -14,7 +14,7 @@ const ReviewNews = () => {
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID_ARTICLES,
-                [Query.equal('status', 'PENDING')]
+                [Query.equal('status', ['PENDING', 'FLAGGED']), Query.orderDesc('createdAt')]
             );
             setArticles(response.documents);
         } catch (error) {
@@ -106,8 +106,19 @@ const ReviewNews = () => {
                                     </div>
                                 </div>
 
+                                {article.status === 'FLAGGED' && (
+                                    <div className="bg-danger/5 border-2 border-danger/20 p-6 rounded-3xl space-y-3">
+                                        <div className="flex items-center gap-3 text-danger font-black uppercase text-sm">
+                                            <AlertTriangle size={18} /> AI FLAG DETECTED
+                                        </div>
+                                        <p className="text-black font-bold text-sm leading-relaxed">
+                                            {article.aiReason || "Potential misinformation detected. AI requires manual audit for this submission."}
+                                        </p>
+                                    </div>
+                                )}
+
                                 <p className="text-gray-600 font-medium leading-relaxed">
-                                    {article.content.substring(0, 250).replace(/<[^>]*>/g, '')}...
+                                    {(article.content || article.text).substring(0, 250).replace(/<[^>]*>/g, '')}...
                                 </p>
 
                                 <div className="flex flex-wrap gap-4 pt-4 border-t border-gray-50">
