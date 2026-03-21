@@ -59,10 +59,10 @@ const Home = () => {
     return (
         <div className="min-h-screen bg-white text-black font-sans selection:bg-primary selection:text-white">
             {/* Top Navigation */}
-            <nav className="sticky top-0 z-60 bg-white/80 border-b-2 border-bg-tertiary px-[5%] py-4 flex justify-between items-center shadow-lg backdrop-blur-md">
-                <div className="flex items-center gap-12">
-                    <Link to="/" className="text-4xl font-black tracking-tighter hover:scale-105 transition-transform flex items-center gap-2">
-                        <span className="bg-black text-white px-3 py-1 rounded-xl">NEWS</span>
+            <nav className="sticky top-0 z-60 bg-white/80 border-b-2 border-bg-tertiary px-[5%] py-3 flex justify-between items-center shadow-lg backdrop-blur-md">
+                <div className="flex items-center gap-8">
+                    <Link to="/" className="text-2xl font-black tracking-tighter hover:scale-105 transition-transform flex items-center gap-2">
+                        <span className="bg-black text-white px-2 py-0.5 rounded-lg">NEWS</span>
                         <span className="text-primary tracking-tight">GUARD</span>
                     </Link>
                     <div className="hidden lg:flex gap-8 items-center text-sm font-black uppercase tracking-widest text-gray-500">
@@ -84,7 +84,7 @@ const Home = () => {
                             <User size={18} /> Dashboard
                         </Link>
                     ) : (
-                        <Link to="/login" className="bg-primary text-white px-8 py-2.5 rounded-xl font-black text-sm shadow-xl shadow-primary/30 hover:scale-105 transition-transform">
+                        <Link to="/login" className="bg-primary text-white px-6 py-2 rounded-xl font-black text-sm shadow-xl shadow-primary/30 hover:scale-105 transition-transform">
                             Sign In
                         </Link>
                     )}

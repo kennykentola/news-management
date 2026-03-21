@@ -89,7 +89,7 @@ const ArticleDetail = () => {
 
     return (
         <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', color: '#000000', paddingBottom: '5rem' }}>
-            <nav style={{ padding: '1.5rem 10%', display: 'flex', alignItems: 'center', backgroundColor: '#ffffff', justifyContent: 'space-between', borderBottom: '2px solid var(--color-bg-tertiary)', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+            <nav style={{ padding: '0.75rem 5%', display: 'flex', alignItems: 'center', backgroundColor: '#ffffff', justifyContent: 'space-between', borderBottom: '2px solid var(--color-bg-tertiary)', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <Link to="/" style={{ color: '#000000', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 900, fontSize: '1.1rem' }}>
                     <span style={{ fontSize: '1.5rem' }}>←</span> Back to News
                 </Link>

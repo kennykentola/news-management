@@ -54,8 +54,8 @@ const CategoryPage = () => {
     return (
         <div className="min-h-screen bg-white text-black font-sans selection:bg-primary selection:text-white pb-20">
             {/* Minimal Header */}
-            <nav className="border-b-2 border-bg-tertiary px-[5%] py-6 flex justify-between items-center shadow-lg bg-white/80 sticky top-0 z-50 backdrop-blur-md">
-                <Link to="/" className="text-3xl font-black tracking-tighter hover:scale-105 transition-transform flex items-center gap-2">
+            <nav className="border-b-2 border-bg-tertiary px-[5%] py-3 flex justify-between items-center shadow-lg bg-white/80 sticky top-0 z-50 backdrop-blur-md">
+                <Link to="/" className="text-2xl font-black tracking-tighter hover:scale-105 transition-transform flex items-center gap-2">
                     <span className="bg-black text-white px-2 py-0.5 rounded-lg">NEWS</span>
                     <span className="text-primary">GUARD</span>
                 </Link>
