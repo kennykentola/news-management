@@ -63,6 +63,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         role = metaDocs.documents[0].role as Role;
                         // Sync back to prefs if missing
                         await account.updatePrefs({ role });
+                    } else {
+                        // 3. AUTO-REPAIR: Create missing metadata for existing user
+                        console.log("Metadata missing for user. Repairing...");
+                        await databases.createDocument(
+                            DATABASE_ID,
+                            METADATA_COLLECTION_ID,
+                            ID.unique(),
+                            {
+                                name: session.name,
+                                email: session.email,
+                                role: 'READER',
+                                createdAt: new Date().toISOString()
+                            }
+                        );
                     }
                 } catch (metaErr) {
                     console.error("Meta fetch failed:", metaErr);

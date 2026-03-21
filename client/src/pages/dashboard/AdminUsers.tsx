@@ -9,24 +9,23 @@ const AdminUsers = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [syncing, setSyncing] = useState(false);
     const [showSyncInfo, setShowSyncInfo] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [isAddingUser, setIsAddingUser] = useState(false);
     const [newUser, setNewUser] = useState({ name: '', email: '', role: 'WRITER' });
 
     const fetchUsers = async () => {
+        setError(null);
         try {
             const response = await databases.listDocuments(
                 DATABASE_ID,
-                COLLECTION_ID_USERS_METADATA,
-                [Query.orderDesc('createdAt')]
+                COLLECTION_ID_USERS_METADATA
+                // Note: removed ordering to avoid index/attribute errors if name/createdAt is missing
             );
             setUsers(response.documents);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to fetch users:', error);
-            setUsers([
-                { $id: '1', name: 'John Editor', email: 'john@news.com', role: 'EDITOR', createdAt: new Date().toISOString() },
-                { $id: '2', name: 'Sara Writer', email: 'sara@news.com', role: 'WRITER', createdAt: new Date().toISOString() },
-                { $id: '3', name: 'Admin One', email: 'admin@news.com', role: 'ADMIN', createdAt: new Date().toISOString() }
-            ]);
+            setError(error.message || 'Check Appwrite Attributes / Permissions');
+            setUsers([]); // Clear list on real error
         } finally {
             setLoading(false);
         }
@@ -201,6 +200,16 @@ const AdminUsers = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
+
+            {error && (
+                <div className="bg-red-50 border-2 border-red-200 p-6 rounded-4xl flex items-center gap-4 text-red-700 animate-in shake active">
+                    <AlertCircle />
+                    <div>
+                        <p className="font-black text-xs uppercase tracking-widest">Database Sync Error</p>
+                        <p className="font-bold">{error}</p>
+                    </div>
+                </div>
+            )}
 
             <div className="bg-white rounded-4xl border-2 border-bg-tertiary shadow-2xl overflow-hidden">
                 <table className="w-full text-left border-collapse">
