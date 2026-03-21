@@ -125,11 +125,11 @@ const ArticleDetail = () => {
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
                         <span style={{
-                            padding: '0.75rem 1.5rem',
+                            padding: '0.75rem 1.25rem',
                             borderRadius: '999px',
-                            fontSize: '1rem',
+                            fontSize: '0.9rem',
                             fontWeight: 900,
                             backgroundColor: article.aiScore > 70 ? '#e7ffed' : '#fee2e2',
                             color: article.aiScore > 70 ? 'var(--color-primary-dark)' : '#b91c1c',
@@ -137,6 +137,7 @@ const ArticleDetail = () => {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '0.6rem',
+                            maxWidth: '100%',
                             boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
                         }}>
                             {article.aiScore > 70 ? '✅ Verified Reliability' : '❌ Low Reliability'}
@@ -147,7 +148,7 @@ const ArticleDetail = () => {
 
                 <div 
                     style={{ fontSize: '1.25rem', lineHeight: 1.8, color: '#000000', fontWeight: 500 }}
-                    dangerouslySetInnerHTML={{ __html: article.content || 'No content available.' }}
+                    dangerouslySetInnerHTML={{ __html: (article.content || article.text) || 'No content available.' }}
                 />
 
                 {article.sourceUrl && (

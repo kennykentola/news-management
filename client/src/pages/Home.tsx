@@ -20,7 +20,7 @@ const Home = () => {
                 [
                     Query.equal('status', 'PUBLISHED'),
                     Query.orderDesc('createdAt'),
-                    Query.limit(12)
+                    Query.limit(25)
                 ]
             );
             setArticles(response.documents);
@@ -41,8 +41,8 @@ const Home = () => {
     }, []);
 
     const featuredArticles = articles.slice(0, 3);
-    const sideArticles = articles.slice(3, 7);
-    const bottomArticles = articles.slice(7);
+    const sideArticles = articles.slice(3, 9);
+    const bottomArticles = articles.slice(9);
     const activeFeatured = featuredArticles[featuredIndex];
 
     // Carousel logic
