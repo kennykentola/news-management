@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES } from '../lib/appwrite';
 import { Query } from 'appwrite';
-import { Shield, ChevronRight, Clock, User } from 'lucide-react';
+import { Shield, ChevronRight, Clock, User, Menu, X } from 'lucide-react';
 
 const CategoryPage = () => {
     const { category } = useParams<{ category: string }>();
     const [articles, setArticles] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     useEffect(() => {
         const fetchArticles = async () => {
@@ -55,16 +56,36 @@ const CategoryPage = () => {
         <div className="min-h-screen bg-white text-black font-sans selection:bg-primary selection:text-white pb-20">
             {/* Minimal Header */}
             <nav className="border-b-2 border-bg-tertiary px-[5%] py-3 flex justify-between items-center shadow-lg bg-white/80 sticky top-0 z-50 backdrop-blur-md">
-                <Link to="/" className="text-2xl font-black tracking-tighter hover:scale-105 transition-transform flex items-center gap-2">
-                    <span className="bg-black text-white px-2 py-0.5 rounded-lg">NEWS</span>
-                    <span className="text-primary">GUARD</span>
-                </Link>
-                <div className="flex gap-8 items-center text-sm font-black uppercase tracking-widest text-gray-400">
+                <div className="flex items-center gap-4">
+                    <button 
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        className="md:hidden p-2 hover:bg-black/5 rounded-lg transition-colors"
+                    >
+                        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                    <Link to="/" className="text-2xl font-black tracking-tighter hover:scale-105 transition-transform flex items-center gap-2">
+                        <span className="bg-black text-white px-2 py-0.5 rounded-lg">NEWS</span>
+                        <span className="text-primary">GUARD</span>
+                    </Link>
+                </div>
+                <div className="hidden md:flex gap-8 items-center text-sm font-black uppercase tracking-widest text-gray-400">
                     <Link to="/" className="hover:text-primary transition-colors">Home</Link>
                     <Link to="/politics" className={`${category === 'politics' ? 'text-primary' : 'hover:text-primary'} transition-colors`}>Politics</Link>
                     <Link to="/tech" className={`${category === 'tech' ? 'text-primary' : 'hover:text-primary'} transition-colors`}>Tech</Link>
                     <Link to="/health" className={`${category === 'health' ? 'text-primary' : 'hover:text-primary'} transition-colors`}>Health</Link>
                 </div>
+
+                {/* Mobile Menu Overlay */}
+                {isMenuOpen && (
+                    <div className="md:hidden absolute top-full left-0 w-full bg-white border-b-4 border-primary shadow-2xl animate-in slide-in-from-top-4 duration-300">
+                        <div className="flex flex-col p-8 gap-6 text-xl font-black uppercase tracking-tighter">
+                            <Link to="/" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b border-gray-50 pb-4">Home</Link>
+                            <Link to="/politics" onClick={() => setIsMenuOpen(false)} className={`${category === 'politics' ? 'text-primary' : ''} hover:text-primary border-b border-gray-50 pb-4`}>Politics</Link>
+                            <Link to="/tech" onClick={() => setIsMenuOpen(false)} className={`${category === 'tech' ? 'text-primary' : ''} hover:text-primary border-b border-gray-50 pb-4`}>Tech</Link>
+                            <Link to="/health" onClick={() => setIsMenuOpen(false)} className={`${category === 'health' ? 'text-primary' : ''} hover:text-primary pb-4`}>Health</Link>
+                        </div>
+                    </div>
+                )}
             </nav>
 
             <main className="px-[5%] py-12 max-w-[1400px] mx-auto">

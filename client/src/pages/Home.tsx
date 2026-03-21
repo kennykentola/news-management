@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES } from '../lib/appwrite';
 import { Query } from 'appwrite';
 import { useAuth } from '../context/AuthContext';
-import { Shield, ChevronRight, TrendingUp, Clock, Search, User, ArrowRight } from 'lucide-react';
+import { Shield, ChevronRight, TrendingUp, Clock, Search, User, ArrowRight, Menu, X } from 'lucide-react';
 import LoadingScreen from '../components/LoadingScreen';
 
 const Home = () => {
@@ -11,6 +11,7 @@ const Home = () => {
     const [articles, setArticles] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [featuredIndex, setFeaturedIndex] = useState(0);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const fetchNews = async () => {
         try {
@@ -61,6 +62,12 @@ const Home = () => {
             {/* Top Navigation */}
             <nav className="sticky top-0 z-60 bg-white/80 border-b-2 border-bg-tertiary px-[5%] py-3 flex justify-between items-center shadow-lg backdrop-blur-md">
                 <div className="flex items-center gap-8">
+                    <button 
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        className="lg:hidden p-2 hover:bg-black/5 rounded-lg transition-colors"
+                    >
+                        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
                     <Link to="/" className="text-2xl font-black tracking-tighter hover:scale-105 transition-transform flex items-center gap-2">
                         <span className="bg-black text-white px-2 py-0.5 rounded-lg">NEWS</span>
                         <span className="text-primary tracking-tight">GUARD</span>
@@ -74,21 +81,34 @@ const Home = () => {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4">
                     <div className="hidden sm:flex items-center bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 focus-within:ring-2 ring-primary/20 transition-all">
                         <Search size={18} className="text-gray-400" />
                         <input type="text" placeholder="Search news..." className="bg-transparent border-none outline-none text-sm font-bold ml-2 w-40" />
                     </div>
                     {user ? (
-                        <Link to="/dashboard" className="flex items-center gap-2 bg-black text-white px-6 py-2.5 rounded-xl font-black text-sm shadow-xl hover:bg-gray-800 transition-all">
-                            <User size={18} /> Dashboard
+                        <Link to="/dashboard" className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-xl font-black text-xs md:text-sm shadow-xl hover:bg-gray-800 transition-all whitespace-nowrap">
+                            <User size={18} /> <span className="hidden xs:block">Dashboard</span>
                         </Link>
                     ) : (
-                        <Link to="/login" className="bg-primary text-white px-6 py-2 rounded-xl font-black text-sm shadow-xl shadow-primary/30 hover:scale-105 transition-transform">
+                        <Link to="/login" className="bg-primary text-white px-4 md:px-6 py-2 rounded-xl font-black text-xs md:text-sm shadow-xl shadow-primary/30 hover:scale-105 transition-transform whitespace-nowrap">
                             Sign In
                         </Link>
                     )}
                 </div>
+
+                {/* Mobile Menu Overlay */}
+                {isMenuOpen && (
+                    <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b-4 border-primary shadow-2xl animate-in slide-in-from-top-4 duration-300">
+                        <div className="flex flex-col p-8 gap-6 text-xl font-black uppercase tracking-tighter">
+                            <Link to="/" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b border-gray-50 pb-4">Home</Link>
+                            <Link to="/politics" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b border-gray-50 pb-4">Politics</Link>
+                            <Link to="/tech" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b border-gray-50 pb-4">Tech</Link>
+                            <Link to="/health" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b border-gray-50 pb-4">Health</Link>
+                            <Link to="/all" onClick={() => setIsMenuOpen(false)} className="hover:text-primary pb-4">All Articles</Link>
+                        </div>
+                    </div>
+                )}
             </nav>
 
             {/* Breaking News Ticker */}
