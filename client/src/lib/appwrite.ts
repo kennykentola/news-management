@@ -1,4 +1,4 @@
-import { Client, Account, Databases } from 'appwrite';
+import { Client, Account, Databases, Storage } from 'appwrite';
 
 export const client = new Client();
 
@@ -15,10 +15,12 @@ if (endpoint && project) {
 
 export const account = new Account(client);
 export const databases = new Databases(client);
+export const storage = new Storage(client);
 
 export const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID || 'main'; // Fallback for dev
 export const COLLECTION_ID_ARTICLES = import.meta.env.VITE_APPWRITE_COLLECTION_ID_ARTICLES || 'articles';
 export const COMMENTS_COLLECTION_ID = 'comments';
 export const NOTIFICATIONS_COLLECTION_ID = 'notifications';
 export const COLLECTION_ID_USERS_METADATA = 'users_metadata';
+export const BUCKET_ID_IMAGES = 'article_images';
 

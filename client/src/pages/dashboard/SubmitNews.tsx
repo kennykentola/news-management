@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
-import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES, NOTIFICATIONS_COLLECTION_ID } from '../../lib/appwrite';
+import { databases, storage, DATABASE_ID, COLLECTION_ID_ARTICLES, NOTIFICATIONS_COLLECTION_ID, BUCKET_ID_IMAGES } from '../../lib/appwrite';
 import { ID, Query } from 'appwrite';
 import { useAuth } from '../../context/AuthContext';
-import { Sparkles, BarChart3, CheckCheck, AlertCircle } from 'lucide-react';
+import { Sparkles, BarChart3, CheckCheck, AlertCircle, Upload, Link as LinkIcon, X } from 'lucide-react';
 import LoadingScreen from '../../components/LoadingScreen';
 
 const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:5000';
@@ -16,6 +16,8 @@ const SubmitNews = () => {
     const [sourceUrl, setSourceUrl] = useState('');
     const [category, setCategory] = useState('General');
     const [imageUrl, setImageUrl] = useState('');
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [proofreading, setProofreading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
@@ -89,6 +91,24 @@ const SubmitNews = () => {
         setMessage({ type: '', text: '' });
 
         try {
+            // 0. Handle File Upload if exists
+            let finalImageUrl = imageUrl;
+            if (imageFile) {
+                try {
+                    const uploadedFile = await storage.createFile(
+                        BUCKET_ID_IMAGES,
+                        ID.unique(),
+                        imageFile
+                    );
+                    // Generate Preview URL
+                    const result = storage.getFileView(BUCKET_ID_IMAGES, uploadedFile.$id);
+                    finalImageUrl = result.href;
+                } catch (err: any) {
+                    console.error("Image upload failed:", err);
+                    // Continue with fallback image or error
+                }
+            }
+
             // 1. AI Check
             let aiResult: any = { result: 'OFFLINE', score: 0 };
             try {
@@ -158,7 +178,8 @@ const SubmitNews = () => {
                     createdAt: new Date().toISOString(),
                     sourceUrl: sourceUrl,
                     category: category,
-                    imageUrl: imageUrl
+                    imageUrl: finalImageUrl,
+                    aiReason: finalAiReason
                 }
             );
 
@@ -167,6 +188,8 @@ const SubmitNews = () => {
             setContent('');
             setSourceUrl('');
             setImageUrl('');
+            setImageFile(null);
+            setImagePreview(null);
 
         } catch (error: any) {
             console.error(error);
@@ -295,15 +318,85 @@ const SubmitNews = () => {
                             </select>
                         </div>
 
-                        <div>
-                            <label className="block mb-3 text-black text-xl font-black tracking-tight">Image URL (Optional)</label>
-                            <input
-                                type="text"
-                                value={imageUrl}
-                                onChange={(e) => setImageUrl(e.target.value)}
-                                placeholder="https://image-source.com/photo.jpg"
-                                className="w-full p-5 rounded-2xl bg-white border-2 border-bg-tertiary color-black outline-none font-bold text-lg"
-                            />
+                        <div className="lg:col-span-2">
+                            <label className="block mb-3 text-black text-xl font-black tracking-tight">Article Cover Image</label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* File Upload */}
+                                <div className="space-y-4">
+                                    <div 
+                                        onClick={() => document.getElementById('image-upload')?.click()}
+                                        className={`w-full aspect-video rounded-3xl border-4 border-dashed cursor-pointer flex flex-col items-center justify-center gap-4 transition-all overflow-hidden relative
+                                            ${imagePreview ? 'border-primary bg-primary/5' : 'border-bg-tertiary hover:border-primary/50 bg-white'}
+                                        `}
+                                    >
+                                        {imagePreview ? (
+                                            <>
+                                                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setImageFile(null);
+                                                        setImagePreview(null);
+                                                    }}
+                                                    className="absolute top-4 right-4 bg-white/90 p-2 rounded-xl text-danger shadow-lg"
+                                                >
+                                                    <X size={20} />
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
+                                                    <Upload size={32} />
+                                                </div>
+                                                <div className="text-center">
+                                                    <p className="font-black text-lg">Upload from Device</p>
+                                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Drag & drop or click to browse</p>
+                                                </div>
+                                            </>
+                                        )}
+                                        <input 
+                                            id="image-upload"
+                                            type="file" 
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    setImageFile(file);
+                                                    setImagePreview(URL.createObjectURL(file));
+                                                    setImageUrl(''); // Clear URL if file is uploaded
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* URL Fallback */}
+                                <div className="flex flex-col justify-center gap-4">
+                                    <div className="flex items-center gap-2 text-gray-400 font-black text-sm uppercase">
+                                        <span className="h-[2px] w-full bg-bg-tertiary"></span>
+                                        <span>OR</span>
+                                        <span className="h-[2px] w-full bg-bg-tertiary"></span>
+                                    </div>
+                                    <div className="relative">
+                                        <LinkIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                                        <input
+                                            type="text"
+                                            value={imageUrl}
+                                            onChange={(e) => {
+                                                setImageUrl(e.target.value);
+                                                setImageFile(null);
+                                                setImagePreview(null); // Clear file if URL is pasted
+                                            }}
+                                            placeholder="Paste image URL instead..."
+                                            className="w-full p-5 pl-14 rounded-2xl bg-white border-2 border-bg-tertiary color-black outline-none font-bold text-lg focus:border-primary transition-all shadow-inner"
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-400 font-bold leading-relaxed px-5 italic">
+                                        Tip: Uploaded images look better on the home page.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
