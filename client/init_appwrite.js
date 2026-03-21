@@ -94,7 +94,10 @@ async function init() {
             { key: 'imageUrl', type: 'string', size: 2000, required: false },
             { key: 'sourceUrl', type: 'string', size: 1000, required: false },
             { key: 'editorFeedback', type: 'string', size: 5000, required: false },
-            { key: 'aiReason', type: 'string', size: 10000, required: false }
+            { key: 'aiReason', type: 'string', size: 10000, required: false },
+            { key: 'aiCredibility', type: 'double', required: false },
+            { key: 'aiClassification', type: 'string', size: 50, required: false },
+            { key: 'aiEdgeCases', type: 'string', size: 2000, required: false }
         ];
 
         const notificationAttrs = [

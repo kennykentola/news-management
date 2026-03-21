@@ -178,7 +178,10 @@ const SubmitNews = () => {
                     sourceUrl: sourceUrl,
                     category: category,
                     imageUrl: finalImageUrl,
-                    aiReason: finalAiReason
+                    aiReason: finalAiReason,
+                    aiCredibility: aiResult.credibility || (aiResult.score * 0.95), // Mock fallback
+                    aiClassification: aiResult.classification || (aiResult.result === 'FAKE' ? 'FAKE' : 'REAL'),
+                    aiEdgeCases: aiResult.edge_cases || 'None detected'
                 }
             );
 

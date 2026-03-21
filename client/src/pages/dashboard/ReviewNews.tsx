@@ -98,22 +98,40 @@ const ReviewNews = () => {
                                             By {article.authorName} • {new Date(article.createdAt).toLocaleDateString()}
                                         </div>
                                     </div>
-                                    <div className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 border shadow-sm
-                                        ${article.aiLabel === 'REAL' ? 'bg-primary/10 text-primary-dark border-primary/20' : 'bg-danger/10 text-danger border-danger/20'}
-                                    `}>
-                                        <ShieldCheck size={14} />
-                                        AI Score: {article.aiScore}% ({article.aiLabel})
+                                    <div className="flex gap-2">
+                                        <div className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 border shadow-sm
+                                            ${article.aiClassification === 'FAKE' ? 'bg-danger/10 text-danger border-danger/20' : 
+                                              article.aiClassification === 'MISLEADING' ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                                              article.aiClassification === 'SATIRE' ? 'bg-purple-100 text-purple-700 border-purple-200' :
+                                              'bg-primary/10 text-primary-dark border-primary/20'}
+                                        `}>
+                                            <ShieldCheck size={14} />
+                                            AI: {article.aiClassification || article.aiLabel}
+                                        </div>
+                                        <div className="px-4 py-2 rounded-xl bg-black text-white text-xs font-black flex items-center gap-2 shadow-sm border border-black">
+                                            <ShieldCheck size={14} className="text-primary" />
+                                            Credibility: {Math.round(article.aiCredibility || 0)}%
+                                        </div>
                                     </div>
                                 </div>
 
                                 {article.status === 'FLAGGED' && (
-                                    <div className="bg-danger/5 border-2 border-danger/20 p-6 rounded-3xl space-y-3">
-                                        <div className="flex items-center gap-3 text-danger font-black uppercase text-sm">
-                                            <AlertTriangle size={18} /> AI FLAG DETECTED
+                                    <div className="bg-danger/5 border-2 border-danger/20 p-6 rounded-3xl space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-3 text-danger font-black uppercase text-xs tracking-tighter">
+                                                <AlertTriangle size={18} /> AI FLAG DETECTED - Analysis Report
+                                            </div>
+                                            {article.aiClassification && (
+                                                <span className="text-[10px] bg-red-600 text-white px-3 py-1 rounded-full font-black uppercase tracking-widest">{article.aiClassification}</span>
+                                            )}
                                         </div>
                                         <p className="text-black font-bold text-sm leading-relaxed">
                                             {article.aiReason || "Potential misinformation detected. AI requires manual audit for this submission."}
                                         </p>
+                                        <div className="bg-white/80 p-4 rounded-2xl border-2 border-danger/5">
+                                            <p className="text-[10px] font-black text-gray-400 uppercase mb-2">Edge Cases detected</p>
+                                            <p className="text-xs font-bold text-black">{article.aiEdgeCases || 'Low confidence in Nigerian vernacular patterns detected.'}</p>
+                                        </div>
                                     </div>
                                 )}
 

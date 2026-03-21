@@ -51,12 +51,14 @@ const AIControl = () => {
         }
     };
 
-    const handleAction = async (endpoint: string, actionName: string) => {
-        setLoading(endpoint);
+    const handleAction = async (endpoint: string, actionName: string, params?: any) => {
+        setLoading(endpoint + (params?.type || ''));
         addLog(`Initiating ${actionName}...`);
         try {
             const res = await fetch(`${AI_SERVER_URL}${endpoint}`, {
-                method: 'POST'
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(params || {})
             });
             const data = await res.json();
             
@@ -171,22 +173,33 @@ const AIControl = () => {
                                 </div>
                             </div>
 
-                            <button
-                                onClick={() => handleAction('/admin/train', 'Core Training')}
-                                disabled={!!loading}
-                                className="flex items-center justify-between p-6 rounded-3xl bg-black text-white hover:bg-gray-800 group transition-all shadow-xl shadow-black/20"
-                            >
-                                <div className="flex items-center gap-6 text-left">
-                                    <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-primary group-hover:scale-110 transition-all">
-                                        <Shield size={24} />
+                            <div className="grid grid-cols-2 gap-4">
+                                <button
+                                    onClick={() => handleAction('/admin/train', 'Fast Training', { type: 'fast' })}
+                                    disabled={!!loading}
+                                    className="flex items-center justify-between p-6 rounded-3xl bg-black text-white hover:bg-gray-800 transition-all shadow-xl shadow-black/10 border-2 border-black"
+                                >
+                                    <div className="flex flex-col text-left">
+                                        <h4 className="font-black text-xs uppercase tracking-widest mb-1 text-primary">Fast Mode</h4>
+                                        <p className="font-black text-lg">Naive Bayes</p>
+                                        <p className="text-[10px] font-bold text-gray-500">2-5 Minutes</p>
                                     </div>
-                                    <div>
-                                        <h4 className="font-black text-lg">Train AI Model</h4>
-                                        <p className="text-xs font-bold text-gray-400">Re-calibrate brain with Yoruba, Igbo, Hausa patterns</p>
+                                    {loading === '/admin/trainfast' ? <RefreshCw className="animate-spin text-primary" /> : <Zap size={20} className="text-primary" />}
+                                </button>
+
+                                <button
+                                    onClick={() => handleAction('/admin/train', 'Advanced Training', { type: 'afriberta' })}
+                                    disabled={!!loading}
+                                    className="flex items-center justify-between p-6 rounded-3xl bg-white text-black border-2 border-primary/20 hover:border-primary transition-all shadow-xl shadow-primary/5"
+                                >
+                                    <div className="flex flex-col text-left">
+                                        <h4 className="font-black text-xs uppercase tracking-widest mb-1 text-primary-dark">Deep Learning</h4>
+                                        <p className="font-black text-lg">AfriBERTa</p>
+                                        <p className="text-[10px] font-bold text-gray-400 tracking-tighter italic">High Resource Required</p>
                                     </div>
-                                </div>
-                                {loading === '/admin/train' ? <RefreshCw className="animate-spin text-primary" /> : <Zap size={20} className="text-primary" />}
-                            </button>
+                                    {loading === '/admin/trainafriberta' ? <RefreshCw className="animate-spin text-primary" /> : <Cpu size={20} className="text-primary-dark" />}
+                                </button>
+                            </div>
                         </div>
                     </div>
 
