@@ -43,8 +43,9 @@ def sync_data():
         count = 0
         for _, row in df.iterrows():
             try:
-                # Truncate text to 24000 (Appwrite limit is 25k)
-                clean_text = str(text)[:24000]
+                # Get text from 'text' column if 'content' is missing
+                raw_text = row.get('text', row.get('content', 'No content available'))
+                clean_text = str(raw_text).strip()[:24000]
                 title = str(row.get('title', clean_text[:80] + "...")).strip()
                 if not title: title = "News Update"
 
