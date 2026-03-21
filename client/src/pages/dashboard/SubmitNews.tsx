@@ -102,7 +102,7 @@ const SubmitNews = () => {
                     );
                     // Generate Preview URL
                     const result = storage.getFileView(BUCKET_ID_IMAGES, uploadedFile.$id);
-                    finalImageUrl = result.href;
+                    finalImageUrl = result.href || result.toString(); // Support both URL object and string
                 } catch (err: any) {
                     console.error("Image upload failed:", err);
                     // Continue with fallback image or error
@@ -174,7 +174,6 @@ const SubmitNews = () => {
                     status: status,
                     aiLabel: String(aiResult.result || 'UNKNOWN').substring(0, 50),
                     aiScore: aiResult.score,
-                    aiReason: aiResult.analysis?.explanation || 'Automatic AI verification check.',
                     createdAt: new Date().toISOString(),
                     sourceUrl: sourceUrl,
                     category: category,

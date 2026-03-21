@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { account, databases } from '../lib/appwrite';
-import { ID, Models, OAuthProvider } from 'appwrite';
+import { ID, Models, OAuthProvider, Query } from 'appwrite';
 
 // Define roles
 export type Role = 'WRITER' | 'EDITOR' | 'ADMIN' | 'READER';
