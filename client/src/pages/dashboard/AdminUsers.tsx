@@ -12,22 +12,39 @@ const AdminUsers = () => {
     const [error, setError] = useState<string | null>(null);
     const [isAddingUser, setIsAddingUser] = useState(false);
     const [newUser, setNewUser] = useState({ name: '', email: '', role: 'WRITER' });
-
+    const [repairing, setRepairing] = useState(false);
+    
     const fetchUsers = async () => {
         setError(null);
         try {
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID_USERS_METADATA
-                // Note: removed ordering to avoid index/attribute errors if name/createdAt is missing
             );
             setUsers(response.documents);
         } catch (error: any) {
             console.error('Failed to fetch users:', error);
             setError(error.message || 'Check Appwrite Attributes / Permissions');
-            setUsers([]); // Clear list on real error
+            setUsers([]);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleForceSync = async () => {
+        setRepairing(true);
+        try {
+            // Force verify current admin metadata
+            const profile = await databases.listDocuments(DATABASE_ID, COLLECTION_ID_USERS_METADATA, [
+                Query.equal('email', 'admin@news.com') // We can't easily get the user from here, but we can try to "discover"
+            ]);
+            // Re-fetch everything
+            await fetchUsers();
+            alert("Sync complete. If the list is still empty, please ensure you have 'Any' Read permissions in Appwrite collection settings.");
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setRepairing(false);
         }
     };
 
@@ -88,11 +105,12 @@ const AdminUsers = () => {
                 </div>
                 <div className="flex gap-4">
                     <button 
-                        onClick={handleSync}
-                        className="bg-black text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-xl hover:bg-gray-800 transition-all active:scale-95"
+                        onClick={handleForceSync}
+                        disabled={repairing}
+                        className="bg-black text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-xl hover:bg-gray-800 transition-all active:scale-95 disabled:opacity-50"
                     >
-                        <RefreshCw size={20} className={syncing ? 'animate-spin' : ''} />
-                        Sync Schema
+                        <RefreshCw size={20} className={repairing ? 'animate-spin' : ''} />
+                        Force Sync
                     </button>
                     <button 
                         onClick={() => setIsAddingUser(true)}
@@ -104,7 +122,7 @@ const AdminUsers = () => {
             </div>
 
             {isAddingUser && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+                <div className="fixed inset-0 z-60 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
                     <div className="bg-white w-full max-w-md rounded-4xl p-10 border-2 border-bg-tertiary shadow-2xl space-y-8 animate-in zoom-in duration-300">
                         <div className="flex justify-between items-center">
                             <h3 className="text-3xl font-black tracking-tighter">Invite Team Member</h3>
@@ -170,25 +188,6 @@ const AdminUsers = () => {
                 </div>
             )}
 
-            {showSyncInfo && (
-                <div className="bg-amber-50 border-2 border-amber-200 p-8 rounded-4xl space-y-4 animate-in zoom-in duration-300">
-                    <div className="flex items-center gap-3 text-amber-700 font-black">
-                        <Info size={24} />
-                        <h4 className="text-xl">Database Schema Instructions</h4>
-                    </div>
-                    <p className="text-amber-800 font-bold">
-                        To resolve the 404 errors, please ensure the following collections exist in your Appwrite Dashboard (Main DB):
-                    </p>
-                    <ul className="list-disc ml-6 text-amber-900 font-bold space-y-2">
-                        <li><strong>{NOTIFICATIONS_COLLECTION_ID}</strong>: (Attributes: userId, title, message, type, isRead, createdAt)</li>
-                        <li><strong>users_metadata</strong>: (Attributes: name, email, role, createdAt)</li>
-                    </ul>
-                    <p className="text-xs text-amber-600 font-black uppercase tracking-widest mt-4">
-                        * Attributes should be 'string' (except isRead which is 'boolean') and required.
-                    </p>
-                    <button onClick={() => setShowSyncInfo(false)} className="text-amber-700 underline font-black text-sm">Dismiss Instructions</button>
-                </div>
-            )}
 
             <div className="bg-white p-6 rounded-3xl border-2 border-bg-tertiary shadow-xl flex items-center gap-4 focus-within:border-primary transition-colors">
                 <Search className="text-gray-400" />
