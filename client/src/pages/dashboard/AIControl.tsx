@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Database, RefreshCw, Cpu, CheckCircle, AlertTriangle, Zap, Download, Search, FileText } from 'lucide-react';
+import { Shield, Database, RefreshCw, Cpu, CheckCircle, AlertTriangle, Zap, Download, Search, FileText, ArrowRight } from 'lucide-react';
 import LoadingScreen from '../../components/LoadingScreen';
 
 const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:5000';
