@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES, COMMENTS_COLLECTION_ID } from '../lib/appwrite';
 import { ID, Query } from 'appwrite';
 import { useAuth } from '../context/AuthContext';
+import LoadingScreen from '../components/LoadingScreen';
 
 const ArticleDetail = () => {
     const { id } = useParams<{ id: string }>();
@@ -83,7 +84,7 @@ const ArticleDetail = () => {
         }
     };
 
-    if (loading) return <div style={{ padding: '4rem', color: '#000000', textAlign: 'center', fontWeight: 900, fontSize: '1.5rem', animatePulse: 'true' }}>Loading article...</div>;
+    if (loading) return <LoadingScreen message="Analyzing news reliability..." />;
     if (error || !article) return <div style={{ padding: '4rem', color: 'var(--color-danger)', textAlign: 'center', fontWeight: 900, fontSize: '1.5rem' }}>{error || 'Article not found'}</div>;
 
     return (
@@ -144,9 +145,10 @@ const ArticleDetail = () => {
                     </div>
                 </div>
 
-                <div style={{ fontSize: '1.25rem', lineHeight: 1.8, color: '#000000', whiteSpace: 'pre-wrap', fontWeight: 500 }}>
-                    {article.content}
-                </div>
+                <div 
+                    style={{ fontSize: '1.25rem', lineHeight: 1.8, color: '#000000', fontWeight: 500 }}
+                    dangerouslySetInnerHTML={{ __html: article.content || 'No content available.' }}
+                />
 
                 {article.sourceUrl && (
                     <div style={{ marginTop: '5rem', padding: '2rem', backgroundColor: '#f9fafb', borderRadius: '1rem', border: '2px solid var(--color-bg-tertiary)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
