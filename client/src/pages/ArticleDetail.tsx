@@ -180,14 +180,19 @@ const ArticleDetail = () => {
 
                 <div 
                     style={{ 
-                        fontSize: 'clamp(1rem, 4vw, 1.25rem)', 
-                        lineHeight: 1.8, 
-                        color: '#000000', 
-                        fontWeight: 500,
+                        fontSize: 'clamp(1.1rem, 4vw, 1.35rem)', 
+                        lineHeight: 1.85, 
+                        color: '#1a1a1a', 
+                        fontWeight: 400,
                         overflowWrap: 'anywhere',
-                        wordBreak: 'normal'
+                        wordBreak: 'normal',
+                        fontFamily: "'Inter', sans-serif"
                     }}
-                    dangerouslySetInnerHTML={{ __html: ((article.content || article.text || article.body || article.summary || article.description) || 'No core content available in document.').replace(/&nbsp;/g, ' ') }}
+                    dangerouslySetInnerHTML={{ 
+                        __html: (article.content || article.text || article.body || article.summary || 'No core content available. Please verify the source for full details.')
+                        .replace(/&nbsp;/g, ' ')
+                        .replace(/\n/g, '<br/>')
+                    }}
                 />
 
                 {article.sourceUrl && (
@@ -245,10 +250,41 @@ const ArticleDetail = () => {
                     ))}
                     {comments.length === 0 && <p style={{ color: '#6b7280', fontStyle: 'italic', textAlign: 'center', padding: '4rem', fontSize: '1.1rem', fontWeight: 600 }}>No readers have commented yet. Be the first to share your insight!</p>}
                 </div>
-            </section>
+            {/* Premium Footer */}
+            <footer style={{ 
+                marginTop: '10rem', 
+                backgroundColor: '#000000', 
+                color: '#ffffff', 
+                padding: '6rem 5% 4rem',
+                borderTop: '8px solid var(--color-primary)'
+            }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '4rem' }}>
+                    <div style={{ spaceY: '2rem' }}>
+                        <h2 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '1.5rem' }}>NewsGuard <span style={{ color: 'var(--color-primary)' }}>AI</span></h2>
+                        <p style={{ color: '#9ca3af', fontWeight: 600, lineHeight: 1.6, maxWidth: '350px' }}>
+                            Nigeria's leading AI-powered news verification platform. Ensuring the truth reaches every corner of the federation.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 style={{ fontSize: '0.8rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--color-primary)', marginBottom: '2rem' }}>Ecosystem</h4>
+                        <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '1rem', fontWeight: 700 }}>
+                            <li><Link to="/" style={{ color: '#ffffff', textDecoration: 'none' }}>Home</Link></li>
+                            <li><Link to="/about" style={{ color: '#ffffff', textDecoration: 'none' }}>About verification</Link></li>
+                            <li><Link to="/dashboard" style={{ color: '#ffffff', textDecoration: 'none' }}>Citizen Dashboard</Link></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style={{ fontSize: '0.8rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--color-primary)', marginBottom: '2rem' }}>Security Protocol</h4>
+                        <p style={{ color: '#9ca3af', fontSize: '0.9rem', lineHeight: 1.6, fontWeight: 500 }}>
+                            Our AfriBERTa-based language models are audited daily for bias and accuracy. We use blockchain-inspired metadata to track article origins.
+                        </p>
+                    </div>
+                </div>
+                <div style={{ maxWidth: '1200px', margin: '6rem auto 0', paddingTop: '3rem', borderTop: '1px solid #1f2937', textAlign: 'center' }}>
+                    <p style={{ color: '#4b5563', fontSize: '0.8rem', fontWeight: 800 }}>© 2026 NEWSGUARD AI NIGERIA. ALL TRUTH SECURED.</p>
+                </div>
+            </footer>
         </div>
-
-
     );
 };
 
