@@ -136,23 +136,23 @@ const Overview = () => {
                 const totalRes = await databases.listDocuments(DATABASE_ID, COLLECTION_ID_ARTICLES, [Query.limit(1)]);
                 const total = totalRes.total;
 
+                // Fake = Anything with FLAGGED status
                 const fakeRes = await databases.listDocuments(DATABASE_ID, COLLECTION_ID_ARTICLES, [
-                    Query.equal('aiLabel', 'FAKE'),
+                    Query.equal('status', 'FLAGGED'),
                     Query.limit(1)
                 ]);
                 const fakeCount = fakeRes.total;
 
+                // Published = Anything with PUBLISHED status
                 const publishedRes = await databases.listDocuments(DATABASE_ID, COLLECTION_ID_ARTICLES, [
                     Query.equal('status', 'PUBLISHED'),
                     Query.limit(1)
                 ]);
                 const publishedCount = publishedRes.total;
 
-                const realRes = await databases.listDocuments(DATABASE_ID, COLLECTION_ID_ARTICLES, [
-                    Query.equal('aiLabel', 'REAL'),
-                    Query.limit(1)
-                ]);
-                const realCount = realRes.total;
+                // Real/Accuracy Calculation
+                // If it's published, it's 'Real' in the trust index
+                const realCount = publishedCount;
 
                 const totalAnalyzed = realCount + fakeCount;
                 const realPerc = totalAnalyzed > 0 ? Math.round((realCount / totalAnalyzed) * 100) : 0;
