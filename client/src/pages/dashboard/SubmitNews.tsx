@@ -102,7 +102,7 @@ const SubmitNews = () => {
                     );
                     // Generate Preview URL
                     const result = storage.getFileView(BUCKET_ID_IMAGES, uploadedFile.$id);
-                    finalImageUrl = result.href || result.toString(); // Support both URL object and string
+                    finalImageUrl = result.toString(); // Appwrite 21+ returns a URL object or string, .toString() covers both
                 } catch (err: any) {
                     console.error("Image upload failed:", err);
                     // Continue with fallback image or error
