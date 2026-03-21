@@ -111,60 +111,60 @@ const Home = () => {
                     </p>
                 </div>
 
-                {/* Hero Feature Section */}
+                {/* CNN-Style Hero Grid */}
                 <section className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                    {/* Main Featured Carousel */}
-                    <div className="lg:col-span-8 group relative overflow-hidden rounded-4xl bg-white border-2 border-bg-tertiary shadow-2xl">
-                        {activeFeatured && (
-                            <Link to={`/article/${activeFeatured.$id}`} className="block">
-                                <div className="relative overflow-hidden aspect-video">
+                    {/* Main Top Headline */}
+                    <div className="lg:col-span-8 space-y-8">
+                        {articles[0] && (
+                            <Link to={`/article/${articles[0].$id}`} className="group block space-y-8 pb-12 border-b-2 border-bg-tertiary">
+                                <div className="relative overflow-hidden rounded-4xl bg-white border-2 border-bg-tertiary shadow-2xl aspect-video">
                                     <img 
-                                        src={activeFeatured.imageUrl || 'https://images.unsplash.com/photo-1585829365234-781fdec3d4e4?auto=format&fit=crop&q=80&w=1200'} 
-                                        alt={activeFeatured.title} 
+                                        src={articles[0].imageUrl || 'https://images.unsplash.com/photo-1585829365234-781fdec3d4e4?auto=format&fit=crop&q=80&w=1200'} 
+                                        alt={articles[0].title} 
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
                                     />
-                                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent hidden md:block" />
                                     <div className="absolute top-6 left-6 flex gap-3">
-                                        <span className="bg-primary text-white px-4 py-2 rounded-xl text-xs font-black uppercase shadow-lg border border-white/20 animate-pulse">
-                                            {activeFeatured.category || 'BREAKING'}
+                                        <span className="bg-primary text-white px-4 py-2 rounded-xl text-xs font-black uppercase shadow-lg">
+                                            {articles[0].category || 'TOP STORY'}
                                         </span>
-                                        <span className="bg-white/90 backdrop-blur-md text-primary-dark px-4 py-2 rounded-xl text-xs font-black uppercase shadow-lg flex items-center gap-2">
-                                            <Shield size={14} className="text-green-600" /> {activeFeatured.aiScore}% TRUST
-                                        </span>
-                                    </div>
-
-                                    {/* Indicators */}
-                                    <div className="absolute bottom-6 right-6 flex gap-2">
-                                        {featuredArticles.map((_, i) => (
-                                            <button
-                                                key={i}
-                                                onClick={(e) => { e.preventDefault(); setFeaturedIndex(i); }}
-                                                className={`w-3 h-3 rounded-full transition-all ${i === featuredIndex ? 'bg-primary w-8' : 'bg-white/50 hover:bg-white'}`}
-                                            />
-                                        ))}
                                     </div>
                                 </div>
-                                <div className="p-8 space-y-4">
-                                    <h1 className="text-4xl md:text-6xl font-black leading-tight tracking-tighter text-black group-hover:text-primary transition-colors">
-                                        {activeFeatured.title}
+                                <div className="space-y-6">
+                                    <h1 className="text-5xl md:text-7xl font-black leading-[0.95] tracking-tighter text-black group-hover:text-primary transition-colors">
+                                        {articles[0].title}
                                     </h1>
-                                    <p className="text-lg text-gray-600 font-bold leading-relaxed line-clamp-2">
-                                        {activeFeatured.content?.replace(/<[^>]*>/g, '') || ''}
+                                    <p className="text-xl text-gray-600 font-bold leading-relaxed line-clamp-3 max-w-4xl">
+                                        {(articles[0].content || articles[0].text)?.replace(/<[^>]*>/g, '') || ''}
                                     </p>
-                                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-black text-primary">
-                                                {activeFeatured.authorName?.charAt(0)}
-                                            </div>
-                                            <span className="font-black text-sm uppercase tracking-widest">{activeFeatured.authorName}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-primary-dark shadow-xl shadow-primary/20 transition-all">
-                                            Read Full Article <ArrowRight size={16} />
-                                        </div>
+                                    <div className="flex items-center gap-6">
+                                        <span className="bg-primary/5 text-primary-dark px-4 py-2 rounded-xl text-sm font-black uppercase flex items-center gap-2 border border-primary/10">
+                                            <Shield size={16} className="text-primary" /> AI TRUST SCORE: {articles[0].aiScore}%
+                                        </span>
+                                        <span className="text-gray-400 font-black text-sm uppercase tracking-widest">{new Date(articles[0].createdAt).toLocaleDateString()}</span>
                                     </div>
                                 </div>
                             </Link>
                         )}
+
+                        {/* Secondary Grid (Below Hero) */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                            {articles.slice(1, 3).map((article) => (
+                                <Link key={article.$id} to={`/article/${article.$id}`} className="group block space-y-6">
+                                    <div className="aspect-video rounded-3xl overflow-hidden border-2 border-bg-tertiary shadow-lg">
+                                        <img src={article.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-all" alt="" />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <span className="text-xs font-black text-primary uppercase tracking-widest">{article.category}</span>
+                                        <h2 className="text-2xl font-black leading-tight group-hover:text-primary transition-all">
+                                            {article.title}
+                                        </h2>
+                                        <p className="text-sm text-gray-500 font-bold line-clamp-2">
+                                            {(article.content || article.text)?.replace(/<[^>]*>/g, '') || ''}
+                                        </p>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
                     </div>
                     <div className="lg:col-span-4 space-y-10">
                         <div className="flex items-center gap-4 mb-8">

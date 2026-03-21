@@ -129,6 +129,23 @@ const AIControl = () => {
                                 {loading === '/admin/scrape' ? <RefreshCw className="animate-spin text-primary" /> : <Zap size={20} className="text-gray-200" />}
                             </button>
 
+                            <button
+                                onClick={() => handleAction('/admin/sync', 'Pushing news to Home Page')}
+                                disabled={!!loading}
+                                className="flex items-center justify-between p-6 rounded-3xl border-2 border-black/5 bg-black text-white hover:bg-gray-900 group transition-all"
+                            >
+                                <div className="flex items-center gap-6 text-left">
+                                    <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-white group-hover:scale-110 transition-all">
+                                        <ArrowRight size={24} />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-black text-lg">Sync to Home Page</h4>
+                                        <p className="text-xs font-bold text-gray-400">Push verified news to front-end database</p>
+                                    </div>
+                                </div>
+                                {loading === '/admin/sync' ? <RefreshCw className="animate-spin text-primary" /> : <Zap size={20} className="text-primary" />}
+                            </button>
+
                             {/* One-Click Cleaner */}
                             <div className="relative group p-6 rounded-3xl border-2 border-green-500/20 bg-green-50/50 hover:bg-green-50 transition-all border-dashed">
                                 <input

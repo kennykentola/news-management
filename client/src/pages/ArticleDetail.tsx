@@ -148,7 +148,7 @@ const ArticleDetail = () => {
 
                 <div 
                     style={{ fontSize: '1.25rem', lineHeight: 1.8, color: '#000000', fontWeight: 500 }}
-                    dangerouslySetInnerHTML={{ __html: (article.content || article.text) || 'No content available.' }}
+                    dangerouslySetInnerHTML={{ __html: (article.content || article.text || article.body || article.summary || article.description) || 'No core content available in document.' }}
                 />
 
                 {article.sourceUrl && (

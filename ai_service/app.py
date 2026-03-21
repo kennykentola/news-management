@@ -172,6 +172,19 @@ def run_scrape_social():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/admin/sync', methods=['POST'])
+def run_sync():
+    try:
+        # Run the sync_to_appwrite.py script
+        result = subprocess.run(['python', 'sync_to_appwrite.py'], capture_output=True, text=True)
+        return jsonify({
+            'status': 'success' if result.returncode == 0 else 'error',
+            'output': result.stdout,
+            'error': result.stderr
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/admin/scrape', methods=['POST'])
 def run_scrape():
     try:
