@@ -1,3 +1,13 @@
+---
+title: NewsGuard AI
+emoji: 📰
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_file: app.py
+pinned: false
+---
+
 # News Management System (TONIA)
 
 A comprehensive news platform with AI-powered fake news detection.
