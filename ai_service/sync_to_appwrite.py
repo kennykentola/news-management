@@ -6,6 +6,7 @@ from appwrite.client import Client
 from appwrite.services.databases import Databases
 from appwrite.id import ID
 from datetime import datetime
+import html
 
 load_dotenv()
 
@@ -43,11 +44,21 @@ def sync_data():
         count = 0
         for _, row in df.iterrows():
             try:
-                # Get text from 'text' column if 'content' is missing
-                raw_text = row.get('text', row.get('content', 'No content available'))
-                clean_text = str(raw_text).strip()[:24000]
-                title = str(row.get('title', clean_text[:80] + "...")).strip()
-                if not title: title = "News Update"
+                # 1. Safer Data Extraction (Handles NameErrors and Missing Columns)
+                potential_text = row.get('text') or row.get('content') or 'No content available'
+                potential_title = row.get('title') 
+                
+                # 2. HTML Unescaping & Clean-up
+                clean_content = html.unescape(str(potential_text)).strip()[:24000]
+                
+                # If title is missing or too short, use a snippet of content
+                if not potential_title or len(str(potential_title).strip()) < 5:
+                    clean_title = clean_content[:100] + "..." if len(clean_content) > 100 else clean_content
+                else:
+                    clean_title = html.unescape(str(potential_title)).strip()
+
+                if not clean_title or clean_title == "...": 
+                    clean_title = "News Update"
 
                 label = row.get('label', 'REAL')
                 score = 90 if label == 'REAL' else 15
@@ -57,8 +68,8 @@ def sync_data():
                     COLLECTION_ID,
                     ID.unique(),
                     {
-                        'title': title[:500], # Max size for title attribute
-                        'content': clean_text,
+                        'title': clean_title[:500], # Max size for title attribute
+                        'content': clean_content,
                         'authorName': 'AI News Syncer',
                         'authorId': 'ai_system',
                         'status': 'PUBLISHED',

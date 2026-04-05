@@ -23,9 +23,11 @@ def fetch_google_news_nigeria():
         items = soup.find_all('item')
         
         for item in items[:20]:
-            title = item.title.text
-            link = item.link.text
-            pub_date = item.pubDate.text
+            title_tag = item.find('title')
+            link_tag = item.find('link')
+            
+            title = title_tag.text if title_tag else "No Title"
+            link = link_tag.text if link_tag else "#"
             
             # Simple simulation: assume trending news might be misinformation to be checked
             # This is where you would normally use an AI to classify or manually label

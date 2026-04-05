@@ -1,5 +1,6 @@
 import pandas as pd
 import re
+import html
 import io
 import os
 
@@ -42,13 +43,14 @@ def clean_news_data(file_content, filename):
     # 5. Text Cleaning Heuristics
     def advanced_clean(text):
         if not isinstance(text, str): return ""
-        # Remove HTML tags
+        # 0. Unescape HTML entities (e.g., &nbsp; -> space)
+        text = html.unescape(text)
+        # 1. Remove HTML tags
         text = re.sub(r'<[^>]*>', '', text)
-        # Remove URLs
+        # 2. Remove URLs
         text = re.sub(r'http\S+|www\S+|https\S+', '', text, flags=re.MULTILINE)
-        # Normalize whitespace
+        # 3. Normalize whitespace
         text = re.sub(r'\s+', ' ', text).strip()
-        # Keep Nigerian specific characters if any (already standard in UTF-8 usually)
         return text
 
     df[primary_text] = df[primary_text].apply(advanced_clean)

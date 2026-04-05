@@ -48,38 +48,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Default to READER
             let role: Role = 'READER';
 
-            // 1. Check Preferences (Fastest)
-            if (session.prefs && session.prefs.role) {
-                role = session.prefs.role;
-            } else {
-                // 2. Check Database (Source of Truth)
-                try {
-                    const metaDocs = await databases.listDocuments(
+            // 1. Check Database (Source of Truth) - Prioritize this to reflect Admin changes
+            try {
+                const metaDocs = await databases.listDocuments(
+                    DATABASE_ID,
+                    METADATA_COLLECTION_ID,
+                    [Query.equal('email', session.email)]
+                );
+                
+                if (metaDocs.total > 0) {
+                    role = metaDocs.documents[0].role as Role;
+                    
+                    // Sync back to prefs if they differ (ensures fast path stays correct for next time)
+                    if (session.prefs?.role !== role) {
+                        try {
+                            await account.updatePrefs({ role });
+                        } catch (prefErr) {
+                            console.warn("Could not sync role to prefs:", prefErr);
+                        }
+                    }
+                } else {
+                    // Fallback to Preferences if metadata document is missing
+                    if (session.prefs && session.prefs.role) {
+                        role = session.prefs.role;
+                    }
+                    
+                    // AUTO-REPAIR: Create missing metadata for existing user using best-known role
+                    console.log("Metadata missing for user. Repairing...");
+                    await databases.createDocument(
                         DATABASE_ID,
                         METADATA_COLLECTION_ID,
-                        [Query.equal('email', session.email)]
+                        ID.unique(),
+                        {
+                            name: session.name,
+                            email: session.email,
+                            role: role,
+                            createdAt: new Date().toISOString()
+                        }
                     );
-                    if (metaDocs.total > 0) {
-                        role = metaDocs.documents[0].role as Role;
-                        // Sync back to prefs if missing
-                        await account.updatePrefs({ role });
-                    } else {
-                        // 3. AUTO-REPAIR: Create missing metadata for existing user
-                        console.log("Metadata missing for user. Repairing...");
-                        await databases.createDocument(
-                            DATABASE_ID,
-                            METADATA_COLLECTION_ID,
-                            ID.unique(),
-                            {
-                                name: session.name,
-                                email: session.email,
-                                role: 'READER',
-                                createdAt: new Date().toISOString()
-                            }
-                        );
-                    }
-                } catch (metaErr) {
-                    console.error("Meta fetch failed:", metaErr);
+                }
+            } catch (metaErr) {
+                console.error("Meta fetch failed, falling back to prefs:", metaErr);
+                if (session.prefs && session.prefs.role) {
+                    role = session.prefs.role;
                 }
             }
 
