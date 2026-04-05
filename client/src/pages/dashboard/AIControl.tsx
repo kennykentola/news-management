@@ -40,8 +40,18 @@ const AIControl = () => {
                 a.remove();
                 addLog(`✅ Cleaning complete! Downloaded cleaned_${file.name.split('.')[0]}.csv`);
             } else {
-                const data = await response.json();
-                addLog(`❌ Cleaning failed: ${data.error}`);
+                // Check if the response is JSON
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await response.json();
+                    addLog(`❌ Cleaning failed: ${data.error}`);
+                } else if (response.status === 503 || response.status === 521) {
+                    addLog(`⏳ AI Brain is currently sleeping or starting up. Please wait 60 seconds and try again.`);
+                    // Auto-ping the root to wake it up
+                    fetch(AI_SERVER_URL).catch(() => {});
+                } else {
+                    addLog(`❌ Cleaning failed with status ${response.status}. The server might be busy.`);
+                }
             }
         } catch (err: any) {
             addLog(`❌ Error connecting to cleaning service: ${err.message}`);
@@ -60,19 +70,36 @@ const AIControl = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(params || {})
             });
-            const data = await res.json();
             
-            if (data.status === 'success' || data.status === 'started') {
-                setStatus('success');
-                addLog(`✅ ${actionName}: ${data.message || 'Complete'}`);
-                if (data.output) addLog(`Details: ${data.output}`);
+            // Check if the response is JSON before parsing
+            const contentType = res.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const data = await res.json();
+                
+                if (data.status === 'success' || data.status === 'started') {
+                    setStatus('success');
+                    addLog(`✅ ${actionName}: ${data.message || 'Complete'}`);
+                    if (data.output) addLog(`Details: ${data.output}`);
+                } else {
+                    setStatus('error');
+                    addLog(`❌ ${actionName} failed: ${data.error || 'Unknown error'}`);
+                }
             } else {
+                // Handle non-JSON responses (usually 503/521 from HF)
                 setStatus('error');
-                addLog(`❌ ${actionName} failed: ${data.error || 'Unknown error'}`);
+                if (res.status === 503 || res.status === 521) {
+                    addLog(`⏳ AI Brain is sleeping or starting up. Hugging Face is warming up the engine...`);
+                    addLog(`💡 Tip: Please wait about 1 minute and click the button again.`);
+                    // Send a background ping to wake it up
+                    fetch(AI_SERVER_URL).catch(() => {});
+                } else {
+                    addLog(`❌ Server Error (${res.status}): The AI service responded with an unexpected message.`);
+                }
             }
         } catch (err: any) {
             setStatus('error');
             addLog(`❌ Connection Error: ${err.message}`);
+            addLog(`💡 Check if the AI Server is online or if your internet is stable.`);
         } finally {
             setLoading(null);
         }

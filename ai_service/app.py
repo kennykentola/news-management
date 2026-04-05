@@ -5,9 +5,20 @@ import joblib
 import os
 import subprocess
 import numpy as np
+import psutil
+import logging
 from dotenv import load_dotenv
 
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 load_dotenv()
+
+def log_memory_usage(stage):
+    process = psutil.Process(os.getpid())
+    mem_info = process.memory_info()
+    logger.info(f"[{stage}] Memory Usage: {mem_info.rss / 1024 / 1024:.2f} MB")
 
 app = Flask(__name__)
 CORS(app)
@@ -31,12 +42,17 @@ except Exception as e:
 
 def load_model():
     global model, vectorizer
+    log_memory_usage("Before Loading Model")
     if os.path.exists(MODEL_PATH):
         try:
+            logger.info(f"Loading model from {MODEL_PATH}...")
             model, vectorizer = joblib.load(MODEL_PATH)
-            print("Model loaded successfully.")
+            logger.info("Model and Vectorizer loaded successfully.")
+            log_memory_usage("After Loading Model")
         except Exception as e:
-            print(f"Error loading model: {e}")
+            logger.error(f"Error loading model: {e}")
+    else:
+        logger.warning(f"Model file {MODEL_PATH} not found. Some endpoints may fail.")
 
 load_model()
 
