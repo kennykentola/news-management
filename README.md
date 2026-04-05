@@ -8,7 +8,7 @@ app_file: app.py
 pinned: false
 ---
 
-# News Management System (TONIA)
+# News Management System
 
 A comprehensive news platform with AI-powered fake news detection.
 
