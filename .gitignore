@@ -15,5 +15,5 @@ venv/
 .gemini/
 
 # Data
-*.csv
+*.db
 *.db
