@@ -3,14 +3,16 @@ import { Link } from 'react-router-dom';
 import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES, COLLECTION_ID_USERS_METADATA } from '../lib/appwrite';
 import { Query } from 'appwrite';
 import { useAuth } from '../context/AuthContext';
-import { Shield, ChevronRight, TrendingUp, Clock, Search, User, ArrowRight, Menu, X, Sparkles } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+import { Shield, ChevronRight, TrendingUp, Clock, Search, User, ArrowRight, Menu, X, Sparkles, Sun, Moon } from 'lucide-react';
 import LoadingScreen from '../components/LoadingScreen';
+import Footer from '../components/Footer';
 
 const Home = () => {
     const { user } = useAuth();
+    const { isDarkMode, toggleDarkMode } = useTheme();
     const [articles, setArticles] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [featuredIndex, setFeaturedIndex] = useState(0);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [stats, setStats] = useState({ total: 2450, accuracy: 99.4 });
     const [recommended, setRecommended] = useState<any[]>([]);
@@ -35,7 +37,7 @@ const Home = () => {
                 : 99.4;
             setStats({ total, accuracy: Number(avgScore) });
 
-            // 4. Recommendation Logic
+            // Recommendation Logic
             if (user) {
                 try {
                     const metadata = await databases.listDocuments(
@@ -64,11 +66,6 @@ const Home = () => {
             }
         } catch (error) {
             console.error('Failed to fetch news', error);
-            setArticles([
-                { $id: '1', title: 'World Economy Shifts Toward Sustainability', content: 'Global leaders have agreed on a new framework that prioritizes green energy...', imageUrl: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&q=80&w=800', aiScore: 94, authorName: 'Elena Green', category: 'Economy', createdAt: new Date().toISOString() },
-                { $id: '2', title: 'New AI Standards Proposed for Privacy', content: 'The international council for technology has released a draft for ethical AI...', imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=800', aiScore: 88, authorName: 'Mark Chen', category: 'Technology', createdAt: new Date().toISOString() },
-                { $id: '3', title: 'SpaceX Prepares for Mars Mission Alpha', content: 'Engineers at Starbase are finalizing checks for the next orbital launch attempt...', imageUrl: 'https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&q=80&w=800', aiScore: 92, authorName: 'Sarah Mars', category: 'Science', createdAt: new Date().toISOString() }
-            ]);
         } finally {
             setLoading(false);
         }
@@ -76,59 +73,53 @@ const Home = () => {
 
     useEffect(() => {
         fetchNews();
-    }, []);
+    }, [user]);
 
-    const featuredArticles = articles.slice(0, 3);
-    const sideArticles = articles.slice(3, 9);
-    const bottomArticles = articles.slice(9);
-    const activeFeatured = featuredArticles[featuredIndex];
-
-    // Carousel logic
-    useEffect(() => {
-        if (featuredArticles.length <= 1) return;
-        const interval = setInterval(() => {
-            setFeaturedIndex((prev) => (prev + 1) % featuredArticles.length);
-        }, 8000);
-        return () => clearInterval(interval);
-    }, [featuredArticles.length]);
-
-    if (loading) return <LoadingScreen />;
+    const featuredArticle = articles[0];
+    const sideArticles = articles.slice(1, 4);
+    const bottomArticles = articles.slice(4);
 
     return (
-        <div className="min-h-screen bg-white text-black font-sans selection:bg-primary selection:text-white">
-            {/* Top Navigation */}
-            <nav className="sticky top-0 z-60 bg-white/80 border-b-2 border-bg-tertiary px-[5%] py-3 flex justify-between items-center shadow-lg backdrop-blur-md">
-                <div className="flex items-center gap-8">
-                    <button 
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        className="lg:hidden p-2 hover:bg-black/5 rounded-lg transition-colors"
-                    >
-                        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                    </button>
-                    <Link to="/" className="text-2xl font-black tracking-tighter hover:scale-105 transition-transform flex items-center gap-2">
-                        <span className="bg-black text-white px-2 py-0.5 rounded-lg">NEWS</span>
-                        <span className="text-primary tracking-tight">GUARD</span>
+        <div className="min-h-screen bg-bg-primary text-text-primary font-sans selection:bg-primary selection:text-white transition-colors duration-500">
+            {/* Massive Premium Header */}
+            <nav className="border-b-4 border-primary px-[5%] py-4 flex justify-between items-center shadow-2xl bg-bg-primary sticky top-0 z-50 transition-colors">
+                <div className="flex items-center gap-12">
+                    <Link to="/" className="text-2xl font-black tracking-tighter hover:scale-105 transition-transform flex items-center gap-2 text-text-primary no-underline">
+                        <button 
+                            onClick={(e) => { e.preventDefault(); setIsMenuOpen(!isMenuOpen); }}
+                            className="md:hidden p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
+                        >
+                            {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                        </button>
+                        <span className="bg-text-primary text-bg-primary px-2 py-0.5 rounded-lg transition-colors">NEWS</span>
+                        <span className="text-primary">GUARD</span>
                     </Link>
-                    <div className="hidden lg:flex gap-8 items-center text-sm font-black uppercase tracking-widest text-gray-500">
-                        <Link to="/" className="hover:text-primary transition-colors border-b-2 border-primary pb-1">Home</Link>
-                        <Link to="/politics" className="hover:text-primary transition-colors">Politics</Link>
-                        <Link to="/tech" className="hover:text-primary transition-colors">Tech</Link>
-                        <Link to="/health" className="hover:text-primary transition-colors">Health</Link>
-                        <Link to="/all" className="hover:text-primary transition-colors">All Articles</Link>
+                    <div className="hidden md:flex gap-10 items-center text-sm font-black uppercase tracking-widest text-text-secondary">
+                        <Link to="/" className="hover:text-primary transition-colors border-b-2 border-primary pb-1 no-underline text-text-primary">Home</Link>
+                        <Link to="/category/Politics" className="hover:text-primary transition-colors no-underline text-text-secondary">Politics</Link>
+                        <Link to="/category/Technology" className="hover:text-primary transition-colors no-underline text-text-secondary">Tech</Link>
+                        <Link to="/category/Health" className="hover:text-primary transition-colors no-underline text-text-secondary">Health</Link>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <div className="hidden sm:flex items-center bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 focus-within:ring-2 ring-primary/20 transition-all">
-                        <Search size={18} className="text-gray-400" />
-                        <input type="text" placeholder="Search news..." className="bg-transparent border-none outline-none text-sm font-bold ml-2 w-40" />
+                <div className="flex items-center gap-6">
+                    <div className="hidden sm:flex items-center bg-bg-secondary px-4 py-2 rounded-xl border border-bg-tertiary focus-within:ring-2 ring-primary/20 transition-all">
+                        <Search size={18} className="text-text-secondary" />
+                        <input type="text" placeholder="Search..." className="bg-transparent border-none outline-none text-sm font-bold ml-2 w-24 md:w-40 text-text-primary placeholder:text-text-secondary/50" />
                     </div>
+                    <button 
+                        onClick={toggleDarkMode}
+                        className="p-1.5 bg-bg-secondary rounded-lg border border-bg-tertiary text-text-primary hover:scale-110 active:scale-95 transition-all shadow-sm"
+                        aria-label="Toggle Theme"
+                    >
+                        {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
+                    </button>
                     {user ? (
-                        <Link to="/dashboard" className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-xl font-black text-xs md:text-sm shadow-xl hover:bg-gray-800 transition-all whitespace-nowrap">
+                        <Link to="/dashboard" className="flex items-center gap-2 bg-text-primary text-bg-primary px-4 py-2 rounded-xl font-black text-xs md:text-sm shadow-xl hover:opacity-90 transition-all whitespace-nowrap">
                             <User size={18} /> <span className="hidden xs:block">Dashboard</span>
                         </Link>
                     ) : (
-                        <Link to="/login" className="bg-primary text-white px-4 md:px-6 py-2 rounded-xl font-black text-xs md:text-sm shadow-xl shadow-primary/30 hover:scale-105 transition-transform whitespace-nowrap">
+                        <Link to="/login" className="bg-primary text-white px-4 md:px-6 py-2 rounded-xl font-black text-xs md:text-sm shadow-xl shadow-primary/30 hover:scale-105 transition-transform whitespace-nowrap no-underline">
                             Sign In
                         </Link>
                     )}
@@ -136,13 +127,12 @@ const Home = () => {
 
                 {/* Mobile Menu Overlay */}
                 {isMenuOpen && (
-                    <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b-4 border-primary shadow-2xl animate-in slide-in-from-top-4 duration-300">
+                    <div className="lg:hidden absolute top-full left-0 w-full bg-bg-primary border-b-4 border-primary shadow-2xl animate-in slide-in-from-top-4 duration-300">
                         <div className="flex flex-col p-8 gap-6 text-xl font-black uppercase tracking-tighter">
-                            <Link to="/" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b border-gray-50 pb-4">Home</Link>
-                            <Link to="/politics" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b border-gray-50 pb-4">Politics</Link>
-                            <Link to="/tech" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b border-gray-50 pb-4">Tech</Link>
-                            <Link to="/health" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b border-gray-50 pb-4">Health</Link>
-                            <Link to="/all" onClick={() => setIsMenuOpen(false)} className="hover:text-primary pb-4">All Articles</Link>
+                            <Link to="/" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b border-bg-tertiary pb-4 no-underline text-text-primary">Home</Link>
+                            <Link to="/category/Politics" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b border-bg-tertiary pb-4 no-underline text-text-primary">Politics</Link>
+                            <Link to="/category/Technology" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b border-bg-tertiary pb-4 no-underline text-text-primary">Tech</Link>
+                            <Link to="/category/Health" onClick={() => setIsMenuOpen(false)} className="hover:text-primary pb-4 no-underline text-text-primary">Health</Link>
                         </div>
                     </div>
                 )}
@@ -151,166 +141,109 @@ const Home = () => {
             {/* Breaking News Ticker */}
             <div className="bg-primary-dark/10 py-3 px-[5%] flex items-center gap-4 border-b border-primary/10">
                 <span className="bg-primary text-white px-3 py-1 rounded-lg text-xs font-black uppercase tracking-tighter">AI Fact Ticker</span>
-                <div className="text-sm font-black overflow-hidden relative h-5 flex-1">
+                <div className="text-sm font-black overflow-hidden relative h-5 flex-1 dark:text-primary">
                     <p className="absolute animate-marquee whitespace-nowrap">
                         🛡️ AI Status: High Accuracy Mode Enabled • 🌍 {stats.total.toLocaleString()} Articles verified on platform • ✅ AI Trusted Accuracy: {stats.accuracy}% • ⏳ Last platform update: {new Date().toLocaleTimeString()}
                     </p>
                 </div>
             </div>
 
-            <main className="px-[5%] py-12 max-w-[1600px] mx-auto space-y-20">
-                <div className="text-center space-y-4 mb-20">
-                    <h2 className="text-6xl md:text-8xl font-black tracking-tighter bg-linear-to-r from-black via-primary to-primary-dark bg-clip-text text-transparent">
-                        Trustworthy News, Verified by AI
-                    </h2>
-                    <p className="text-xl md:text-2xl font-bold text-gray-500 max-w-3xl mx-auto">
-                        Stay informed with articles that have been fact-checked and analyzed for reliability.
-                    </p>
-                </div>
-
-                {/* Recommended Section (Only if user has interests) */}
-                {recommended.length > 0 && (
-                    <section className="bg-black/5 p-8 md:p-12 rounded-4xl border-2 border-bg-tertiary space-y-12 shadow-2xl animate-in fade-in slide-in-from-bottom-10 duration-1000">
-                        <div className="flex justify-between items-end">
-                            <div className="space-y-4">
-                                <div className="inline-flex items-center gap-2 bg-primary/10 text-primary-dark px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border border-primary/20">
-                                    <Sparkles size={14} /> Personalized for you
-                                </div>
-                                <h2 className="text-4xl md:text-5xl font-black text-black tracking-tighter">Recommended News</h2>
-                                <p className="text-gray-500 font-bold max-w-2xl text-sm md:text-base">Based on your reading history and interests.</p>
-                            </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-                            {recommended.map((article) => (
-                                <Link key={article.$id} to={`/article/${article.$id}`} className="group bg-white p-6 rounded-3xl border-2 border-bg-tertiary shadow-xl hover:shadow-2xl transition-all space-y-4">
-                                    <div className="relative aspect-video rounded-2xl overflow-hidden">
-                                        <img src={article.imageUrl} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                                        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur px-3 py-1 rounded-lg text-[10px] font-black uppercase text-primary border border-primary/10">
-                                            {article.category}
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <h3 className="text-xl font-black leading-tight group-hover:text-primary transition-colors line-clamp-2">
-                                            {article.title}
-                                        </h3>
-                                        <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{new Date(article.createdAt).toLocaleDateString()}</span>
-                                            <div className="flex items-center gap-1 text-[10px] font-black text-primary-dark">
-                                                <Shield size={12} /> {article.aiScore}%
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    </section>
-                )}
-
-                {/* CNN-Style Hero Grid */}
-                <section className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                    {/* Main Top Headline */}
-                    <div className="lg:col-span-8 space-y-8">
-                        {articles[0] && (
-                            <Link to={`/article/${articles[0].$id}`} className="group block space-y-8 pb-12 border-b-2 border-bg-tertiary">
-                                <div className="relative overflow-hidden rounded-4xl bg-white border-2 border-bg-tertiary shadow-2xl aspect-video">
-                                    <img 
-                                        src={articles[0].imageUrl || 'https://images.unsplash.com/photo-1585829365234-781fdec3d4e4?auto=format&fit=crop&q=80&w=1200'} 
-                                        alt={articles[0].title} 
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
-                                    />
-                                    <div className="absolute top-6 left-6 flex gap-3">
-                                        <span className="bg-primary text-white px-4 py-2 rounded-xl text-xs font-black uppercase shadow-lg">
-                                            {articles[0].category || 'TOP STORY'}
+            <main className="px-[5%] py-12 md:py-20 space-y-24 max-w-[1500px] mx-auto overflow-hidden">
+                {/* Master Featured Section */}
+                <section className="grid grid-cols-1 xl:grid-cols-12 gap-12 items-start">
+                    {featuredArticle && (
+                        <div className="xl:col-span-8 group relative rounded-4xl overflow-hidden shadow-2xl border-2 border-bg-tertiary bg-bg-secondary transition-all hover:shadow-primary/10">
+                            <Link to={`/article/${featuredArticle.$id}`} className="block relative aspect-16/10 xl:aspect-auto xl:h-[650px] no-underline">
+                                <img 
+                                    src={featuredArticle.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=1200'} 
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+                                    alt={featuredArticle.title}
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-bg-primary via-bg-primary/40 to-transparent flex flex-col justify-end p-8 md:p-16 space-y-6">
+                                    <div className="flex items-center gap-4">
+                                        <span className="bg-primary text-white px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl">
+                                            {featuredArticle.category || 'Featured'}
+                                        </span>
+                                        <span className="bg-white/10 backdrop-blur-md text-text-primary px-3 py-1 rounded-lg text-[10px] font-black uppercase border border-white/20 flex items-center gap-1.5">
+                                            <Shield size={12} className="text-primary" /> {featuredArticle.aiScore}% Trusted
                                         </span>
                                     </div>
-                                </div>
-                                <div className="space-y-6">
-                                    <h1 className="text-5xl md:text-7xl font-black leading-[0.95] tracking-tighter text-black group-hover:text-primary transition-colors">
-                                        {articles[0].title}
-                                    </h1>
-                                    <p className="text-xl text-gray-600 font-bold leading-relaxed line-clamp-3 max-w-4xl">
-                                        {(articles[0].content || articles[0].text)?.replace(/<[^>]*>/g, '') || ''}
+                                    <h2 className="text-4xl md:text-6xl font-black text-text-primary tracking-tighter leading-[0.9] max-w-3xl group-hover:text-primary transition-colors">
+                                        {featuredArticle.title}
+                                    </h2>
+                                    <p className="text-lg md:text-xl text-text-secondary font-bold line-clamp-2 max-w-2xl leading-relaxed">
+                                        {featuredArticle.content?.replace(/<[^>]*>/g, '').slice(0, 200)}...
                                     </p>
-                                    <div className="flex items-center gap-6">
-                                        <span className="bg-primary/5 text-primary-dark px-4 py-2 rounded-xl text-sm font-black uppercase flex items-center gap-2 border border-primary/10">
-                                            <Shield size={16} className="text-primary" /> AI TRUST SCORE: {articles[0].aiScore}%
-                                        </span>
-                                        <span className="text-gray-400 font-black text-sm uppercase tracking-widest">{new Date(articles[0].createdAt).toLocaleDateString()}</span>
+                                    <div className="flex items-center gap-4 pt-4">
+                                        <div className="w-12 h-12 rounded-2xl bg-text-primary text-bg-primary flex items-center justify-center font-black text-xl shadow-xl">
+                                            {featuredArticle.authorName?.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-black text-text-primary uppercase tracking-tight">By {featuredArticle.authorName}</p>
+                                            <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">Lead Intelligence Asset</p>
+                                        </div>
                                     </div>
                                 </div>
                             </Link>
-                        )}
+                        </div>
+                    )}
 
-                        {/* Secondary Grid (Below Hero) */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                            {articles.slice(1, 3).map((article) => (
-                                <Link key={article.$id} to={`/article/${article.$id}`} className="group block space-y-6">
-                                    <div className="aspect-video rounded-3xl overflow-hidden border-2 border-bg-tertiary shadow-lg">
-                                        <img src={article.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-all" alt="" />
-                                    </div>
-                                    <div className="space-y-3">
-                                        <span className="text-xs font-black text-primary uppercase tracking-widest">{article.category}</span>
-                                        <h2 className="text-2xl font-black leading-tight group-hover:text-primary transition-all">
-                                            {article.title}
-                                        </h2>
-                                        <p className="text-sm text-gray-500 font-bold line-clamp-2">
-                                            {(article.content || article.text)?.replace(/<[^>]*>/g, '') || ''}
-                                        </p>
-                                    </div>
-                                </Link>
-                            ))}
+                    {/* Intelligence Sidebar */}
+                    <div className="xl:col-span-4 space-y-12">
+                        <div className="flex items-center justify-between border-b-4 border-primary pb-4">
+                            <h3 className="text-2xl font-black tracking-tighter text-text-primary uppercase flex items-center gap-3">
+                                <TrendingUp className="text-primary" /> Intelligence Feed
+                            </h3>
+                            <Link to="/all" className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] hover:text-primary transition-colors no-underline">
+                                Full Index
+                            </Link>
                         </div>
-                    </div>
-                    <div className="lg:col-span-4 space-y-10">
-                        <div className="flex items-center gap-4 mb-8">
-                            <TrendingUp className="text-primary" size={24} />
-                            <h3 className="text-2xl font-black uppercase tracking-tighter">Trending Verified Stories</h3>
-                        </div>
-                        <div className="space-y-8">
+                        <div className="space-y-10">
                             {sideArticles.map((article, idx) => (
-                                <Link key={article.$id} to={`/article/${article.$id}`} className="flex gap-6 group">
-                                    <div className="text-4xl font-black text-gray-100 group-hover:text-primary transition-colors">
-                                        0{idx + 1}
-                                    </div>
-                                    <div className="space-y-2 border-b border-gray-100 pb-6 flex-1">
-                                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">
-                                            {article.category}
-                                        </span>
-                                        <h4 className="text-lg font-black leading-snug group-hover:underline">
+                                <Link key={article.$id} to={`/article/${article.$id}`} className="group flex gap-6 items-start no-underline">
+                                    <span className="text-5xl font-black text-bg-tertiary transition-colors group-hover:text-primary/20">{idx + 2}</span>
+                                    <div className="space-y-2">
+                                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">{article.category}</span>
+                                        <h4 className="text-xl font-black text-text-primary leading-tight group-hover:text-primary transition-colors line-clamp-2">
                                             {article.title}
                                         </h4>
-                                        <p className="text-xs text-gray-400 font-bold">
-                                            AI Verdict: <span className="text-primary-dark">VERIFIED HIGH ACCURACY</span>
-                                        </p>
+                                        <div className="flex items-center gap-3 text-[10px] font-bold text-text-secondary uppercase tracking-widest">
+                                            <Clock size={12} /> {new Date(article.createdAt).toLocaleDateString()}
+                                        </div>
                                     </div>
                                 </Link>
                             ))}
                         </div>
-                        <div className="bg-black text-white p-8 rounded-4xl relative overflow-hidden shadow-2xl">
-                            <Shield className="absolute -bottom-10 -right-10 text-white/10" size={160} />
-                            <h4 className="text-xl font-black mb-4 relative z-10">Fact-Check Any Claim</h4>
-                            <p className="text-sm font-bold text-gray-400 mb-6 relative z-10">Paste any article or claim and our AI will analyze its veracity in seconds.</p>
-                            <Link to="/check" className="bg-primary text-white px-6 py-3 rounded-xl font-black text-xs inline-flex items-center gap-2 hover:scale-105 transition-all relative z-10">
-                                Launch Tool <ChevronRight size={14} />
-                            </Link>
+                        
+                        {/* Premium CTA Card */}
+                        <div className="bg-primary p-10 rounded-4xl shadow-2xl relative overflow-hidden group">
+                            <Sparkles className="absolute -bottom-4 -right-4 text-white/20 w-32 h-32 rotate-12 transition-transform group-hover:scale-125" />
+                            <div className="relative z-10 space-y-6">
+                                <h4 className="text-2xl font-black text-white leading-none tracking-tighter italic">"Truth is the only currency that matters."</h4>
+                                <p className="text-white/80 font-bold text-sm tracking-tight leading-relaxed">
+                                    Deploy our neural assessment tools to verify the integrity of any information asset in real-time.
+                                </p>
+                                <Link to="/fact-check" className="inline-flex items-center gap-2 bg-text-primary text-bg-primary px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all no-underline">
+                                    Fact Check Lab <ArrowRight size={16} />
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </section>
 
-                <hr className="border-gray-100" />
+                <hr className="border-bg-tertiary" />
 
                 {/* Sub Grid Section */}
-                <section>
-                    <div className="flex justify-between items-center mb-12">
-                        <h3 className="text-3xl font-black tracking-tighter">Global Verifications</h3>
-                        <Link to="/all" className="text-sm font-black uppercase text-primary flex items-center gap-1 hover:translate-x-1 transition-all">
-                            View all articles <ChevronRight size={16} />
+                <section className="space-y-12">
+                    <div className="flex justify-between items-center">
+                        <h3 className="text-3xl font-black tracking-tighter text-text-primary">Global Index</h3>
+                        <Link to="/all" className="text-sm font-black uppercase text-primary flex items-center gap-1 hover:translate-x-1 transition-all no-underline">
+                            View everything <ChevronRight size={16} />
                         </Link>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
                         {bottomArticles.map(article => (
-                            <Link key={article.$id} to={`/article/${article.$id}`} className="group flex flex-col bg-white rounded-4xl border-2 border-bg-tertiary overflow-hidden shadow-lg hover:shadow-2xl transition-all h-full">
+                            <Link key={article.$id} to={`/article/${article.$id}`} className="group flex flex-col bg-bg-secondary rounded-4xl border-2 border-bg-tertiary overflow-hidden shadow-lg hover:shadow-2xl transition-all h-full no-underline text-text-primary">
                                 <div className="aspect-16/10 overflow-hidden relative">
                                     <img 
                                         src={article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=800'} 
@@ -318,24 +251,24 @@ const Home = () => {
                                         alt=""
                                     />
                                     <div className="absolute top-4 left-4">
-                                        <span className="bg-white/90 backdrop-blur-md text-primary-dark px-3 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-md flex items-center gap-1.5">
-                                            <Shield size={12} className="text-green-600" /> {article.aiScore}% TRUST
+                                        <span className="bg-bg-primary/90 backdrop-blur-md text-text-primary px-3 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-md flex items-center gap-1.5 border border-bg-tertiary">
+                                            <Shield size={12} className="text-primary" /> {article.aiScore}% TRUST
                                         </span>
                                     </div>
                                 </div>
                                 <div className="p-8 flex flex-col flex-1">
                                     <div className="flex justify-between items-center mb-4">
                                         <span className="text-xs font-black text-primary uppercase tracking-widest">{article.category}</span>
-                                        <span className="text-xs font-bold text-gray-400">{new Date(article.createdAt).toLocaleDateString()}</span>
+                                        <span className="text-xs font-bold text-text-secondary">{new Date(article.createdAt).toLocaleDateString()}</span>
                                     </div>
-                                    <h4 className="text-2xl font-black leading-tight group-hover:text-primary transition-all mb-4">
+                                    <h4 className="text-2xl font-black leading-tight group-hover:text-primary transition-all mb-4 line-clamp-2">
                                         {article.title}
                                     </h4>
-                                    <p className="text-sm text-gray-500 font-bold line-clamp-3 mb-8 flex-1">
-                                        {article.content?.replace(/<[^>]*>/g, '') || ''}
+                                    <p className="text-sm text-text-secondary font-bold line-clamp-3 mb-8 flex-1">
+                                        {(article.content || article.text)?.replace(/<[^>]*>/g, '') || ''}
                                     </p>
-                                    <div className="flex items-center justify-between pt-6 border-t border-gray-100">
-                                        <div className="flex items-center gap-2 text-gray-400 font-black text-[10px] uppercase tracking-widest">
+                                    <div className="flex items-center justify-between pt-6 border-t border-bg-tertiary">
+                                        <div className="flex items-center gap-2 text-text-secondary font-black text-[10px] uppercase tracking-widest">
                                             <Clock size={12} /> 4 min read
                                         </div>
                                         <div className="text-primary font-black text-xs uppercase tracking-widest flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-xl">
@@ -349,27 +282,7 @@ const Home = () => {
                 </section>
             </main>
 
-            <footer className="bg-gray-50 border-t-2 border-bg-tertiary pt-20 pb-10 px-[5%] text-center">
-                <div className="max-w-7xl mx-auto space-y-12">
-                    <div className="flex flex-col items-center gap-6">
-                        <Link to="/" className="text-4xl font-black tracking-tighter">
-                            NEWS<span className="text-primary">GUARD</span>
-                        </Link>
-                        <p className="text-gray-400 font-bold max-w-xl text-lg">
-                            Pioneering the future of journalism with AI-driven authentication and real-time fact calibration.
-                        </p>
-                    </div>
-                    <div className="flex justify-center gap-12 font-black uppercase text-xs tracking-widest text-gray-500">
-                        <Link to="/" className="hover:text-primary">Home</Link>
-                        <Link to="/about" className="hover:text-primary">About</Link>
-                        <Link to="/api" className="hover:text-primary">API</Link>
-                        <Link to="/contact" className="hover:text-primary">Contact</Link>
-                    </div>
-                    <div className="pt-10 border-t border-gray-200 text-[10px] font-black uppercase text-gray-300 tracking-[0.2em]">
-                        &copy; 2026 NewsGuard AI Systems • Verified Integrity Protocol
-                    </div>
-                </div>
-            </footer>
+            <Footer />
 
             <style>{`
                 @keyframes marquee {
