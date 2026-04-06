@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -32,34 +33,36 @@ const Unauthorized = () => {
 
 function App() {
     return (
-        <AuthProvider>
-            <NotificationProvider>
-                <Router>
-                    <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/check" element={<FactCheck />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Register />} />
-                        <Route path="/forgot-password" element={<ForgotPassword />} />
-                        <Route path="/reset-password" element={<ResetPassword />} />
-                        <Route path="/verify-email" element={<VerifyEmail />} />
-                        <Route path="/article/:id" element={<ArticleDetail />} />
-                        <Route path="/all" element={<CategoryPage />} />
-                        <Route path="/:category" element={<CategoryPage />} />
-                        <Route path="/unauthorized" element={<Unauthorized />} />
+        <ThemeProvider>
+            <AuthProvider>
+                <NotificationProvider>
+                    <Router>
+                        <Routes>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/check" element={<FactCheck />} />
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/register" element={<Register />} />
+                            <Route path="/forgot-password" element={<ForgotPassword />} />
+                            <Route path="/reset-password" element={<ResetPassword />} />
+                            <Route path="/verify-email" element={<VerifyEmail />} />
+                            <Route path="/article/:id" element={<ArticleDetail />} />
+                            <Route path="/all" element={<CategoryPage />} />
+                            <Route path="/:category" element={<CategoryPage />} />
+                            <Route path="/unauthorized" element={<Unauthorized />} />
 
-                        <Route
-                            path="/dashboard/*"
-                            element={
-                                <ProtectedRoute allowedRoles={['WRITER', 'EDITOR', 'ADMIN']}>
-                                    <Dashboard />
-                                </ProtectedRoute>
-                            }
-                        />
-                    </Routes>
-                </Router>
-            </NotificationProvider>
-        </AuthProvider>
+                            <Route
+                                path="/dashboard/*"
+                                element={
+                                    <ProtectedRoute allowedRoles={['WRITER', 'EDITOR', 'ADMIN']}>
+                                        <Dashboard />
+                                    </ProtectedRoute>
+                                }
+                            />
+                        </Routes>
+                    </Router>
+                </NotificationProvider>
+            </AuthProvider>
+        </ThemeProvider>
     );
 }
 
