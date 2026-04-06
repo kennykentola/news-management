@@ -47,7 +47,7 @@ function App() {
                             <Route path="/verify-email" element={<VerifyEmail />} />
                             <Route path="/article/:id" element={<ArticleDetail />} />
                             <Route path="/all" element={<CategoryPage />} />
-                            <Route path="/:category" element={<CategoryPage />} />
+                            <Route path="/category/:category" element={<CategoryPage />} />
                             <Route path="/unauthorized" element={<Unauthorized />} />
 
                             <Route

@@ -17,9 +17,9 @@ export const storage = new Storage(client);
 // Environment-driven Resource Configuration (Using Verified Human-Readable IDs)
 export const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID || 'main';
 export const COLLECTION_ID_ARTICLES = import.meta.env.VITE_APPWRITE_COLLECTION_ID_ARTICLES || 'articles';
-export const COMMENTS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID_COMMENTS || 'comments';
 export const COLLECTION_ID_USERS_METADATA = import.meta.env.VITE_APPWRITE_COLLECTION_ID_USERS_METADATA || 'users_metadata';
-export const BUCKET_ID_IMAGES = import.meta.env.VITE_APPWRITE_BUCKET_ID || 'article_images';
+export const COMMENTS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID_COMMENTS || 'comments';
 export const NOTIFICATIONS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID_NOTIFICATIONS || 'notifications';
+export const BUCKET_ID = import.meta.env.VITE_APPWRITE_BUCKET_ID || 'article_images';
 
 export { client };

@@ -4,31 +4,43 @@
   --font-body: Inter, system-ui, -apple-system, sans-serif;
   --font-heading: Outfit, sans-serif;
 
-  /* Refined WhatsApp-inspired Theme Colors for Maximum Contrast */
+  /* Restored WhatsApp-inspired Palette based on Verified Genome */
   --color-primary: #25D366;
   --color-primary-dark: #075E54;
   --color-bg-primary: #ffffff;
-  --color-bg-secondary: #ffffff;
-  --color-bg-tertiary: #d1d5db; /* Darker gray for better contrast on borders */
-  --color-text-primary: #000000; /* Pure black text */
-  --color-text-secondary: #374151; /* Dark gray for secondary text */
+  --color-bg-secondary: #f9fafb;
+  --color-bg-tertiary: #e5e7eb;
+  --color-text-primary: #000000;
+  --color-text-secondary: #4b5563;
   --color-accent: #00a884;
   --color-success: #25D366;
   --color-danger: #ef4444;
   --color-warning: #f59e0b;
   
-  --color-sidebar-bg: #e7ffed; /* Aqua/Light Green for sidebar base */
-  
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
+  --radius-4xl: 32px;
 }
 
+/* Base Document Configuration */
 :root {
   color-scheme: light;
-  --sidebar-gradient: linear-gradient(180deg, #e7ffed 0%, #ffffff 100%);
+  --sidebar-gradient: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
   --shadow-subtle: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+}
+
+/* High-Fidelity 'Dark Ops' Manuscript (Neural Palette) */
+.dark {
+  color-scheme: dark;
+  --color-bg-primary: #040807; /* Master Neural Black */
+  --color-bg-secondary: #0a0f0d; /* Surface Black */
+  --color-bg-tertiary: #1a2420; /* Border Neutral */
+  --color-text-primary: #f3f4f6; /* High Contrast Ash */
+  --color-text-secondary: #9ca3af; /* Secondary Slate */
+  --color-primary: #25D366; /* Preserved WhatsApp Green Asset */
+  --sidebar-gradient: linear-gradient(180deg, #0a0f0d 0%, #040807 100%);
 }
 
 body {
@@ -36,19 +48,12 @@ body {
   color: var(--color-text-primary);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 @layer utilities {
-  .gradient-text {
-    background: linear-gradient(90deg, #000000 0%, #25D366 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    display: inline-block;
-  }
-
   .whatsapp-hero-gradient {
-    background: linear-gradient(180deg, #e7ffed 0%, #ffffff 100%);
+    background: var(--sidebar-gradient);
   }
 
   .text-shadow-subtle {
@@ -57,54 +62,44 @@ body {
 }
 
 @layer components {
+  /* High-Fidelity UI Fragments */
   .glass-panel {
-    background-color: #ffffff;
+    background-color: var(--color-bg-secondary);
     border: 1px solid var(--color-bg-tertiary);
     box-shadow: var(--shadow-subtle);
   }
   
-  .sidebar-gradient {
-     background: var(--sidebar-gradient);
-  }
-
-  /* Improved contrast for inputs */
+  /* Restored Input Fidelity */
   .input-field {
-    background-color: #ffffff;
+    background-color: var(--color-bg-secondary);
     border: 1px solid var(--color-bg-tertiary);
     color: var(--color-text-primary);
     padding: 0.75rem;
     border-radius: var(--radius-md);
     outline: none;
-    transition: all 0.2s;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    transition: all 0.2s ease;
   }
   
   .input-field:focus {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
+    box-shadow: 0 0 0 2px rgba(37, 211, 102, 0.2);
   }
 
-  /* Rich Text Editor Overrides */
+  /* Rich Text Editor Overrides (MS Integrity) */
   .ql-container.ql-snow {
-    border: 2px solid var(--color-bg-tertiary) !important;
+    border: 1px solid var(--color-bg-tertiary) !important;
     border-top: none !important;
-    border-bottom-left-radius: var(--radius-lg);
-    border-bottom-right-radius: var(--radius-lg);
-    font-family: var(--font-body) !important;
-    font-size: 1rem !important;
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary) !important;
   }
 
   .ql-toolbar.ql-snow {
-    border: 2px solid var(--color-bg-tertiary) !important;
-    border-top-left-radius: var(--radius-lg);
-    border-top-right-radius: var(--radius-lg);
-    background: #f9fafb;
-    padding: 0.75rem !important;
+    border: 1px solid var(--color-bg-tertiary) !important;
+    background: var(--color-bg-secondary);
   }
 
   .ql-editor {
     min-height: 250px;
-    color: #000000 !important;
-    line-height: 1.6 !important;
+    font-size: 1rem !important;
   }
 }
