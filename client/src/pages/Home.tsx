@@ -159,7 +159,7 @@ const Home = () => {
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
                                     alt={featuredArticle.title}
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-bg-primary via-bg-primary/40 to-transparent flex flex-col justify-end p-8 md:p-16 space-y-6">
+                                <div className="absolute inset-0 bg-linear-to-t from-bg-primary via-bg-primary/40 to-transparent flex flex-col justify-end p-8 md:p-16 space-y-6">
                                     <div className="flex items-center gap-4">
                                         <span className="bg-primary text-white px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl">
                                             {featuredArticle.category || 'Featured'}
