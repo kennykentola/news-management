@@ -21,5 +21,6 @@ export const COLLECTION_ID_USERS_METADATA = import.meta.env.VITE_APPWRITE_COLLEC
 export const COMMENTS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID_COMMENTS || 'comments';
 export const NOTIFICATIONS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID_NOTIFICATIONS || 'notifications';
 export const BUCKET_ID = import.meta.env.VITE_APPWRITE_BUCKET_ID || 'article_images';
+export const BUCKET_ID_IMAGES = BUCKET_ID; // Restore legacy export for component compatibility
 
 export { client };
