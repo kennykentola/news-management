@@ -13,6 +13,7 @@ import Home from './pages/Home';
 import ArticleDetail from './pages/ArticleDetail';
 import FactCheck from './pages/FactCheck';
 import CategoryPage from './pages/CategoryPage';
+import { Toaster } from 'react-hot-toast';
 
 const Unauthorized = () => {
     const { logout } = useAuth();
@@ -34,6 +35,7 @@ const Unauthorized = () => {
 function App() {
     return (
         <ThemeProvider>
+            <Toaster position="bottom-right" reverseOrder={false} />
             <AuthProvider>
                 <NotificationProvider>
                     <Router>

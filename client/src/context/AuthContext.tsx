@@ -10,6 +10,7 @@ interface UserData {
     name: string;
     email: string;
     role: Role;
+    avatarId?: string;
 }
 
 interface AuthContextType {
@@ -24,6 +25,9 @@ interface AuthContextType {
     createVerification: () => Promise<void>;
     updateVerification: (userId: string, secret: string) => Promise<void>;
     loginWithGoogle: () => Promise<void>;
+    updateName: (name: string) => Promise<void>;
+    updatePassword: (password: string, oldPassword?: string) => Promise<void>;
+    updateAvatar: (avatarId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -98,7 +102,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 $id: session.$id,
                 name: session.name,
                 email: session.email,
-                role: role
+                role: role,
+                avatarId: session.prefs?.avatarId
             });
 
         } catch (e) {
@@ -206,6 +211,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
+    const updateName = async (name: string) => {
+        await account.updateName(name);
+        await checkAuth();
+    };
+
+    const updatePassword = async (password: string, oldPassword?: string) => {
+        await account.updatePassword(password, oldPassword);
+    };
+
+    const updateAvatar = async (avatarId: string) => {
+        const session = await account.get();
+        await account.updatePrefs({ ...session.prefs, avatarId });
+        await checkAuth();
+    };
+
     return (
         <AuthContext.Provider value={{
             user,
@@ -218,7 +238,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             completePasswordRecovery,
             createVerification,
             updateVerification,
-            loginWithGoogle
+            loginWithGoogle,
+            updateName,
+            updatePassword,
+            updateAvatar
         }}>
             {children}
         </AuthContext.Provider>
