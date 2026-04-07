@@ -46,7 +46,7 @@ const SidebarItem = ({ to, label, icon, active, onClick }: SidebarItemProps) => 
         onClick={onClick}
         className={`flex items-center px-4 py-3 rounded-lg mb-2 transition-all duration-200 border-l-4 ${active
             ? 'bg-primary text-white border-primary shadow-md font-bold'
-            : 'text-black hover:bg-black/5 border-transparent font-semibold shadow-sm'
+            : 'text-text-primary hover:bg-bg-tertiary border-transparent font-semibold shadow-sm'
             }`}
     >
         <span className="mr-3">{icon}</span>

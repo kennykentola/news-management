@@ -87,7 +87,7 @@ const Home = () => {
                     <Link to="/" className="text-2xl font-black tracking-tighter hover:scale-105 transition-transform flex items-center gap-2 text-text-primary no-underline">
                         <button 
                             onClick={(e) => { e.preventDefault(); setIsMenuOpen(!isMenuOpen); }}
-                            className="md:hidden p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
+                            className="md:hidden p-1.5 hover:bg-bg-tertiary rounded-lg transition-colors"
                         >
                             {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
                         </button>
@@ -201,7 +201,7 @@ const Home = () => {
                         <div className="space-y-10">
                             {sideArticles.map((article, idx) => (
                                 <Link key={article.$id} to={`/article/${article.$id}`} className="group flex gap-6 items-start no-underline">
-                                    <span className="text-5xl font-black text-bg-tertiary transition-colors group-hover:text-primary/20">{idx + 2}</span>
+                                    <span className="text-5xl font-black text-text-secondary/20 transition-colors group-hover:text-primary/20">{idx + 2}</span>
                                     <div className="space-y-2">
                                         <span className="text-[10px] font-black text-primary uppercase tracking-widest">{article.category}</span>
                                         <h4 className="text-xl font-black text-text-primary leading-tight group-hover:text-primary transition-colors line-clamp-2">

@@ -65,7 +65,7 @@ const CategoryPage = () => {
                     <Link to="/" className="text-2xl font-black tracking-tighter hover:scale-105 transition-transform flex items-center gap-2 text-text-primary no-underline">
                         <button 
                             onClick={(e) => { e.preventDefault(); setIsMenuOpen(!isMenuOpen); }}
-                            className="md:hidden p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
+                            className="md:hidden p-1.5 hover:bg-bg-tertiary rounded-lg transition-colors"
                         >
                             {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
                         </button>
