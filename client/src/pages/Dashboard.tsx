@@ -67,17 +67,17 @@ const Dashboard = () => {
     const closeSidebar = () => setIsSidebarOpen(false);
 
     return (
-        <div className="flex min-h-screen bg-white relative text-black">
+        <div className="flex min-h-screen bg-bg-primary relative text-text-primary">
             {/* Mobile Header / Hamburger */}
-            <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b-2 border-bg-tertiary flex items-center justify-between px-4 z-40 shadow-sm">
+            <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-bg-primary border-b-2 border-bg-tertiary flex items-center justify-between px-4 z-40 shadow-sm">
                 <div className="flex items-center">
                     <button
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="p-2 text-black hover:bg-gray-100 rounded-md transition-colors"
+                        className="p-2 text-text-primary hover:bg-bg-secondary rounded-md transition-colors"
                     >
                         {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
-                    <span className="ml-4 font-extrabold text-xl text-primary-dark tracking-tight">NewsGuard</span>
+                    <span className="ml-4 font-extrabold text-xl text-primary tracking-tight">NewsGuard</span>
                 </div>
                 <div className="flex items-center gap-4">
                     <NotificationCenter />
@@ -99,12 +99,19 @@ const Dashboard = () => {
                 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
             `}>
                 <div className="p-6 border-b-2 border-bg-tertiary/50">
-                    <h2 className="text-2xl font-black text-black tracking-tighter">NewsGuard</h2>
-                    <div className="mt-2 text-xs text-gray-700 flex items-center">
-                        <span className="truncate max-w-[120px] font-bold uppercase">{user?.name}</span>
-                        <span className="ml-2 px-2 py-0.5 bg-primary text-white rounded text-[10px] font-black uppercase tracking-widest shadow-sm">
-                            {user?.role}
-                        </span>
+                    <Link to="/" className="text-2xl font-black text-text-primary tracking-tighter no-underline hover:text-primary transition-colors flex items-center gap-2 mb-6">
+                         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">NG</div> NewsGuard
+                    </Link>
+                    <div className="flex items-center gap-3 p-4 bg-bg-secondary rounded-2xl border-2 border-bg-tertiary shadow-sm">
+                        <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center font-black text-xl shadow-lg shadow-primary/20">
+                            {user?.name?.charAt(0)}
+                        </div>
+                        <div className="overflow-hidden">
+                            <p className="text-xs font-black text-text-primary uppercase tracking-tight truncate">{user?.name}</p>
+                            <span className="px-2 py-0.5 bg-primary/10 text-primary-dark dark:text-primary rounded text-[10px] font-black uppercase tracking-widest border border-primary/20">
+                                {user?.role}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -199,10 +206,10 @@ const Dashboard = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-x-hidden bg-white pt-16 md:pt-0 min-h-screen">
+            <main className="flex-1 overflow-x-hidden bg-bg-primary pt-16 md:pt-0 min-h-screen">
                 {/* Desktop Header */}
-                <header className="hidden md:flex h-20 bg-white/90 backdrop-blur-md border-b-2 border-bg-tertiary/50 items-center justify-between px-10 sticky top-0 z-30 shadow-sm">
-                    <h2 className="text-2xl font-black text-black capitalize tracking-tight">{location.pathname.split('/').pop() || 'Dashboard'}</h2>
+                <header className="hidden md:flex h-20 bg-bg-primary/90 backdrop-blur-md border-b-2 border-bg-tertiary/50 items-center justify-between px-10 sticky top-0 z-30 shadow-sm">
+                    <h2 className="text-2xl font-black text-text-primary capitalize tracking-tight">{location.pathname.split('/').pop() || 'Dashboard'}</h2>
                     <div className="flex items-center gap-6">
                         <NotificationCenter />
                     </div>

@@ -59,14 +59,14 @@ const ReviewNews = () => {
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h2 className="text-4xl font-black text-black tracking-tighter">Editorial Review</h2>
-                    <p className="text-gray-500 font-bold mt-2">Verify and validate articles before they go live.</p>
+                    <h2 className="text-4xl font-black text-text-primary tracking-tighter">Editorial Review</h2>
+                    <p className="text-text-secondary font-bold mt-2">Verify and validate articles before they go live.</p>
                 </div>
-                <div className="flex items-center gap-4 bg-white p-2 rounded-2xl border-2 border-bg-tertiary shadow-sm focus-within:border-primary transition-all">
-                    <Search className="text-gray-400 ml-2" size={20} />
+                <div className="flex items-center gap-4 bg-bg-secondary p-2 rounded-2xl border-2 border-bg-tertiary shadow-sm focus-within:border-primary transition-all">
+                    <Search className="text-text-secondary/50 ml-2" size={20} />
                     <input 
                         placeholder="Search queue..." 
-                        className="bg-transparent border-none outline-none font-bold text-black p-2"
+                        className="bg-transparent border-none outline-none font-bold text-text-primary p-2"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -77,11 +77,11 @@ const ReviewNews = () => {
             </div>
 
             {filteredArticles.length === 0 ? (
-                <div className="bg-white p-20 rounded-4xl border-2 border-dashed border-bg-tertiary text-center">
-                    <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <CheckCircle className="text-gray-300" size={40} />
+                <div className="bg-bg-secondary p-20 rounded-4xl border-2 border-dashed border-bg-tertiary text-center">
+                    <div className="w-20 h-20 bg-bg-primary rounded-full flex items-center justify-center mx-auto mb-6">
+                        <CheckCircle className="text-text-secondary/30" size={40} />
                     </div>
-                    <p className="text-gray-400 font-black text-xl tracking-tight">Queue is empty. Great job!</p>
+                    <p className="text-text-secondary/50 font-black text-xl tracking-tight uppercase">Queue is empty. Great job!</p>
                 </div>
             ) : (
                 <div className="grid gap-8">
@@ -98,21 +98,21 @@ const ReviewNews = () => {
                                             By {article.authorName} • {new Date(article.createdAt).toLocaleDateString()}
                                         </div>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <div className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 border shadow-sm
-                                            ${article.aiClassification === 'FAKE' ? 'bg-danger/10 text-danger border-danger/20' : 
-                                              article.aiClassification === 'MISLEADING' ? 'bg-amber-100 text-amber-700 border-amber-200' :
-                                              article.aiClassification === 'SATIRE' ? 'bg-purple-100 text-purple-700 border-purple-200' :
-                                              'bg-primary/10 text-primary-dark border-primary/20'}
-                                        `}>
-                                            <ShieldCheck size={14} />
-                                            AI: {article.aiClassification || article.aiLabel}
+                                        <div className="flex flex-wrap gap-2 lg:flex-nowrap">
+                                            <div className={`px-4 py-2 rounded-xl text-[10px] font-black flex items-center gap-2 border shadow-sm whitespace-nowrap
+                                                ${article.aiClassification === 'FAKE' ? 'bg-danger/10 text-danger border-danger/20' : 
+                                                  article.aiClassification === 'MISLEADING' ? 'bg-amber-100/50 text-amber-700 border-amber-200' :
+                                                  article.aiClassification === 'SATIRE' ? 'bg-purple-100/50 text-purple-700 border-purple-200' :
+                                                  'bg-primary/10 text-primary-dark dark:text-primary border-primary/20'}
+                                            `}>
+                                                <ShieldCheck size={14} />
+                                                AI: {article.aiClassification || article.aiLabel}
+                                            </div>
+                                            <div className="px-4 py-2 rounded-xl bg-text-primary text-bg-primary text-[10px] font-black flex items-center gap-2 shadow-sm border border-text-primary whitespace-nowrap">
+                                                <ShieldCheck size={14} className="text-primary" />
+                                                Trust: {Math.round(article.aiCredibility || 0)}%
+                                            </div>
                                         </div>
-                                        <div className="px-4 py-2 rounded-xl bg-black text-white text-xs font-black flex items-center gap-2 shadow-sm border border-black">
-                                            <ShieldCheck size={14} className="text-primary" />
-                                            Credibility: {Math.round(article.aiCredibility || 0)}%
-                                        </div>
-                                    </div>
                                 </div>
 
                                 {article.status === 'FLAGGED' && (
@@ -135,27 +135,27 @@ const ReviewNews = () => {
                                     </div>
                                 )}
 
-                                <p className="text-gray-600 font-medium leading-relaxed">
+                                <p className="text-text-secondary font-medium leading-relaxed">
                                     {(article.content || article.text).substring(0, 250).replace(/<[^>]*>/g, '')}...
                                 </p>
 
-                                <div className="flex flex-wrap gap-4 pt-4 border-t border-gray-50">
+                                <div className="flex flex-wrap gap-4 pt-4 border-t border-bg-tertiary">
                                     <button
                                         onClick={() => handleDecision(article.$id, 'APPROVED')}
-                                        className="bg-primary text-white px-8 py-3 rounded-2xl font-black flex items-center gap-2 shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
+                                        className="bg-primary text-white px-8 py-3 rounded-2xl font-black flex items-center gap-2 shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all text-sm"
                                     >
-                                        <CheckCircle size={20} /> Approve & Send to Admin
+                                        <CheckCircle size={20} /> Approve Dispatch
                                     </button>
                                     <button
                                         onClick={() => {
                                             const feedback = prompt("Reason for rejection / Changes needed:");
                                             if (feedback !== null) handleDecision(article.$id, 'REJECTED', feedback);
                                         }}
-                                        className="bg-white text-danger px-8 py-3 rounded-2xl font-black flex items-center gap-2 border-2 border-danger/20 hover:bg-danger/5 transition-all"
+                                        className="bg-bg-secondary text-danger px-8 py-3 rounded-2xl font-black flex items-center gap-2 border-2 border-danger/20 hover:bg-danger/10 transition-all text-sm"
                                     >
                                         <XCircle size={20} /> Request Changes
                                     </button>
-                                    <Link to={`/article/${article.$id}`} className="ml-auto p-4 bg-gray-50 rounded-2xl text-black hover:bg-black hover:text-white transition-all shadow-sm">
+                                    <Link to={`/article/${article.$id}`} className="ml-auto p-4 bg-bg-secondary rounded-2xl text-text-primary hover:bg-text-primary hover:text-bg-primary transition-all shadow-sm border-2 border-bg-tertiary">
                                         <Eye size={20} />
                                     </Link>
                                 </div>

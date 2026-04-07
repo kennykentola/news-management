@@ -12,7 +12,6 @@ const AdminUsers = () => {
     const [error, setError] = useState<string | null>(null);
     const [isAddingUser, setIsAddingUser] = useState(false);
     const [newUser, setNewUser] = useState({ name: '', email: '', role: 'WRITER' });
-    const [repairing, setRepairing] = useState(false);
     
     const fetchUsers = async () => {
         setError(null);
@@ -28,23 +27,6 @@ const AdminUsers = () => {
             setUsers([]);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleForceSync = async () => {
-        setRepairing(true);
-        try {
-            // Force verify current admin metadata
-            const profile = await databases.listDocuments(DATABASE_ID, COLLECTION_ID_USERS_METADATA, [
-                Query.equal('email', 'admin@news.com') // We can't easily get the user from here, but we can try to "discover"
-            ]);
-            // Re-fetch everything
-            await fetchUsers();
-            alert("Sync complete. If the list is still empty, please ensure you have 'Any' Read permissions in Appwrite collection settings.");
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setRepairing(false);
         }
     };
 
@@ -100,21 +82,13 @@ const AdminUsers = () => {
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h2 className="text-4xl font-black text-black tracking-tighter">User Management</h2>
-                    <p className="text-gray-500 font-bold mt-2">Oversee contributors and system permissions.</p>
+                    <h2 className="text-4xl font-black text-text-primary tracking-tighter">User Management Hub</h2>
+                    <p className="text-text-secondary font-bold mt-2">Oversee contributors and system permissions.</p>
                 </div>
                 <div className="flex gap-4">
                     <button 
-                        onClick={handleForceSync}
-                        disabled={repairing}
-                        className="bg-black text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-xl hover:bg-gray-800 transition-all active:scale-95 disabled:opacity-50"
-                    >
-                        <RefreshCw size={20} className={repairing ? 'animate-spin' : ''} />
-                        Force Sync
-                    </button>
-                    <button 
                         onClick={() => setIsAddingUser(true)}
-                        className="bg-primary text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-xl shadow-primary/20 hover:scale-105 transition-all"
+                        className="bg-primary text-white px-8 py-3 rounded-2xl font-black flex items-center gap-2 shadow-xl shadow-primary/20 hover:scale-105 transition-all text-sm"
                     >
                         <UserPlus size={20} /> Pre-Register User
                     </button>
@@ -123,10 +97,10 @@ const AdminUsers = () => {
 
             {isAddingUser && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white w-full max-w-md rounded-[2rem] p-10 border-2 border-bg-tertiary shadow-2xl space-y-8 animate-in zoom-in duration-300">
+                    <div className="bg-bg-primary w-full max-w-md rounded-[2rem] p-10 border-2 border-bg-tertiary shadow-2xl space-y-8 animate-in zoom-in duration-300">
                         <div className="flex justify-between items-center">
-                            <h3 className="text-3xl font-black tracking-tighter">Invite Team Member</h3>
-                            <button onClick={() => setIsAddingUser(false)} className="text-gray-400 hover:text-black">
+                            <h3 className="text-3xl font-black text-text-primary tracking-tighter">Invite Team Member</h3>
+                            <button onClick={() => setIsAddingUser(false)} className="text-text-secondary hover:text-primary transition-colors">
                                 <X size={24} />
                             </button>
                         </div>
@@ -150,27 +124,27 @@ const AdminUsers = () => {
                             }
                         }} className="space-y-6">
                             <div>
-                                <label className="block text-xs font-black uppercase text-gray-400 mb-2">Full Name</label>
+                                <label className="block text-xs font-black uppercase text-text-secondary/50 mb-2">Full Name</label>
                                 <input 
                                     type="text" required
-                                    className="w-full p-4 rounded-xl border-2 border-bg-tertiary font-bold outline-none focus:border-primary"
+                                    className="w-full p-4 rounded-xl border-2 border-bg-tertiary bg-bg-secondary text-text-primary font-bold outline-none focus:border-primary transition-all"
                                     value={newUser.name}
                                     onChange={e => setNewUser({...newUser, name: e.target.value})}
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-black uppercase text-gray-400 mb-2">Email Address</label>
+                                <label className="block text-xs font-black uppercase text-text-secondary/50 mb-2">Email Address</label>
                                 <input 
                                     type="email" required
-                                    className="w-full p-4 rounded-xl border-2 border-bg-tertiary font-bold outline-none focus:border-primary"
+                                    className="w-full p-4 rounded-xl border-2 border-bg-tertiary bg-bg-secondary text-text-primary font-bold outline-none focus:border-primary transition-all"
                                     value={newUser.email}
                                     onChange={e => setNewUser({...newUser, email: e.target.value})}
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-black uppercase text-gray-400 mb-2">Assigned Role</label>
+                                <label className="block text-xs font-black uppercase text-text-secondary/50 mb-2">Assigned Role</label>
                                 <select 
-                                    className="w-full p-4 rounded-xl border-2 border-bg-tertiary font-bold outline-none cursor-pointer"
+                                    className="w-full p-4 rounded-xl border-2 border-bg-tertiary bg-bg-secondary text-text-primary font-bold outline-none cursor-pointer focus:border-primary"
                                     value={newUser.role}
                                     onChange={e => setNewUser({...newUser, role: e.target.value})}
                                 >
@@ -189,12 +163,12 @@ const AdminUsers = () => {
             )}
 
 
-            <div className="bg-white p-6 rounded-3xl border-2 border-bg-tertiary shadow-xl flex items-center gap-4 focus-within:border-primary transition-colors">
-                <Search className="text-gray-400" />
+            <div className="bg-bg-secondary p-6 rounded-3xl border-2 border-bg-tertiary shadow-xl flex items-center gap-4 focus-within:border-primary transition-colors">
+                <Search className="text-text-secondary/50" />
                 <input 
                     type="text" 
                     placeholder="Search users by name, role, or email..." 
-                    className="flex-1 bg-transparent border-none outline-none font-bold text-xl text-black placeholder:text-gray-300"
+                    className="flex-1 bg-transparent border-none outline-none font-bold text-xl text-text-primary placeholder:text-text-secondary/30"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -210,26 +184,26 @@ const AdminUsers = () => {
                 </div>
             )}
 
-            <div className="bg-white rounded-[2rem] border-2 border-bg-tertiary shadow-2xl overflow-x-auto">
+            <div className="bg-bg-secondary rounded-[2rem] border-2 border-bg-tertiary shadow-2xl overflow-x-auto">
                 <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
-                        <tr className="bg-gray-50/50 border-b-2 border-bg-tertiary">
-                            <th className="p-8 text-xs font-black text-gray-400 uppercase tracking-widest">User Profile</th>
-                            <th className="p-8 text-xs font-black text-gray-400 uppercase tracking-widest">System Role</th>
-                            <th className="p-8 text-xs font-black text-gray-400 uppercase tracking-widest">Joined On</th>
-                            <th className="p-8 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Control</th>
+                        <tr className="bg-bg-primary/50 border-b-2 border-bg-tertiary">
+                            <th className="p-8 text-xs font-black text-text-secondary uppercase tracking-widest">User Profile</th>
+                            <th className="p-8 text-xs font-black text-text-secondary uppercase tracking-widest">System Role</th>
+                            <th className="p-8 text-xs font-black text-text-secondary uppercase tracking-widest">Joined On</th>
+                            <th className="p-8 text-xs font-black text-text-secondary uppercase tracking-widest text-right">Control Hub</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredUsers.map(user => (
-                            <tr key={user.$id} className="border-b border-bg-tertiary hover:bg-gray-50 transition-colors">
+                            <tr key={user.$id} className="border-b border-bg-tertiary hover:bg-bg-primary transition-colors">
                                 <td className="p-8 flex items-center gap-4">
                                     <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white font-black text-2xl shadow-lg shrink-0">
                                         {user.name.charAt(0)}
                                     </div>
                                     <div>
-                                        <p className="font-black text-black text-xl tracking-tight">{user.name}</p>
-                                        <p className="text-sm font-bold text-gray-400">{user.email}</p>
+                                        <p className="font-black text-text-primary text-xl tracking-tight">{user.name}</p>
+                                        <p className="text-sm font-bold text-text-secondary/50">{user.email}</p>
                                     </div>
                                 </td>
                                 <td className="p-8">
@@ -249,12 +223,12 @@ const AdminUsers = () => {
                                         <option value="ADMIN">ADMIN</option>
                                     </select>
                                 </td>
-                                <td className="p-8 text-sm font-black text-gray-500">
+                                <td className="p-8 text-sm font-black text-text-secondary/50">
                                     {new Date(user.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                                 </td>
                                 <td className="p-8 text-right">
                                     <div className="flex justify-end gap-4">
-                                        <button className="p-3 text-black hover:bg-black hover:text-white rounded-2xl transition-all shadow-sm border border-bg-tertiary" title="Edit Permissions">
+                                        <button className="p-3 text-text-primary hover:bg-text-primary hover:text-bg-primary rounded-2xl transition-all shadow-sm border border-bg-tertiary" title="Edit Permissions">
                                             <Users size={20} />
                                         </button>
                                         <button 

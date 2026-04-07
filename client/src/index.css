@@ -56,6 +56,10 @@ body {
     background: var(--sidebar-gradient);
   }
 
+  .sidebar-gradient {
+    background: var(--sidebar-gradient);
+  }
+
   .text-shadow-subtle {
     text-shadow: 0 2px 4px rgba(0,0,0,0.05);
   }

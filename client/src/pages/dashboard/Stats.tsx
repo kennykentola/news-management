@@ -86,38 +86,38 @@ const Stats = () => {
         { name: 'Sun', checks: 3 },
     ];
 
-    if (loading) return <div className="text-black font-bold p-10 text-center animate-pulse">Loading statistics...</div>;
+    if (loading) return <div className="text-text-primary font-black uppercase tracking-widest p-20 text-center animate-pulse">Synchronizing metrics...</div>;
 
     return (
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 max-w-6xl mx-auto">
-            <h2 className="text-4xl font-black text-black mb-8 tracking-tight">Analytics Overview</h2>
+            <h2 className="text-4xl font-black text-text-primary mb-8 tracking-tighter">Intelligence Overview</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="bg-white p-8 rounded-2xl border-2 border-bg-tertiary shadow-xl hover:shadow-2xl transition-shadow duration-300">
-                    <h3 className="text-xs font-black text-gray-500 uppercase mb-3 tracking-widest">Total Articles Scanned</h3>
-                    <p className="text-5xl font-black text-black">{metrics.total}</p>
-                    <span className="text-[10px] text-primary-dark font-black uppercase tracking-widest mt-4 flex items-center gap-2">
+                <div className="bg-bg-secondary p-8 rounded-2xl border-2 border-bg-tertiary shadow-xl hover:shadow-2xl transition-all duration-300">
+                    <h3 className="text-xs font-black text-text-secondary uppercase mb-3 tracking-widest">Total Articles Scanned</h3>
+                    <p className="text-5xl font-black text-text-primary tracking-tighter">{metrics.total}</p>
+                    <span className="text-[10px] text-primary-dark dark:text-primary font-black uppercase tracking-widest mt-4 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-primary animate-ping"></span>
-                        Live Data Streaming
+                        Neural Analysis Active
                     </span>
                 </div>
-                <div className="bg-white p-8 rounded-2xl border-2 border-bg-tertiary shadow-xl hover:shadow-2xl transition-shadow duration-300">
-                    <h3 className="text-xs font-black text-gray-500 uppercase mb-3 tracking-widest">Fake Detected</h3>
-                    <p className="text-5xl font-black text-danger">{metrics.fake}</p>
+                <div className="bg-bg-secondary p-8 rounded-2xl border-2 border-bg-tertiary shadow-xl hover:shadow-2xl transition-all duration-300 border-l-4 border-l-danger">
+                    <h3 className="text-xs font-black text-text-secondary uppercase mb-3 tracking-widest">Fake Detected</h3>
+                    <p className="text-5xl font-black text-danger tracking-tighter">{metrics.fake}</p>
                     <span className="text-[10px] text-danger font-black uppercase tracking-widest mt-4 block opacity-80">High Volume Alert</span>
                 </div>
-                <div className="bg-white p-8 rounded-2xl border-2 border-bg-tertiary shadow-xl hover:shadow-2xl transition-shadow duration-300">
-                    <h3 className="text-xs font-black text-gray-500 uppercase mb-3 tracking-widest">AI Accuracy Index</h3>
-                    <p className="text-5xl font-black text-primary-dark">{metrics.accuracy.toFixed(1)}%</p>
-                    <span className="text-[10px] text-gray-600 font-black uppercase tracking-widest mt-4 block opacity-80">Based on Confidence</span>
+                <div className="bg-bg-secondary p-8 rounded-2xl border-2 border-bg-tertiary shadow-xl hover:shadow-2xl transition-all duration-300 border-l-4 border-l-primary">
+                    <h3 className="text-xs font-black text-text-secondary uppercase mb-3 tracking-widest">AI Trust Index</h3>
+                    <p className="text-5xl font-black text-text-primary tracking-tighter">{metrics.accuracy.toFixed(1)}%</p>
+                    <span className="text-[10px] text-text-secondary font-black uppercase tracking-widest mt-4 block opacity-80">Confidence Interval</span>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-white p-8 rounded-2xl border-2 border-bg-tertiary shadow-2xl h-[450px] flex flex-col">
-                    <h3 className="text-2xl font-black text-black mb-6 tracking-tight">Detection Outcomes</h3>
-                    <div className="flex-1 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
+                <div className="bg-bg-secondary p-8 rounded-2xl border-2 border-bg-tertiary shadow-2xl h-[450px] flex flex-col">
+                    <h3 className="text-2xl font-black text-text-primary mb-6 tracking-tighter">Detection Matrix</h3>
+                    <div className="flex-1 w-full min-h-0">
+                        <ResponsiveContainer width="99%" height="100%">
                             <PieChart>
                                 <Pie
                                     data={pieData}
@@ -128,39 +128,40 @@ const Stats = () => {
                                     fill="var(--color-primary)"
                                     paddingAngle={8}
                                     dataKey="value"
-                                    stroke="#ffffff"
-                                    strokeWidth={4}
+                                    stroke="transparent"
+                                    strokeWidth={0}
                                 >
                                     {pieData.map((_entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} className="focus:outline-none" />
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#ffffff', border: '2px solid var(--color-bg-tertiary)', borderRadius: '12px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', fontWeight: 800, color: '#000000' }}
-                                    itemStyle={{ color: '#000000' }}
+                                    contentStyle={{ backgroundColor: 'var(--color-bg-primary)', border: '2px solid var(--color-bg-tertiary)', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', fontWeight: 800, color: 'var(--color-text-primary)' }}
+                                    itemStyle={{ color: 'var(--color-text-primary)' }}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
-                    <div className="flex justify-center gap-8 mt-8 text-sm font-black text-gray-700 uppercase tracking-wider">
-                        <span className="flex items-center gap-2"><span className="w-4 h-4 bg-red-500 rounded-full shadow-sm"></span> Fake</span>
-                        <span className="flex items-center gap-2"><span className="w-4 h-4 bg-green-500 rounded-full shadow-sm"></span> Verified</span>
-                        <span className="flex items-center gap-2"><span className="w-4 h-4 bg-yellow-500 rounded-full shadow-sm"></span> Unsure</span>
+                    <div className="flex justify-center gap-8 mt-8 text-[10px] font-black text-text-secondary uppercase tracking-widest">
+                        <span className="flex items-center gap-2"><span className="w-3 h-3 bg-red-500 rounded-full"></span> Fake News</span>
+                        <span className="flex items-center gap-2"><span className="w-3 h-3 bg-green-500 rounded-full"></span> Verified</span>
+                        <span className="flex items-center gap-2"><span className="w-3 h-3 bg-yellow-500 rounded-full"></span> Unsure</span>
                     </div>
                 </div>
 
-                <div className="bg-white p-8 rounded-2xl border-2 border-bg-tertiary shadow-2xl h-[450px]">
-                    <h3 className="text-2xl font-black text-black mb-6 tracking-tight">Weekly Activity</h3>
-                    <div className="h-[320px]">
-                        <ResponsiveContainer width="100%" height="100%">
+                <div className="bg-bg-secondary p-8 rounded-2xl border-2 border-bg-tertiary shadow-2xl h-[450px] flex flex-col">
+                    <h3 className="text-2xl font-black text-text-primary mb-6 tracking-tighter">Weekly Activity Hub</h3>
+                    <div className="flex-1 w-full min-h-0">
+                        <ResponsiveContainer width="99%" height="100%">
                             <BarChart data={activityData}>
-                                <XAxis dataKey="name" stroke="#000000" fontSize={12} tickLine={false} axisLine={false} fontWeight={800} dy={10} />
-                                <YAxis stroke="#000000" fontSize={12} tickLine={false} axisLine={false} fontWeight={800} dx={-10} />
+                                <XAxis dataKey="name" stroke="var(--color-text-secondary)" fontSize={10} tickLine={false} axisLine={false} fontWeight={900} dy={10} />
+                                <YAxis stroke="var(--color-text-secondary)" fontSize={10} tickLine={false} axisLine={false} fontWeight={900} dx={-10} />
                                 <Tooltip
-                                    cursor={{ fill: '#f3f4f6' }}
-                                    contentStyle={{ backgroundColor: '#ffffff', border: '2px solid var(--color-bg-tertiary)', borderRadius: '12px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', fontWeight: 800 }}
+                                    cursor={{ fill: 'var(--color-bg-tertiary)', opacity: 0.3 }}
+                                    contentStyle={{ backgroundColor: 'var(--color-bg-primary)', border: '2px solid var(--color-bg-tertiary)', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', fontWeight: 800, color: 'var(--color-text-primary)' }}
+                                    itemStyle={{ color: 'var(--color-text-primary)' }}
                                 />
-                                <Bar dataKey="checks" fill="var(--color-primary)" radius={[8, 8, 0, 0]} />
+                                <Bar dataKey="checks" fill="var(--color-primary)" radius={[8, 8, 4, 4]} barSize={32} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
