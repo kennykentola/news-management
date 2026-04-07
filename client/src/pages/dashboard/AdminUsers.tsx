@@ -198,7 +198,7 @@ const AdminUsers = () => {
                         {filteredUsers.map(user => (
                             <tr key={user.$id} className="border-b border-bg-tertiary hover:bg-bg-primary transition-colors">
                                 <td className="p-8 flex items-center gap-4">
-                                    <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white font-black text-2xl shadow-lg shrink-0">
+                                    <div className="w-14 h-14 bg-linear-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white font-black text-2xl shadow-lg shrink-0">
                                         {user.name.charAt(0)}
                                     </div>
                                     <div>

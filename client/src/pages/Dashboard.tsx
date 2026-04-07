@@ -9,6 +9,7 @@ import PublishNews from './dashboard/PublishNews';
 
 import Overview from './dashboard/Overview';
 import Stats from './dashboard/Stats';
+import Profile from './dashboard/Profile';
 import AIControl from './dashboard/AIControl';
 import NotificationCenter from '../components/NotificationCenter';
 import {
@@ -25,7 +26,8 @@ import {
     Users,
     Settings,
     LogOut,
-    Home
+    Home,
+    User
 } from 'lucide-react';
 import AdminUsers from './dashboard/AdminUsers';
 
@@ -130,6 +132,13 @@ const Dashboard = () => {
                         active={isActive('/dashboard')}
                         onClick={closeSidebar}
                     />
+                    <SidebarItem
+                        to="/dashboard/profile"
+                        label="My Profile"
+                        icon={<User size={20} />}
+                        active={isActive('/dashboard/profile')}
+                        onClick={closeSidebar}
+                    />
 
                     {(user?.role === 'WRITER' || user?.role === 'ADMIN') && (
                         <>
@@ -218,6 +227,7 @@ const Dashboard = () => {
                 <div className="p-6 md:p-10 max-w-6xl mx-auto">
                     <Routes>
                         <Route path="/" element={<Overview />} />
+                        <Route path="/profile" element={<Profile />} />
                         <Route path="/my-articles" element={<MyArticles />} />
                         <Route path="/edit/:id" element={<EditArticle />} />
                         <Route path="/submit" element={<SubmitNews />} />
