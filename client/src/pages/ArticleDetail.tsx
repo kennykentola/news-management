@@ -256,7 +256,7 @@ const ArticleDetail = () => {
                 )}
 
                 <section 
-                    className="prose prose-2xl dark:prose-invert prose-black dark:prose-white max-w-none text-xl md:text-2xl font-medium leading-relaxed md:leading-[1.8] text-text-primary/90 space-y-8"
+                    className="article-content prose prose-2xl dark:prose-invert prose-black dark:prose-white max-w-none text-xl md:text-2xl font-medium leading-relaxed md:leading-[1.8] text-text-primary/90 space-y-8"
                     dangerouslySetInnerHTML={{ 
                         __html: (article.content || article.text || article.body || '')
                         .replace(/&nbsp;/g, ' ')

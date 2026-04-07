@@ -1,13 +1,14 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { databases, storage, DATABASE_ID, COLLECTION_ID_ARTICLES, NOTIFICATIONS_COLLECTION_ID, BUCKET_ID_IMAGES } from '../../lib/appwrite';
 import { ID, Query } from 'appwrite';
 import { useAuth } from '../../context/AuthContext';
-import { Sparkles, BarChart3, CheckCheck, AlertCircle, Upload, Link as LinkIcon, X } from 'lucide-react';
+import { Sparkles, BarChart3, CheckCheck, AlertCircle, Upload, Link as LinkIcon, X, Info } from 'lucide-react';
 import LoadingScreen from '../../components/LoadingScreen';
 
 const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:5000';
+const MAX_CONTENT_LENGTH = 49500; // Buffer for 50k schema expansion
 
 const SubmitNews = () => {
     const { user } = useAuth();
@@ -21,6 +22,7 @@ const SubmitNews = () => {
     const [loading, setLoading] = useState(false);
     const [proofreading, setProofreading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const quillRef = useRef<any>(null);
     const [writerStats, setWriterStats] = useState({
         totalSubmitted: 0,
         avgAccuracy: 0,
@@ -84,8 +86,14 @@ const SubmitNews = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Validation Checks
         const plainText = content.replace(/<[^>]*>/g, '');
         if (!plainText.trim()) return alert("Please provide article content.");
+        
+        if (content.length > MAX_CONTENT_LENGTH) {
+            return alert(`Manuscript is too large (${content.length.toLocaleString()} characters). Please reduce content or inline media to stay below ${MAX_CONTENT_LENGTH.toLocaleString()} characters.`);
+        }
         
         setLoading(true);
         setMessage({ type: '', text: '' });
@@ -201,16 +209,53 @@ const SubmitNews = () => {
         }
     };
 
-    const modules = {
-        toolbar: [
-            [{ 'header': [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ 'color': [] }, { 'background': [] }],
-            [{ 'align': [] }],
-            ['link', 'image', 'video'],
-            ['clean']
-        ],
-    };
+    // High-Fidelity Image Synergy Handler
+    const imageHandler = useCallback(() => {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.click();
+
+        input.onchange = async () => {
+            const file = input.files?.[0];
+            if (!file) return;
+
+            try {
+                setLoading(true);
+                const uploadedFile = await storage.createFile(
+                    BUCKET_ID_IMAGES,
+                    ID.unique(),
+                    file
+                );
+                const fileUrl = storage.getFileView(BUCKET_ID_IMAGES, uploadedFile.$id).toString();
+                
+                const quill = quillRef.current.getEditor();
+                const range = quill.getSelection();
+                quill.insertEmbed(range.index, 'image', fileUrl);
+                setLoading(false);
+            } catch (err) {
+                console.error("Inline image upload failed:", err);
+                alert("Failed to upload inline image asset.");
+                setLoading(false);
+            }
+        };
+    }, []);
+
+    const modules = useMemo(() => ({
+        toolbar: {
+            container: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'align': [] }],
+                ['link', 'image', 'video'],
+                ['clean']
+            ],
+            handlers: {
+                image: imageHandler
+            }
+        },
+    }), [imageHandler]);
 
 
     if (loading && writerStats.totalSubmitted === 0) return <LoadingScreen message="Aggregating your writing metrics..." />;
@@ -219,37 +264,37 @@ const SubmitNews = () => {
         <div className="space-y-10 animate-in fade-in duration-700">
             {/* Writer Analytics Section */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded-2xl border-2 border-bg-tertiary shadow-xl flex items-center gap-6">
-                    <div className="p-4 bg-primary/10 rounded-xl text-primary-dark">
+                <div className="bg-bg-secondary p-6 rounded-2xl border-2 border-bg-tertiary shadow-xl flex items-center gap-6">
+                    <div className="p-4 bg-primary/10 rounded-xl text-primary-dark dark:text-primary">
                         <BarChart3 size={32} />
                     </div>
                     <div>
-                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Total Works</p>
-                        <p className="text-3xl font-black text-black">{writerStats.totalSubmitted}</p>
+                        <p className="text-xs font-black text-text-secondary uppercase tracking-widest">Total Works</p>
+                        <p className="text-3xl font-black text-text-primary">{writerStats.totalSubmitted}</p>
                     </div>
                 </div>
-                <div className="bg-white p-6 rounded-2xl border-2 border-bg-tertiary shadow-xl flex items-center gap-6">
-                    <div className="p-4 bg-emerald-100 rounded-xl text-emerald-700">
+                <div className="bg-bg-secondary p-6 rounded-2xl border-2 border-bg-tertiary shadow-xl flex items-center gap-6">
+                    <div className="p-4 bg-emerald-100/10 rounded-xl text-emerald-600 dark:text-emerald-400">
                         <CheckCheck size={32} />
                     </div>
                     <div>
-                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest">AI Accuracy</p>
-                        <p className="text-3xl font-black text-black">{writerStats.avgAccuracy}%</p>
+                        <p className="text-xs font-black text-text-secondary uppercase tracking-widest">AI Accuracy</p>
+                        <p className="text-3xl font-black text-text-primary">{writerStats.avgAccuracy}%</p>
                     </div>
                 </div>
-                <div className="bg-white p-6 rounded-2xl border-2 border-bg-tertiary shadow-xl flex items-center gap-6">
-                    <div className="p-4 bg-amber-100 rounded-xl text-amber-700">
+                <div className="bg-bg-secondary p-6 rounded-2xl border-2 border-bg-tertiary shadow-xl flex items-center gap-6">
+                    <div className="p-4 bg-amber-100/10 rounded-xl text-amber-600 dark:text-amber-400">
                         <AlertCircle size={32} />
                     </div>
                     <div>
-                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Approval Rate</p>
-                        <p className="text-3xl font-black text-black">{writerStats.approvedRate}%</p>
+                        <p className="text-xs font-black text-text-secondary uppercase tracking-widest">Approval Rate</p>
+                        <p className="text-3xl font-black text-text-primary">{writerStats.approvedRate}%</p>
                     </div>
                 </div>
             </div>
 
-            <div className="bg-white shadow-2xl border-2 border-bg-tertiary p-10 rounded-4xl">
-                <h2 className="text-4xl font-black mb-10 border-b-4 border-bg-tertiary pb-4 text-black tracking-tighter">Submit News Article</h2>
+            <div className="bg-bg-secondary shadow-2xl border-2 border-bg-tertiary p-10 rounded-4xl">
+                <h2 className="text-4xl font-black mb-10 border-b-4 border-bg-tertiary pb-4 text-text-primary tracking-tighter">Submit News Article</h2>
 
                 {message.text && (
                     <div style={{
@@ -268,48 +313,59 @@ const SubmitNews = () => {
 
                 <form onSubmit={handleSubmit} className="space-y-10">
                     <div>
-                        <label className="block mb-3 text-black text-xl font-black tracking-tight">Article Headline</label>
+                        <label className="block mb-3 text-text-primary text-xl font-black tracking-tight">Article Headline</label>
                         <input
                             type="text"
                             required
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="Enticing and factual headline..."
-                            className="w-full p-5 rounded-2xl bg-white border-2 border-bg-tertiary color-black outline-none font-black text-2xl shadow-inner focus:border-primary transition-all"
+                            className="w-full p-5 rounded-2xl bg-bg-primary border-2 border-bg-tertiary text-text-primary outline-none font-black text-2xl shadow-inner focus:border-primary transition-all"
                         />
                     </div>
 
                     <div>
                         <div className="flex justify-between items-center mb-4">
-                            <label className="text-black text-xl font-black tracking-tight">Main Content</label>
+                            <label className="text-text-primary text-xl font-black tracking-tight">Main Content</label>
                             <button
                                 type="button"
                                 onClick={handleProofread}
                                 disabled={proofreading}
-                                className="flex items-center gap-2 px-6 py-2 bg-black text-white rounded-xl font-black text-sm hover:bg-gray-800 transition-all disabled:opacity-50"
+                                className="flex items-center gap-2 px-6 py-2 bg-text-primary text-bg-primary rounded-xl font-black text-sm hover:opacity-90 transition-all disabled:opacity-50"
                             >
                                 <Sparkles size={18} className={proofreading ? 'animate-spin' : ''} />
                                 {proofreading ? 'AI Proofreading...' : 'Proofread with AI'}
                             </button>
                         </div>
-                        <div className="rich-text-editor">
+                        <div className="rich-text-editor relative">
                             <ReactQuill 
+                                ref={quillRef}
                                 theme="snow"
                                 value={content}
                                 onChange={setContent}
                                 modules={modules}
                                 placeholder="Tell the world what's happening..."
                             />
+                            
+                            {/* High-Fidelity Character Pulse */}
+                            <div className="absolute -bottom-8 right-2 flex items-center gap-2">
+                                <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${content.length > MAX_CONTENT_LENGTH ? 'text-danger animate-pulse' : 'text-text-secondary/50'}`}>
+                                    Manuscript Load: {content.length.toLocaleString()} / {MAX_CONTENT_LENGTH.toLocaleString()}
+                                </span>
+                                {content.length > MAX_CONTENT_LENGTH && (
+                                    <Info size={12} className="text-danger" title="Limit approached. Excessive inline media or text detected." />
+                                )}
+                            </div>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                         <div>
-                            <label className="block mb-3 text-black text-xl font-black tracking-tight">Category</label>
+                            <label className="block mb-3 text-text-primary text-xl font-black tracking-tight">Category</label>
                             <select
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
-                                className="w-full p-5 rounded-2xl bg-white border-2 border-bg-tertiary color-black outline-none font-black text-lg cursor-pointer"
+                                className="w-full p-5 rounded-2xl bg-bg-primary border-2 border-bg-tertiary text-text-primary outline-none font-black text-lg cursor-pointer"
                             >
                                 <option value="General">General</option>
                                 <option value="Politics">Politics</option>
@@ -340,7 +396,7 @@ const SubmitNews = () => {
                                                         setImageFile(null);
                                                         setImagePreview(null);
                                                     }}
-                                                    className="absolute top-4 right-4 bg-white/90 p-2 rounded-xl text-danger shadow-lg"
+                                                    className="absolute top-4 right-4 bg-bg-primary/90 p-2 rounded-xl text-danger shadow-lg"
                                                 >
                                                     <X size={20} />
                                                 </button>
@@ -351,8 +407,8 @@ const SubmitNews = () => {
                                                     <Upload size={32} />
                                                 </div>
                                                 <div className="text-center">
-                                                    <p className="font-black text-lg">Upload from Device</p>
-                                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Drag & drop or click to browse</p>
+                                                    <p className="font-black text-lg text-text-primary">Upload from Device</p>
+                                                    <p className="text-xs text-text-secondary/50 font-bold uppercase tracking-wider">Drag & drop or click to browse</p>
                                                 </div>
                                             </>
                                         )}
@@ -381,7 +437,7 @@ const SubmitNews = () => {
                                         <span className="h-[2px] w-full bg-bg-tertiary"></span>
                                     </div>
                                     <div className="relative">
-                                        <LinkIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                                        <LinkIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-text-secondary/50" size={20} />
                                         <input
                                             type="text"
                                             value={imageUrl}
@@ -391,10 +447,10 @@ const SubmitNews = () => {
                                                 setImagePreview(null); // Clear file if URL is pasted
                                             }}
                                             placeholder="Paste image URL instead..."
-                                            className="w-full p-5 pl-14 rounded-2xl bg-white border-2 border-bg-tertiary color-black outline-none font-bold text-lg focus:border-primary transition-all shadow-inner"
+                                            className="w-full p-5 pl-14 rounded-2xl bg-bg-primary border-2 border-bg-tertiary text-text-primary outline-none font-bold text-lg focus:border-primary transition-all shadow-inner"
                                         />
                                     </div>
-                                    <p className="text-xs text-gray-400 font-bold leading-relaxed px-5 italic">
+                                    <p className="text-xs text-text-secondary/50 font-bold leading-relaxed px-5 italic">
                                         Tip: Uploaded images look better on the home page.
                                     </p>
                                 </div>
@@ -403,13 +459,13 @@ const SubmitNews = () => {
                     </div>
 
                     <div>
-                        <label className="block mb-3 text-black text-xl font-black tracking-tight">Source URL / Citation (Optional)</label>
+                        <label className="block mb-3 text-text-primary text-xl font-black tracking-tight">Source URL / Citation (Optional)</label>
                         <input
                             type="text"
                             value={sourceUrl}
                             onChange={(e) => setSourceUrl(e.target.value)}
                             placeholder="Link to official reports or primary sources..."
-                            className="w-full p-5 rounded-2xl bg-white border-2 border-bg-tertiary color-black outline-none font-bold text-lg"
+                            className="w-full p-5 rounded-2xl bg-bg-primary border-2 border-bg-tertiary text-text-primary outline-none font-bold text-lg"
                         />
                     </div>
 

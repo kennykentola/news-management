@@ -86,7 +86,7 @@ async function init() {
 
         const articleAttrs = [
             { key: 'title', type: 'string', size: 500, required: true },
-            { key: 'content', type: 'string', size: 25000, required: true },
+            { key: 'content', type: 'string', size: 50000, required: true },
             { key: 'authorName', type: 'string', size: 200, required: true },
             { key: 'authorId', type: 'string', size: 100, required: true },
             { key: 'status', type: 'string', size: 50, required: true },

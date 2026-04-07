@@ -104,7 +104,7 @@ const AdminUsers = () => {
                                 <X size={24} />
                             </button>
                         </div>
-                        <p className="text-gray-500 font-bold text-sm leading-relaxed">
+                        <p className="text-text-secondary font-bold text-sm leading-relaxed">
                             Pre-registering a user sets their role in advance. When they sign up with the same email, they will automatically receive these permissions.
                         </p>
                         <form onSubmit={async (e) => {
@@ -211,10 +211,10 @@ const AdminUsers = () => {
                                         value={user.role}
                                         onChange={(e) => updateRole(user.$id, e.target.value)}
                                         className={`px-3 py-1.5 rounded-xl text-[10px] font-black shadow-sm border outline-none cursor-pointer transition-all
-                                            ${user.role === 'ADMIN' ? 'bg-black text-white border-black' : 
-                                              user.role === 'EDITOR' ? 'bg-primary/10 text-primary-dark border-primary/20' : 
-                                              user.role === 'WRITER' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                              'bg-white text-black border-bg-tertiary'}
+                                            ${user.role === 'ADMIN' ? 'bg-text-primary text-bg-primary border-text-primary' : 
+                                              user.role === 'EDITOR' ? 'bg-primary/10 text-primary-dark dark:text-primary border-primary/20' : 
+                                              user.role === 'WRITER' ? 'bg-primary-dark/10 text-primary-dark dark:bg-primary/5 dark:text-primary border-primary/10' :
+                                              'bg-bg-primary text-text-primary border-bg-tertiary'}
                                         `}
                                     >
                                         <option value="READER">READER</option>

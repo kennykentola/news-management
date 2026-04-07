@@ -51,7 +51,7 @@ const ReviewNews = () => {
     if (loading) return (
         <div className="flex flex-col items-center justify-center p-20 space-y-4">
             <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-            <p className="font-black text-black tracking-widest uppercase text-sm">Loading Review Queue...</p>
+            <p className="font-black text-text-primary tracking-widest uppercase text-sm">Loading Review Queue...</p>
         </div>
     );
 
@@ -86,33 +86,33 @@ const ReviewNews = () => {
             ) : (
                 <div className="grid gap-8">
                     {filteredArticles.map(article => (
-                        <div key={article.$id} className="bg-white p-8 rounded-4xl border-2 border-bg-tertiary shadow-xl hover:shadow-2xl transition-all group flex flex-col md:flex-row gap-8">
+                        <div key={article.$id} className="bg-bg-secondary p-8 rounded-4xl border-2 border-bg-tertiary shadow-xl hover:shadow-2xl transition-all group flex flex-col gap-8">
                             <div className="flex-1 space-y-4">
-                                <div className="flex justify-between items-start">
+                                <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                                     <div className="space-y-1">
-                                        <h3 className="text-2xl font-black text-black tracking-tight leading-tight group-hover:text-primary transition-colors">
+                                        <h3 className="text-2xl font-black text-text-primary tracking-tight leading-tight group-hover:text-primary transition-colors">
                                             {article.title}
                                         </h3>
-                                        <div className="flex items-center gap-2 text-sm font-bold text-gray-500">
+                                        <div className="flex items-center gap-2 text-sm font-bold text-text-secondary">
                                             <FileText size={14} />
                                             By {article.authorName} • {new Date(article.createdAt).toLocaleDateString()}
                                         </div>
                                     </div>
-                                        <div className="flex flex-wrap gap-2 lg:flex-nowrap">
-                                            <div className={`px-4 py-2 rounded-xl text-[10px] font-black flex items-center gap-2 border shadow-sm whitespace-nowrap
-                                                ${article.aiClassification === 'FAKE' ? 'bg-danger/10 text-danger border-danger/20' : 
-                                                  article.aiClassification === 'MISLEADING' ? 'bg-amber-100/50 text-amber-700 border-amber-200' :
-                                                  article.aiClassification === 'SATIRE' ? 'bg-purple-100/50 text-purple-700 border-purple-200' :
-                                                  'bg-primary/10 text-primary-dark dark:text-primary border-primary/20'}
-                                            `}>
-                                                <ShieldCheck size={14} />
-                                                AI: {article.aiClassification || article.aiLabel}
-                                            </div>
-                                            <div className="px-4 py-2 rounded-xl bg-text-primary text-bg-primary text-[10px] font-black flex items-center gap-2 shadow-sm border border-text-primary whitespace-nowrap">
-                                                <ShieldCheck size={14} className="text-primary" />
-                                                Trust: {Math.round(article.aiCredibility || 0)}%
-                                            </div>
+                                    <div className="flex flex-wrap gap-2 sm:mt-0">
+                                        <div className={`px-4 py-2 rounded-xl text-[10px] font-black flex items-center gap-2 border shadow-sm whitespace-nowrap
+                                            ${article.aiClassification === 'FAKE' ? 'bg-danger/10 text-danger border-danger/20' : 
+                                              article.aiClassification === 'MISLEADING' ? 'bg-amber-100/50 text-amber-700 border-amber-200' :
+                                              article.aiClassification === 'SATIRE' ? 'bg-purple-100/50 text-purple-700 border-purple-200' :
+                                              'bg-primary/10 text-primary-dark dark:text-primary border-primary/20'}
+                                        `}>
+                                            <ShieldCheck size={14} />
+                                            AI: {article.aiClassification || article.aiLabel}
                                         </div>
+                                        <div className="px-4 py-2 rounded-xl bg-text-primary text-bg-primary text-[10px] font-black flex items-center gap-2 shadow-sm border border-text-primary whitespace-nowrap">
+                                            <ShieldCheck size={14} className="text-primary" />
+                                            Trust: {Math.round(article.aiCredibility || 0)}%
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {article.status === 'FLAGGED' && (
@@ -125,12 +125,12 @@ const ReviewNews = () => {
                                                 <span className="text-[10px] bg-red-600 text-white px-3 py-1 rounded-full font-black uppercase tracking-widest">{article.aiClassification}</span>
                                             )}
                                         </div>
-                                        <p className="text-black font-bold text-sm leading-relaxed">
+                                        <p className="text-text-primary font-bold text-sm leading-relaxed">
                                             {article.aiReason || "Potential misinformation detected. AI requires manual audit for this submission."}
                                         </p>
-                                        <div className="bg-white/80 p-4 rounded-2xl border-2 border-danger/5">
-                                            <p className="text-[10px] font-black text-gray-400 uppercase mb-2">Edge Cases detected</p>
-                                            <p className="text-xs font-bold text-black">{article.aiEdgeCases || 'Low confidence in Nigerian vernacular patterns detected.'}</p>
+                                        <div className="bg-bg-primary p-4 rounded-2xl border-2 border-danger/5">
+                                            <p className="text-[10px] font-black text-text-secondary uppercase mb-2">Edge Cases detected</p>
+                                            <p className="text-xs font-bold text-text-primary">{article.aiEdgeCases || 'Low confidence in Nigerian vernacular patterns detected.'}</p>
                                         </div>
                                     </div>
                                 )}
