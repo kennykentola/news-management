@@ -4,7 +4,7 @@ import 'react-quill-new/dist/quill.snow.css';
 import { databases, storage, DATABASE_ID, COLLECTION_ID_ARTICLES, NOTIFICATIONS_COLLECTION_ID, BUCKET_ID_IMAGES } from '../../lib/appwrite';
 import { ID, Query } from 'appwrite';
 import { useAuth } from '../../context/AuthContext';
-import { Sparkles, BarChart3, CheckCheck, AlertCircle, Upload, Link as LinkIcon, X, Info } from 'lucide-react';
+import { Sparkles, BarChart3, CheckCheck, AlertCircle, Upload, Link as LinkIcon, X, Info, Zap } from 'lucide-react';
 import LoadingScreen from '../../components/LoadingScreen';
 
 const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:5000';
@@ -227,7 +227,7 @@ const SubmitNews = () => {
     }, []);
 
     // High-Fidelity Image Synergy Handler
-    const imageHandler = useCallback(() => {
+    const imageHandler = useCallback(async () => {
         const input = document.createElement('input');
         input.setAttribute('type', 'file');
         input.setAttribute('accept', 'image/*');
@@ -244,15 +244,22 @@ const SubmitNews = () => {
                     ID.unique(),
                     file
                 );
-                const fileUrl = storage.getFileView(BUCKET_ID_IMAGES, uploadedFile.$id).toString();
-                
+                const fileUrl = storage.getFilePreview(
+                    BUCKET_ID_IMAGES,
+                    uploadedFile.$id,
+                    800,
+                    600,
+                    'center' as any,
+                    100
+                ).toString();
+
                 const quill = quillRef.current.getEditor();
-                const range = quill.getSelection();
+                const range = quill.getSelection(true);
                 quill.insertEmbed(range.index, 'image', fileUrl);
-                setLoading(false);
             } catch (err) {
-                console.error("Inline image upload failed:", err);
-                alert("Failed to upload inline image asset.");
+                console.error('Inline image upload failed:', err);
+                alert('Failed to upload inline image asset.');
+            } finally {
                 setLoading(false);
             }
         };
@@ -371,7 +378,9 @@ const SubmitNews = () => {
                                     Manuscript Load: {content.length.toLocaleString()} / {MAX_CONTENT_LENGTH.toLocaleString()}
                                 </span>
                                 {content.length > MAX_CONTENT_LENGTH && (
-                                    <Info size={12} className="text-danger" title="Limit approached. Excessive inline media or text detected." />
+                                    <span title="Limit approached. Excessive inline media or text detected.">
+                                        <Info size={12} className="text-danger" />
+                                    </span>
                                 )}
                             </div>
                         </div>
@@ -427,6 +436,7 @@ const SubmitNews = () => {
                                                 <div className="text-center">
                                                     <p className="font-black text-lg text-text-primary">Upload from Device</p>
                                                     <p className="text-xs text-text-secondary/50 font-bold uppercase tracking-wider">Drag & drop or click to browse</p>
+                                                    <Zap size={14} className="text-primary fill-primary/20" />
                                                 </div>
                                             </>
                                         )}

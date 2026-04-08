@@ -28,7 +28,7 @@ const Profile = () => {
                 BUCKET_ID_IMAGES, 
                 fileId, 
                 400, 400, 
-                'center', 
+                'center' as any, 
                 100
             ).toString();
         } catch (e) {

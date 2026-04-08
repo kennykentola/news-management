@@ -77,6 +77,11 @@ def sync_data():
                 label = row.get('label', 'UNVERIFIED')
                 score = 0 # Default to 0 for unverified sync
                 
+                # 3. High-Fidelity Asset Resolution (Banner Imagery)
+                scraped_image = row.get('image_url')
+                default_banner = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=800'
+                final_image = scraped_image if scraped_image and str(scraped_image).startswith('http') else default_banner
+
                 databases.create_document(
                     DATABASE_ID,
                     COLLECTION_ID,
@@ -86,14 +91,14 @@ def sync_data():
                         'content': clean_content,
                         'authorName': 'AI News Syncer',
                         'authorId': 'ai_system',
-                        'status': 'PENDING', # Force PENDING for manual review
+                        'status': 'PENDING', 
                         'aiLabel': str(label)[:50],
                         'aiScore': float(score),
-                        'aiReason': "Neural Sync: Real-time information asset acquired by autonomous ingestion service. Manual audit required.",
+                        'aiReason': "Neural Sync: High-fidelity manuscript acquired via deep-scan extraction. Manual audit required for linguistic edge cases.",
                         'createdAt': datetime.now().isoformat(),
                         'category': 'General',
                         'sourceUrl': potential_link[:500],
-                        'imageUrl': 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=800'
+                        'imageUrl': final_image
                     }
                 )
                 count += 1
