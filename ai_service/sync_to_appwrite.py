@@ -94,7 +94,7 @@ def sync_data():
                         'status': 'PENDING', 
                         'aiLabel': str(label)[:50],
                         'aiScore': float(score),
-                        'aiReason': "Neural Sync: High-fidelity manuscript acquired via deep-scan extraction. Manual audit required for linguistic edge cases.",
+                        'aiReason': "This article was automatically ingested from an external source. Content authenticity has not yet been manually verified by an editor.",
                         'createdAt': datetime.now().isoformat(),
                         'category': 'General',
                         'sourceUrl': potential_link[:500],
