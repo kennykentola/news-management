@@ -11,6 +11,7 @@ interface UserData {
     email: string;
     role: Role;
     avatarId?: string;
+    savedArticles?: string[];
 }
 
 interface AuthContextType {
@@ -28,6 +29,7 @@ interface AuthContextType {
     updateName: (name: string) => Promise<void>;
     updatePassword: (password: string, oldPassword?: string) => Promise<void>;
     updateAvatar: (avatarId: string) => Promise<void>;
+    toggleBookmark: (articleId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -103,7 +105,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 name: session.name,
                 email: session.email,
                 role: role,
-                avatarId: session.prefs?.avatarId
+                avatarId: session.prefs?.avatarId,
+                savedArticles: (metaDocs.documents[0]?.bookmarks || "").split(',').filter(Boolean)
             });
 
         } catch (e) {
@@ -232,6 +235,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await checkAuth();
     };
 
+    const toggleBookmark = async (articleId: string) => {
+        if (!user) return;
+        
+        const isBookmarked = user.savedArticles?.includes(articleId);
+        const newBookmarks = isBookmarked 
+            ? user.savedArticles?.filter(id => id !== articleId)
+            : [...(user.savedArticles || []), articleId];
+
+        try {
+            // Find metadata doc again the find its ID for update
+            const metaDocs = await databases.listDocuments(
+                DATABASE_ID,
+                METADATA_COLLECTION_ID,
+                [Query.equal('email', user.email)]
+            );
+
+            if (metaDocs.total > 0) {
+                await databases.updateDocument(
+                    DATABASE_ID,
+                    METADATA_COLLECTION_ID,
+                    metaDocs.documents[0].$id,
+                    { bookmarks: (newBookmarks || []).join(',') }
+                );
+                
+                // Update local state for instant feedback
+                setUser({ ...user, savedArticles: newBookmarks });
+            }
+        } catch (error) {
+            console.error("Bookmark sync failed:", error);
+            throw error;
+        }
+    };
+
     return (
         <AuthContext.Provider value={{
             user,
@@ -247,7 +283,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             loginWithGoogle,
             updateName,
             updatePassword,
-            updateAvatar
+            updateAvatar,
+            toggleBookmark
         }}>
             {children}
         </AuthContext.Provider>

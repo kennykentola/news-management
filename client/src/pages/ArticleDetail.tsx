@@ -6,11 +6,11 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import LoadingScreen from '../components/LoadingScreen';
 import Footer from '../components/Footer';
-import { Shield, Clock, User, Share2, MessageSquare, ArrowLeft, Globe, Zap, Cpu, Link as LinkIcon, XCircle, ExternalLink, Trash2, Sun, Moon } from 'lucide-react';
+import { Shield, Clock, User, Share2, MessageSquare, ArrowLeft, Globe, Zap, Cpu, Link as LinkIcon, XCircle, ExternalLink, Trash2, Sun, Moon, Bookmark, BookmarkCheck } from 'lucide-react';
 
 const ArticleDetail = () => {
     const { id } = useParams<{ id: string }>();
-    const { user } = useAuth();
+    const { user, toggleBookmark } = useAuth();
     const { isDarkMode, toggleDarkMode } = useTheme();
     const [article, setArticle] = useState<any>(null);
     const [comments, setComments] = useState<any[]>([]);
@@ -149,9 +149,22 @@ const ArticleDetail = () => {
                     >
                         {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
                     </button>
-                    <button onClick={handleShare} className="p-3 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 font-black text-xs uppercase tracking-widest">
-                        <Share2 size={16} /> Share Truth
+                    <button onClick={handleShare} className="p-3 bg-bg-secondary text-text-primary rounded-xl border-2 border-bg-tertiary hover:scale-105 active:scale-95 transition-all flex items-center gap-2 font-black text-xs uppercase tracking-widest shadow-sm">
+                        <Share2 size={16} /> Share
                     </button>
+                    {user && (
+                        <button 
+                            onClick={() => id && toggleBookmark(id)} 
+                            className={`p-3 rounded-xl transition-all flex items-center gap-2 font-black text-xs uppercase tracking-widest shadow-lg ${
+                                user.savedArticles?.includes(id!) 
+                                ? 'bg-primary text-white shadow-primary/20' 
+                                : 'bg-bg-secondary text-text-primary border-2 border-bg-tertiary shadow-sm'
+                            }`}
+                        >
+                            {user.savedArticles?.includes(id!) ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
+                            {user.savedArticles?.includes(id!) ? 'Saved' : 'Save for Later'}
+                        </button>
+                    )}
                     {user?.role === 'ADMIN' && (
                         <button 
                             onClick={async () => {
