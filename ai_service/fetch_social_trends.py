@@ -8,14 +8,15 @@ OUTPUT = 'dataset.csv'
 
 def fetch_google_news_nigeria():
     """
-    Simulates fetching Nigerian news trends that are popular on X/Facebook 
-    by searching for 'Nigeria' in Google News and filtering for viral topics.
+    Fetches the latest Nigerian news trends using a temporal anchor for 2026.
     """
-    print("Fetching Nigerian Social Trends from News Aggregators...")
+    today = datetime.now().strftime('%Y-%m-%d')
+    print(f"Fetching Nigerian Social Trends for {today}...")
     data = []
     
-    # Using Google News RSS for Nigeria
-    url = "https://news.google.com/rss/search?q=Nigeria+trending+social+media&hl=en-NG&gl=NG&ceid=NG:en"
+    # High-Fidelity Search Query with Temporal Anchor
+    query = f"Nigeria+news+breaking+{today}"
+    url = f"https://news.google.com/rss/search?q={query}&hl=en-NG&gl=NG&ceid=NG:en"
     
     try:
         response = requests.get(url)
@@ -29,13 +30,13 @@ def fetch_google_news_nigeria():
             title = title_tag.text if title_tag else "No Title"
             link = link_tag.text if link_tag else "#"
             
-            # Simple simulation: assume trending news might be misinformation to be checked
-            # This is where you would normally use an AI to classify or manually label
             data.append({
+                'title': title, # Splitting title and text for better schema alignment
                 'text': title,
-                'label': 0, # Default to 0 (Unverified/Potential Fake) for training purposes
+                'link': link,
+                'label': 0, 
                 'source': 'Social/RSS',
-                'language': 'English' # Could be expanded to Yoruba/Igbo/Hausa searches
+                'language': 'English'
             })
             
         return data
@@ -54,7 +55,8 @@ def main():
     
     if os.path.exists(OUTPUT):
         existing_df = pd.read_csv(OUTPUT)
-        combined = pd.concat([existing_df, new_df]).drop_duplicates(subset=['text'])
+        # Deduplicate by link (Source URL) which is a much stronger anchor than title
+        combined = pd.concat([existing_df, new_df]).drop_duplicates(subset=['link'])
     else:
         combined = new_df
         

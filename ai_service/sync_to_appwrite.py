@@ -42,42 +42,56 @@ def sync_data():
         df.columns = [c.lower() for c in df.columns]
         
         count = 0
+        duplicates = 0
         for _, row in df.iterrows():
             try:
-                # 1. Safer Data Extraction (Handles NameErrors and Missing Columns)
+                # 1. High-Fidelity Data Extraction
                 potential_text = row.get('text') or row.get('content') or 'No content available'
                 potential_title = row.get('title') 
+                potential_link = row.get('link') or row.get('url') or ''
                 
-                # 2. HTML Unescaping & Clean-up
                 clean_content = html.unescape(str(potential_text)).strip()[:24000]
                 
-                # If title is missing or too short, use a snippet of content
                 if not potential_title or len(str(potential_title).strip()) < 5:
                     clean_title = clean_content[:100] + "..." if len(clean_content) > 100 else clean_content
                 else:
                     clean_title = html.unescape(str(potential_title)).strip()
 
-                if not clean_title or clean_title == "...": 
-                    clean_title = "News Update"
+                # 2. Neural Deduplication Logic
+                # Check if an article with this title or link already exists
+                from appwrite.query import Query
+                existing = databases.list_documents(
+                    DATABASE_ID,
+                    COLLECTION_ID,
+                    [
+                        Query.equal('title', clean_title[:500]),
+                        Query.limit(1)
+                    ]
+                )
+                
+                if existing['total'] > 0:
+                    duplicates += 1
+                    continue # Skip ingestion of redundant asset
 
-                label = row.get('label', 'REAL')
-                score = 90 if label == 'REAL' else 15
+                label = row.get('label', 'UNVERIFIED')
+                score = 0 # Default to 0 for unverified sync
                 
                 databases.create_document(
                     DATABASE_ID,
                     COLLECTION_ID,
                     ID.unique(),
                     {
-                        'title': clean_title[:500], # Max size for title attribute
+                        'title': clean_title[:500],
                         'content': clean_content,
                         'authorName': 'AI News Syncer',
                         'authorId': 'ai_system',
-                        'status': 'PUBLISHED',
+                        'status': 'PENDING', # Force PENDING for manual review
                         'aiLabel': str(label)[:50],
                         'aiScore': float(score),
-                        'aiReason': f"Verified by automated data sync from trustworthy sources. Reliability for this article is estimated at {score}%.",
+                        'aiReason': "Neural Sync: Real-time information asset acquired by autonomous ingestion service. Manual audit required.",
                         'createdAt': datetime.now().isoformat(),
                         'category': 'General',
+                        'sourceUrl': potential_link[:500],
                         'imageUrl': 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=800'
                     }
                 )

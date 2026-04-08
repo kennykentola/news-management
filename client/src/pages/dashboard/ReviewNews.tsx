@@ -46,7 +46,9 @@ const ReviewNews = () => {
         }
     };
 
-    const filteredArticles = articles.filter(a => a.title.toLowerCase().includes(searchTerm.toLowerCase()));
+    // High-Fidelity Neural Deduplication Filter for current Queue
+    const uniqueArticles = Array.from(new Map(articles.map(a => [a.title.toLowerCase().trim(), a])).values());
+    const filteredArticles = uniqueArticles.filter(a => a.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center p-20 space-y-4">
