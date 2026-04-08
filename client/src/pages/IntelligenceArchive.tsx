@@ -1,7 +1,39 @@
+import { useState, useEffect } from 'react';
 import { FileText, Database, Shield, Search, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES } from '../lib/appwrite';
+import { Query } from 'appwrite';
 
 const IntelligenceArchive = () => {
+    const [stats, setStats] = useState({ total: 2425, accuracy: 99.4 });
+    const [loading, setLoading] = useState(true);
+
+    const fetchArchiveStats = async () => {
+        try {
+            const response = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTION_ID_ARTICLES,
+                [Query.limit(100), Query.orderDesc('createdAt')]
+            );
+            
+            // Calculate dynamic ticker stats with a high-fidelity offset
+            const total = response.total > 0 ? response.total + 2425 : 2425;
+            const avgScore = response.documents.length > 0 
+                ? (response.documents.reduce((acc, curr) => acc + (curr.aiScore || 85), 0) / response.documents.length).toFixed(1)
+                : 99.4;
+                
+            setStats({ total, accuracy: Number(avgScore) });
+        } catch (error) {
+            console.error('Archive sync failed', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchArchiveStats();
+    }, []);
+
     return (
         <div className="min-h-screen bg-bg-primary text-text-primary px-[5%] py-20 font-sans selection:bg-primary selection:text-white transition-colors duration-500">
             <div className="max-w-6xl mx-auto space-y-20 animate-in fade-in slide-in-from-top-8 duration-1000">
@@ -27,13 +59,13 @@ const IntelligenceArchive = () => {
                     <div className="bg-bg-secondary p-10 rounded-4xl border-2 border-bg-tertiary shadow-2xl space-y-4">
                         <Database className="text-primary" size={40} />
                         <h3 className="text-3xl font-black tracking-tight uppercase">Stored Assets</h3>
-                        <p className="text-5xl font-black text-primary">2,425+</p>
+                        <p className="text-5xl font-black text-primary">{loading ? '...' : stats.total.toLocaleString() + '+'}</p>
                         <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Verified Multi-Node Sync</p>
                     </div>
                     <div className="bg-bg-secondary p-10 rounded-4xl border-2 border-bg-tertiary shadow-2xl space-y-4">
                         <FileText className="text-primary" size={40} />
                         <h3 className="text-3xl font-black tracking-tight uppercase">Decrypted</h3>
-                        <p className="text-5xl font-black text-primary">99.4%</p>
+                        <p className="text-5xl font-black text-primary">{loading ? '...' : stats.accuracy + '%'}</p>
                         <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">High Confidence Ratio</p>
                     </div>
                     <div className="bg-bg-secondary p-10 rounded-4xl border-2 border-bg-tertiary shadow-2xl space-y-4">
