@@ -92,7 +92,7 @@ def fetch_google_news_nigeria():
         soup = BeautifulSoup(response.content, features="xml")
         items = soup.find_all('item')
         
-        for item in items[:15]: # Scrape top 15 deeply
+        for item in items[:20]: # Scrape top 20 deeply
             title_tag = item.find('title')
             link_tag = item.find('link')
             

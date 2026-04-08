@@ -35,7 +35,7 @@ def sync_data():
         return
 
     try:
-        df = pd.read_csv(DATASET_PATH).head(30) # Get top 30 news
+        df = pd.read_csv(DATASET_PATH).head(20) # Get top 20 news
         df = df.fillna('')
         
         # Clean col names
@@ -102,7 +102,7 @@ def sync_data():
                     }
                 )
                 count += 1
-                if count >= 15: break # Don't flood, just fill home page
+                if count >= 20: break # Cap at 20 articles per sync
             except Exception as e:
                 print(f"Failed to sync row: {e}")
                 
