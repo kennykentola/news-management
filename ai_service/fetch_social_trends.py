@@ -78,43 +78,51 @@ def scrape_full_article(url):
 
 def fetch_google_news_nigeria():
     """
-    Fetches the latest Nigerian news and performs deep-scan manuscript extraction.
+    Fetches latest Nigerian news and deep-scans the REAL article URLs (not Google redirects).
     """
     today = datetime.now().strftime('%Y-%m-%d')
     print(f"Initiating High-Fidelity Nigerian Social Sync for {today}...")
     data = []
     
     query = f"Nigeria+news+breaking+{today}"
-    url = f"https://news.google.com/rss/search?q={query}&hl=en-NG&gl=NG&ceid=NG:en"
+    rss_url = f"https://news.google.com/rss/search?q={query}&hl=en-NG&gl=NG&ceid=NG:en"
     
     try:
-        response = requests.get(url)
+        response = requests.get(rss_url, timeout=10)
         soup = BeautifulSoup(response.content, features="xml")
         items = soup.find_all('item')
         
-        for item in items[:20]: # Scrape top 20 deeply
+        for item in items[:20]:
             title_tag = item.find('title')
             link_tag = item.find('link')
+            source_tag = item.find('source')  # <source url="https://actual-site.com">
             
-            title = title_tag.text if title_tag else "No Title"
-            link = link_tag.text if link_tag else "#"
+            title = title_tag.text.strip() if title_tag else "No Title"
+            google_link = link_tag.text.strip() if link_tag else "#"
             
-            print(f"Deep Scanning: {title[:50]}...")
-            deep_data = scrape_full_article(link)
+            # Use the direct source URL from <source url="..."> to bypass Google redirect
+            real_url = source_tag.get('url') if source_tag else google_link
+            # Fallback: if source url is just a domain, use the google link for redirect-following
+            if real_url and not real_url.startswith('http'):
+                real_url = google_link
+            
+            print(f"Scanning: {title[:60]}...")
+            print(f"  Source URL: {real_url[:80]}")
+            deep_data = scrape_full_article(real_url)
             
             data.append({
                 'title': title,
                 'text': deep_data['content'] if deep_data and deep_data['content'] else title,
-                'link': link,
+                'link': google_link,
                 'image_url': deep_data['image_url'] if deep_data else None,
-                'label': 0, 
+                'label': 0,
                 'source': 'Social/RSS',
                 'language': 'English'
             })
             
         return data
     except Exception as e:
-        print(f"Error fetching: {e}")
+        print(f"Error fetching RSS: {e}")
         return []
 
 def main():

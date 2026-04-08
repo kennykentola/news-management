@@ -109,7 +109,7 @@ const Dashboard = () => {
                         <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center font-black text-xl shadow-lg shadow-primary/20 overflow-hidden">
                             {user?.avatarId ? (
                                 <img
-                                    src={(() => { try { return storage.getFilePreview(BUCKET_ID_IMAGES, user.avatarId, 96, 96, 'center' as any, 100).toString(); } catch { return ''; } })()}
+                                    src={(() => { try { return storage.getFileView(BUCKET_ID_IMAGES, user.avatarId).toString(); } catch { return ''; } })()}
                                     alt={user?.name}
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
