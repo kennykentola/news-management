@@ -3,7 +3,7 @@ import { Client, Account, Databases, Storage } from 'appwrite';
 const client = new Client();
 
 // Source of Truth: .env (with fallbacks to verified human-readable IDs)
-const ENDPOINT = import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://fra.cloud.appwrite.io/v1';
+const ENDPOINT = import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
 const PROJECT_ID = import.meta.env.VITE_APPWRITE_PROJECT_ID || '697c7f9c00327290c59b';
 
 client
