@@ -210,7 +210,7 @@ const Overview = () => {
                                 </div>
                                 <div className="flex justify-between items-center pt-4 border-t border-bg-tertiary">
                                     <div className="text-center">
-                                        <p className="text-2xl font-black text-text-primary">{user.savedArticles?.length || 0}</p>
+                                        <p className="text-2xl font-black text-text-primary">{user?.savedArticles?.length || 0}</p>
                                         <p className="text-[10px] font-black text-text-secondary uppercase">Saved</p>
                                     </div>
                                     <div className="w-px h-8 bg-bg-tertiary"></div>

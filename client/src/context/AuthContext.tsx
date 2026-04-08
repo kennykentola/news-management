@@ -53,6 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             // Default to READER
             let role: Role = 'READER';
+            let bookmarks: string[] = [];
 
             // 1. Check Database (Source of Truth) - Prioritize this to reflect Admin changes
             try {
@@ -64,6 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 
                 if (metaDocs.total > 0) {
                     role = metaDocs.documents[0].role as Role;
+                    bookmarks = (metaDocs.documents[0].bookmarks || "").split(',').filter(Boolean);
                     
                     // Sync back to prefs if they differ (ensures fast path stays correct for next time)
                     if (session.prefs?.role !== role) {
@@ -106,7 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 email: session.email,
                 role: role,
                 avatarId: session.prefs?.avatarId,
-                savedArticles: (metaDocs.documents[0]?.bookmarks || "").split(',').filter(Boolean)
+                savedArticles: bookmarks
             });
 
         } catch (e) {
