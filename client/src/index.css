@@ -108,9 +108,41 @@ body {
   }
 
   /* Inline Color Sanitization for Dark Mode Integrity */
-  .dark .ql-editor span[style*="color"],
-  .dark .prose span[style*="color"],
   .dark .article-content span[style*="color"] {
     color: var(--color-text-primary) !important;
+  }
+
+  /* High-Fidelity Multimedia Alignment Macros */
+  .ql-align-center { text-align: center; }
+  .ql-align-right { text-align: right; }
+  .ql-align-left { text-align: left; }
+  .ql-align-justify { text-align: justify; }
+
+  /* Image Wrap-Around Logic for investigative layouts */
+  .article-content img.ql-align-right {
+    float: right;
+    margin-left: 2rem;
+    margin-bottom: 1.5rem;
+    max-width: 50%;
+  }
+
+  .article-content img.ql-align-left {
+    float: left;
+    margin-right: 2rem;
+    margin-bottom: 1.5rem;
+    max-width: 50%;
+  }
+
+  .article-content img.ql-align-center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1.5rem;
+  }
+
+  .article-content .twitter-tweet {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    margin-bottom: 2rem !important;
   }
 }

@@ -209,6 +209,23 @@ const SubmitNews = () => {
         }
     };
 
+    // High-Fidelity Social Embed Handler
+    const socialHandler = useCallback(() => {
+        const url = window.prompt("Enter Social Media URL (Twitter/X):");
+        if (!url) return;
+
+        const quill = quillRef.current.getEditor();
+        const range = quill.getSelection();
+        
+        // High-Fidelity Social Card Parchment
+        if (url.includes('twitter.com') || url.includes('x.com')) {
+            const tweetHtml = `<blockquote class="twitter-tweet"><a href="${url}"></a></blockquote>`;
+            quill.clipboard.dangerouslyPasteHTML(range.index, tweetHtml);
+        } else {
+            alert("Currently, only Twitter/X embeds are supported for high-fidelity rendering.");
+        }
+    }, []);
+
     // High-Fidelity Image Synergy Handler
     const imageHandler = useCallback(() => {
         const input = document.createElement('input');
@@ -252,7 +269,8 @@ const SubmitNews = () => {
                 ['clean']
             ],
             handlers: {
-                image: imageHandler
+                image: imageHandler,
+                video: socialHandler // Re-purposing video tool for Social Embeds or adding a new tool
             }
         },
     }), [imageHandler]);
