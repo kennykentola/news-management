@@ -43,9 +43,9 @@ const Footer = () => {
                     <div className="space-y-8">
                         <h4 className="text-[10px] font-black text-text-secondary uppercase tracking-[0.3em]">Validation Lab</h4>
                         <ul className="space-y-4 list-none p-0">
-                            <li><Link to="/fact-check" className="text-text-primary font-bold text-sm hover:text-primary transition-colors no-underline">Neural Fact Check</Link></li>
+                            <li><Link to="/check" className="text-text-primary font-bold text-sm hover:text-primary transition-colors no-underline">Neural Fact Check</Link></li>
                             <li><Link to="/archive" className="text-text-primary font-bold text-sm hover:text-primary transition-colors no-underline">Intelligence Archive</Link></li>
-                            <li><Link to="/privacy" className="text-text-primary font-bold text-sm hover:text-primary transition-colors no-underline">Identity Protocal</Link></li>
+                            <li><Link to="/identity" className="text-text-primary font-bold text-sm hover:text-primary transition-colors no-underline">Identity Protocol</Link></li>
                         </ul>
                     </div>
 
@@ -72,12 +72,12 @@ const Footer = () => {
                         © 2026 NEWS GUARD INTELLIGENCE UNIT. ALL RIGHTS RESERVED.
                     </p>
                     <div className="flex items-center gap-6 text-[10px] font-black text-text-secondary uppercase tracking-tighter">
-                        <div className="flex items-center gap-2">
-                             <Shield size={12} className="text-primary" /> Verified Manuscript
-                        </div>
-                        <div className="flex items-center gap-2">
-                             <Zap size={12} className="text-primary" /> AI Managed Interface
-                        </div>
+                        <Link to="/privacy" className="flex items-center gap-2 hover:text-primary transition-colors no-underline text-text-secondary">
+                             <Shield size={12} className="text-primary" /> Privacy Policy
+                        </Link>
+                        <Link to="/terms" className="flex items-center gap-2 hover:text-primary transition-colors no-underline text-text-secondary">
+                             <Zap size={12} className="text-primary" /> Terms of Service
+                        </Link>
                     </div>
                 </div>
             </div>

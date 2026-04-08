@@ -98,17 +98,17 @@ const ReviewNews = () => {
                                             By {article.authorName} • {new Date(article.createdAt).toLocaleDateString()}
                                         </div>
                                     </div>
-                                    <div className="flex flex-wrap gap-2 sm:mt-0">
+                                    <div className="flex flex-wrap gap-3 sm:mt-0">
                                         <div className={`px-4 py-2 rounded-xl text-[10px] font-black flex items-center gap-2 border shadow-sm whitespace-nowrap
                                             ${article.aiClassification === 'FAKE' ? 'bg-danger/10 text-danger border-danger/20' : 
-                                              article.aiClassification === 'MISLEADING' ? 'bg-amber-100/50 text-amber-700 border-amber-200' :
-                                              article.aiClassification === 'SATIRE' ? 'bg-purple-100/50 text-purple-700 border-purple-200' :
-                                              'bg-primary/10 text-primary-dark dark:text-primary border-primary/20'}
+                                              article.aiClassification === 'MISLEADING' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                                              article.aiClassification === 'SATIRE' ? 'bg-purple-500/10 text-purple-600 border-purple-500/20' :
+                                              'bg-primary/10 text-primary border-primary/20'}
                                         `}>
                                             <ShieldCheck size={14} />
                                             AI: {article.aiClassification || article.aiLabel}
                                         </div>
-                                        <div className="px-4 py-2 rounded-xl bg-text-primary text-bg-primary text-[10px] font-black flex items-center gap-2 shadow-sm border border-text-primary whitespace-nowrap">
+                                        <div className="px-4 py-2 rounded-xl bg-bg-tertiary text-text-primary text-[10px] font-black flex items-center gap-2 shadow-sm border border-bg-tertiary whitespace-nowrap">
                                             <ShieldCheck size={14} className="text-primary" />
                                             Trust: {Math.round(article.aiCredibility || 0)}%
                                         </div>
@@ -136,7 +136,11 @@ const ReviewNews = () => {
                                 )}
 
                                 <p className="text-text-secondary font-medium leading-relaxed">
-                                    {(article.content || article.text).substring(0, 250).replace(/<[^>]*>/g, '')}...
+                                    {(article.content || article.text || '')
+                                        .replace(/<[^>]*>/g, '')
+                                        .replace(/&nbsp;/g, ' ')
+                                        .replace(/&amp;nbsp;/g, ' ')
+                                        .substring(0, 250)}...
                                 </p>
 
                                 <div className="flex flex-wrap gap-4 pt-4 border-t border-bg-tertiary">

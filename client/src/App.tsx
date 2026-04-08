@@ -13,6 +13,10 @@ import Home from './pages/Home';
 import ArticleDetail from './pages/ArticleDetail';
 import FactCheck from './pages/FactCheck';
 import CategoryPage from './pages/CategoryPage';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
+import IntelligenceArchive from './pages/IntelligenceArchive';
+import IdentityProtocol from './pages/IdentityProtocol';
 import { Toaster } from 'react-hot-toast';
 
 const Unauthorized = () => {
@@ -50,6 +54,10 @@ function App() {
                             <Route path="/article/:id" element={<ArticleDetail />} />
                             <Route path="/all" element={<CategoryPage />} />
                             <Route path="/category/:category" element={<CategoryPage />} />
+                            <Route path="/privacy" element={<Privacy />} />
+                            <Route path="/terms" element={<Terms />} />
+                            <Route path="/archive" element={<IntelligenceArchive />} />
+                            <Route path="/identity" element={<IdentityProtocol />} />
                             <Route path="/unauthorized" element={<Unauthorized />} />
 
                             <Route

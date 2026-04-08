@@ -223,7 +223,7 @@ const Home = () => {
                                 <p className="text-white/80 font-bold text-sm tracking-tight leading-relaxed">
                                     Deploy our neural assessment tools to verify the integrity of any information asset in real-time.
                                 </p>
-                                <Link to="/fact-check" className="inline-flex items-center gap-2 bg-text-primary text-bg-primary px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all no-underline">
+                                <Link to="/check" className="inline-flex items-center gap-2 bg-text-primary text-bg-primary px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all no-underline">
                                     Fact Check Lab <ArrowRight size={16} />
                                 </Link>
                             </div>
