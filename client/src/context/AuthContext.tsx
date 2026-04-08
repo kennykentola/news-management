@@ -223,6 +223,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updateAvatar = async (avatarId: string) => {
         const session = await account.get();
         await account.updatePrefs({ ...session.prefs, avatarId });
+        
+        // Force sync local state so UI updates instantly
+        if (user) {
+            setUser({ ...user, avatarId });
+        }
+        
         await checkAuth();
     };
 

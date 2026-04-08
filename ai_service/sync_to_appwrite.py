@@ -69,7 +69,8 @@ def sync_data():
                     ]
                 )
                 
-                if existing['total'] > 0:
+                # Appwrite SDK returns a DocumentList object, use attribute access
+                if getattr(existing, 'total', 0) > 0:
                     duplicates += 1
                     continue # Skip ingestion of redundant asset
 

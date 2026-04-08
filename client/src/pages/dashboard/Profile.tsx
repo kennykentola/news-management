@@ -20,10 +20,17 @@ const Profile = () => {
 
     if (!user) return null;
 
-    // Helper to get Appwrite Preview URL
+    // Helper to get Appwrite Preview URL with High-Fidelity Parameters
     const getAvatarUrl = (fileId: string) => {
         try {
-            return storage.getFilePreview(BUCKET_ID_IMAGES, fileId).toString();
+            // Optimized for 400x400 with high quality and focus on center
+            return storage.getFilePreview(
+                BUCKET_ID_IMAGES, 
+                fileId, 
+                400, 400, 
+                'center', 
+                100
+            ).toString();
         } catch (e) {
             return null;
         }
@@ -37,9 +44,9 @@ const Profile = () => {
         try {
             const uploadedFile = await storage.createFile(BUCKET_ID_IMAGES, ID.unique(), file);
             await updateAvatar(uploadedFile.$id);
-            toast.success('Profile picture updated successfully');
+            toast.success('Digital Identity Synchronized');
         } catch (error: any) {
-            toast.error(error.message || 'Failed to upload image');
+            toast.error(error.message || 'Identity Sync Failed');
         } finally {
             setIsUploading(false);
         }
@@ -53,27 +60,27 @@ const Profile = () => {
 
         try {
             await updateName(newName);
-            toast.success('Name updated successfully');
+            toast.success('Identity Record Updated');
             setIsEditingName(false);
         } catch (error: any) {
-            toast.error(error.message || 'Failed to update name');
+            toast.error(error.message || 'Metadata Update Failed');
         }
     };
 
     const handleUpdatePassword = async (e: React.FormEvent) => {
         e.preventDefault();
         if (passwords.new !== passwords.confirm) {
-            toast.error('New passwords do not match');
+            toast.error('Credential Mismatch Detected');
             return;
         }
 
         try {
             await updatePassword(passwords.new, passwords.current);
-            toast.success('Password updated successfully');
+            toast.success('Security Protocol Updated');
             setIsUpdatingPassword(false);
             setPasswords({ current: '', new: '', confirm: '' });
         } catch (error: any) {
-            toast.error(error.message || 'Failed to update password');
+            toast.error(error.message || 'Credential Sync Failed');
         }
     };
 
@@ -96,7 +103,16 @@ const Profile = () => {
                         <div className="relative group">
                             <div className="w-40 h-40 rounded-[2.5rem] bg-primary text-white flex items-center justify-center font-black text-6xl shadow-2xl shadow-primary/30 overflow-hidden border-4 border-bg-secondary">
                                 {user.avatarId ? (
-                                    <img src={getAvatarUrl(user.avatarId)!} alt={user.name} className="w-full h-full object-cover" />
+                                    <img 
+                                        src={getAvatarUrl(user.avatarId)!} 
+                                        alt={user.name} 
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            // Fallback to initials if image fails to load
+                                            (e.target as HTMLImageElement).style.display = 'none';
+                                            (e.target as HTMLImageElement).parentElement!.innerText = user.name.charAt(0);
+                                        }}
+                                    />
                                 ) : (
                                     user.name.charAt(0)
                                 )}
