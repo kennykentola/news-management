@@ -20,17 +20,10 @@ const Profile = () => {
 
     if (!user) return null;
 
-    // Helper to get Appwrite Preview URL with High-Fidelity Parameters
+    // Helper to get Appwrite File View URL — direct, stable, no type casting needed
     const getAvatarUrl = (fileId: string) => {
         try {
-            // Optimized for 400x400 with high quality and focus on center
-            return storage.getFilePreview(
-                BUCKET_ID_IMAGES, 
-                fileId, 
-                400, 400, 
-                'center' as any, 
-                100
-            ).toString();
+            return storage.getFileView(BUCKET_ID_IMAGES, fileId).toString();
         } catch (e) {
             return null;
         }

@@ -8,51 +8,73 @@ OUTPUT = 'dataset.csv'
 
 def scrape_full_article(url):
     """
-    High-Fidelity Scraper: Visits the source URL to extract the full manuscript and primary imagery.
+    High-Fidelity Deep Scraper: Follows redirect chains (Google News -> real article)
+    and extracts the full manuscript and banner image from the actual source page.
     """
     try:
-        response = requests.get(url, timeout=10, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) NewsGuardBot/4.2'})
-        if response.status_code != 200: return None
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+        }
+        
+        # Follow full redirect chain to reach the real news site
+        session = requests.Session()
+        response = session.get(url, timeout=15, headers=headers, allow_redirects=True)
+        final_url = response.url
+        print(f"  -> Resolved to: {final_url[:80]}")
+        
+        if response.status_code != 200:
+            print(f"  -> HTTP {response.status_code}, skipping.")
+            return None
         
         soup = BeautifulSoup(response.content, 'html.parser')
         
-        # 1. Neural Metadata Extraction (Meta Tags)
+        # 1. Banner Image: Extract from Open Graph meta tag
         image_url = None
         og_image = soup.find("meta", property="og:image")
-        if og_image: image_url = og_image["content"]
+        if og_image and og_image.get("content"):
+            image_url = og_image["content"]
         
-        # 2. Manuscript Extraction Logic
-        # Target common news containers
+        # 2. Full Manuscript Extraction — try multiple common news site patterns
         article_body = []
         
-        # Try finding the largest text container or standard article tags
-        main_content = soup.find('article') or soup.find('main') or soup.find('div', class_='article-content') or soup.find('div', class_='content')
+        # Priority: standard <article> tag or known content divs
+        container = (
+            soup.find('article') or
+            soup.find('div', class_=lambda c: c and any(k in c for k in ['article-body', 'article-content', 'story-body', 'post-content', 'entry-content', 'article__body'])) or
+            soup.find('main')
+        )
         
-        if main_content:
-            paragraphs = main_content.find_all('p')
-            for p in paragraphs:
-                if len(p.text.strip()) > 30:
-                    article_body.append(p.text.strip())
-        
-        # Fallback to aggressive paragraph collection if no primary container found or content is thin
-        if not article_body or len("\n".join(article_body)) < 250:
-            article_body = [] # Clear thin content for total scan
-            paragraphs = soup.find_all('p')
-            for p in paragraphs:
-                text = p.get_text().strip()
-                # Filter out short snippets, social sharing text, and copyright footers
-                if len(text) > 45 and not text.lower().startswith('copyright') and not text.startswith('All rights'):
+        if container:
+            for p in container.find_all('p'):
+                text = p.get_text(separator=' ').strip()
+                if len(text) > 40:
                     article_body.append(text)
-
-        full_content = "\n\n".join(article_body)
+        
+        # Fallback: scan all page paragraphs if container-based extraction failed or is thin
+        if not article_body or len('\n'.join(article_body)) < 300:
+            article_body = []
+            for p in soup.find_all('p'):
+                text = p.get_text(separator=' ').strip()
+                if (len(text) > 50 and 
+                    not text.lower().startswith('copyright') and 
+                    not text.lower().startswith('all rights') and
+                    not text.lower().startswith('sign up') and
+                    not text.lower().startswith('subscribe')):
+                    article_body.append(text)
+        
+        full_content = '\n\n'.join(article_body)
+        print(f"  -> Extracted {len(full_content)} chars of content, image: {'YES' if image_url else 'NO'}")
         
         return {
-            'content': full_content if len(full_content) > 100 else None,
+            'content': full_content if len(full_content) > 150 else None,
             'image_url': image_url
         }
     except Exception as e:
-        print(f"Neural Extraction Error for {url}: {e}")
+        print(f"  -> Extraction error for {url[:60]}: {e}")
         return None
+
 
 def fetch_google_news_nigeria():
     """
