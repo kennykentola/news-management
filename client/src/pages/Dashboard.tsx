@@ -1,6 +1,7 @@
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { storage, BUCKET_ID_IMAGES } from '../lib/appwrite';
 import SubmitNews from './dashboard/SubmitNews';
 import ReviewNews from './dashboard/ReviewNews';
 import MyArticles from './dashboard/MyArticles';
@@ -105,8 +106,22 @@ const Dashboard = () => {
                          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">NG</div> NewsGuard
                     </Link>
                     <div className="flex items-center gap-3 p-4 bg-bg-secondary rounded-2xl border-2 border-bg-tertiary shadow-sm">
-                        <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center font-black text-xl shadow-lg shadow-primary/20">
-                            {user?.name?.charAt(0)}
+                        <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center font-black text-xl shadow-lg shadow-primary/20 overflow-hidden">
+                            {user?.avatarId ? (
+                                <img
+                                    src={(() => { try { return storage.getFilePreview(BUCKET_ID_IMAGES, user.avatarId, 96, 96, 'center' as any, 100).toString(); } catch { return ''; } })()}
+                                    alt={user?.name}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).style.display = 'none';
+                                        if ((e.target as HTMLImageElement).parentElement) {
+                                            (e.target as HTMLImageElement).parentElement!.innerText = user?.name?.charAt(0) || '?';
+                                        }
+                                    }}
+                                />
+                            ) : (
+                                user?.name?.charAt(0)
+                            )}
                         </div>
                         <div className="overflow-hidden">
                             <p className="text-xs font-black text-text-primary uppercase tracking-tight truncate">{user?.name}</p>
