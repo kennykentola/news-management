@@ -14,13 +14,13 @@ export const account = new Account(client);
 export const databases = new Databases(client);
 export const storage = new Storage(client);
 
-// Environment-driven Resource Configuration (Restoring ORIGINAL Hardware IDs)
-export const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID || '679c803200155a02239e';
-export const COLLECTION_ID_ARTICLES = import.meta.env.VITE_APPWRITE_COLLECTION_ID_ARTICLES || '679c81a2003c4f923b7e';
-export const COLLECTION_ID_USERS_METADATA = import.meta.env.VITE_APPWRITE_COLLECTION_ID_USERS_METADATA || '67c8052100234c89437b';
-export const COMMENTS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID_COMMENTS || '67c7e9740003cb0657df';
+// Environment-driven Resource Configuration (Using Verified Human-Readable IDs)
+export const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID || 'main';
+export const COLLECTION_ID_ARTICLES = import.meta.env.VITE_APPWRITE_COLLECTION_ID_ARTICLES || 'articles';
+export const COLLECTION_ID_USERS_METADATA = import.meta.env.VITE_APPWRITE_COLLECTION_ID_USERS_METADATA || 'users_metadata';
+export const COMMENTS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID_COMMENTS || 'comments';
 export const NOTIFICATIONS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID_NOTIFICATIONS || 'notifications';
-export const BUCKET_ID = import.meta.env.VITE_APPWRITE_BUCKET_ID || '67e80f7d002e11894a73';
+export const BUCKET_ID = import.meta.env.VITE_APPWRITE_BUCKET_ID || 'article_images';
 export const BUCKET_ID_IMAGES = BUCKET_ID; // Restore legacy export for component compatibility
 
 export { client };
