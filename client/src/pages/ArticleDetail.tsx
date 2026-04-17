@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES, COMMENTS_COLLECTION_ID, COLLECTION_ID_USERS_METADATA } from '../lib/appwrite';
+import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES, COMMENTS_COLLECTION_ID, RATINGS_COLLECTION_ID, COLLECTION_ID_USERS_METADATA } from '../lib/appwrite';
 import { ID, Query } from 'appwrite';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import LoadingScreen from '../components/LoadingScreen';
 import Footer from '../components/Footer';
-import { Shield, Clock, User, Share2, MessageSquare, ArrowLeft, Globe, Zap, Cpu, Link as LinkIcon, XCircle, ExternalLink, Trash2, Sun, Moon, Bookmark, BookmarkCheck } from 'lucide-react';
+import { Shield, Clock, User, Share2, MessageSquare, ArrowLeft, Globe, Zap, Cpu, Link as LinkIcon, XCircle, ExternalLink, Trash2, Sun, Moon, Bookmark, BookmarkCheck, Star, Facebook, MessageCircle } from 'lucide-react';
 
 const ArticleDetail = () => {
     const { id } = useParams<{ id: string }>();
@@ -15,10 +15,49 @@ const ArticleDetail = () => {
     const [article, setArticle] = useState<any>(null);
     const [comments, setComments] = useState<any[]>([]);
     const [newComment, setNewComment] = useState('');
+    const [averageRating, setAverageRating] = useState(0);
+    const [userRating, setUserRating] = useState(0);
+    const [totalRatings, setTotalRatings] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
     useEffect(() => {
+        const incrementViewCount = async () => {
+            if (!id) return;
+            try {
+                const current = await databases.getDocument(DATABASE_ID, COLLECTION_ID_ARTICLES, id);
+                await databases.updateDocument(DATABASE_ID, COLLECTION_ID_ARTICLES, id, {
+                    viewsCount: (current.viewsCount || 0) + 1
+                });
+            } catch (e) {
+                console.warn('View count increment failed', e);
+            }
+        };
+
+        const fetchRatings = async () => {
+            if (!id) return;
+            try {
+                const ratingsRes = await databases.listDocuments(
+                    DATABASE_ID,
+                    RATINGS_COLLECTION_ID,
+                    [Query.equal('articleId', id)]
+                );
+                const docs = ratingsRes.documents;
+                if (docs.length > 0) {
+                    const avg = docs.reduce((acc, curr) => acc + curr.rating, 0) / docs.length;
+                    setAverageRating(avg);
+                    setTotalRatings(docs.length);
+                }
+                
+                if (user) {
+                    const userRatingDoc = docs.find(d => d.userId === user.$id);
+                    if (userRatingDoc) setUserRating(userRatingDoc.rating);
+                }
+            } catch (e) {
+                console.warn('Failed to fetch ratings', e);
+            }
+        };
+
         const fetchArticle = async () => {
             if (!id) return;
             try {
@@ -65,7 +104,10 @@ const ArticleDetail = () => {
                 setLoading(false);
             }
         };
+
         fetchArticle();
+        fetchRatings();
+        incrementViewCount();
 
         // High-Fidelity Social Media Script Loader
         const scriptId = 'twitter-wjs';
@@ -81,6 +123,40 @@ const ArticleDetail = () => {
         }
     }, [id, user]);
 
+    const handleRating = async (rating: number) => {
+        if (!user) return alert('Please login to provide intelligence feedback (rating).');
+        if (!id) return;
+
+        try {
+            // Check if already rated
+            const existing = await databases.listDocuments(
+                DATABASE_ID,
+                RATINGS_COLLECTION_ID,
+                [Query.equal('articleId', id), Query.equal('userId', user.$id)]
+            );
+
+            if (existing.total > 0) {
+                await databases.updateDocument(DATABASE_ID, RATINGS_COLLECTION_ID, existing.documents[0].$id, {
+                    rating
+                });
+            } else {
+                await databases.createDocument(DATABASE_ID, RATINGS_COLLECTION_ID, ID.unique(), {
+                    articleId: id,
+                    userId: user.$id,
+                    rating,
+                    createdAt: new Date().toISOString()
+                });
+            }
+            setUserRating(rating);
+            // Refresh average (simplified local update for UX)
+            setAverageRating((averageRating * totalRatings + rating) / (totalRatings + 1));
+            setTotalRatings(prev => prev + (existing.total > 0 ? 0 : 1));
+        } catch (e) {
+            console.error(e);
+            alert('Rating failed.');
+        }
+    };
+
     const handleCommentSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user) return alert('Please login to post a comment.');
@@ -94,6 +170,7 @@ const ArticleDetail = () => {
                 {
                     content: newComment,
                     articleId: article.$id,
+                    userId: user.$id,
                     authorName: user.name,
                     createdAt: new Date().toISOString()
                 }
@@ -103,6 +180,16 @@ const ArticleDetail = () => {
         } catch (e) {
             console.error(e);
             alert('Failed to post comment.');
+        }
+    };
+
+    const handleDeleteComment = async (commentId: string) => {
+        if (!window.confirm("Delete this insight?")) return;
+        try {
+            await databases.deleteDocument(DATABASE_ID, COMMENTS_COLLECTION_ID, commentId);
+            setComments(comments.filter(c => c.$id !== commentId));
+        } catch (e) {
+            alert("Delete failed.");
         }
     };
 
@@ -149,9 +236,26 @@ const ArticleDetail = () => {
                     >
                         {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
                     </button>
-                    <button onClick={handleShare} className="p-3 bg-bg-secondary text-text-primary rounded-xl border-2 border-bg-tertiary hover:scale-105 active:scale-95 transition-all flex items-center gap-2 font-black text-xs uppercase tracking-widest shadow-sm">
-                        <Share2 size={16} /> <span className="hidden md:inline">Share</span>
-                    </button>
+                    <div className="relative group">
+                        <button className="p-3 bg-bg-secondary text-text-primary rounded-xl border-2 border-bg-tertiary hover:scale-105 active:scale-95 transition-all flex items-center gap-2 font-black text-xs uppercase tracking-widest shadow-sm">
+                            <Share2 size={16} /> <span className="hidden md:inline">Broadcast</span>
+                        </button>
+                        <div className="absolute right-0 mt-2 w-56 bg-bg-primary border-2 border-bg-tertiary rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[100] p-2">
+                            <button onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(window.location.href)}`, '_blank')} className="w-full flex items-center gap-3 p-3 hover:bg-bg-secondary rounded-xl transition-colors font-bold text-xs">
+                                <Zap size={16} className="text-primary" /> X (Twitter)
+                            </button>
+                            <button onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank')} className="w-full flex items-center gap-3 p-3 hover:bg-bg-secondary rounded-xl transition-colors font-bold text-xs">
+                                <Facebook size={16} className="text-blue-600" /> Facebook
+                            </button>
+                            <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(article.title + ' ' + window.location.href)}`, '_blank')} className="w-full flex items-center gap-3 p-3 hover:bg-bg-secondary rounded-xl transition-colors font-bold text-xs">
+                                <MessageCircle size={16} className="text-green-500" /> WhatsApp
+                            </button>
+                            <hr className="my-2 border-bg-tertiary" />
+                            <button onClick={handleShare} className="w-full flex items-center gap-3 p-3 hover:bg-bg-secondary rounded-xl transition-colors font-bold text-xs">
+                                <LinkIcon size={16} /> Copy Verification Link
+                            </button>
+                        </div>
+                    </div>
                     {user && (
                         <button
                             onClick={() => id && toggleBookmark(id)}
@@ -193,6 +297,9 @@ const ArticleDetail = () => {
                         </span>
                         <span className="text-text-secondary font-black text-[10px] uppercase tracking-widest flex items-center gap-1.5">
                             <Clock size={14} /> {new Date(article.createdAt).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        <span className="text-text-secondary font-black text-[10px] uppercase tracking-widest flex items-center gap-1.5 ml-auto">
+                            <Eye size={14} /> {article.viewsCount || 0} Signals
                         </span>
                     </div>
                     <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-text-primary tracking-tighter leading-[0.95] wrap-break-word">
@@ -249,10 +356,24 @@ const ArticleDetail = () => {
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                            <div className="bg-bg-primary p-8 rounded-3xl border-2 border-bg-tertiary space-y-4">
-                                <h4 className="text-[10px] font-black text-text-secondary uppercase tracking-widest flex items-center gap-2">
-                                    <Shield size={14} className="text-primary" /> Credibility Assessment
-                                </h4>
+                            <div className="bg-bg-primary p-8 rounded-3xl border-2 border-bg-tertiary space-y-6">
+                                <div className="flex justify-between items-center">
+                                    <h4 className="text-[10px] font-black text-text-secondary uppercase tracking-widest flex items-center gap-2">
+                                        <Shield size={14} className="text-primary" /> Credibility Assessment
+                                    </h4>
+                                    <div className="flex items-center gap-1">
+                                        {[1, 2, 3, 4, 5].map(star => (
+                                            <button 
+                                                key={star} 
+                                                onClick={() => handleRating(star)}
+                                                className={`transition-all hover:scale-125 ${(userRating || Math.round(averageRating)) >= star ? 'text-amber-500 fill-amber-500' : 'text-text-secondary/20'}`}
+                                            >
+                                                <Star size={16} />
+                                            </button>
+                                        ))}
+                                        <span className="ml-2 text-[10px] font-black text-text-secondary">{averageRating.toFixed(1)} ({totalRatings})</span>
+                                    </div>
+                                </div>
                                 <p className="text-text-primary font-bold text-lg leading-relaxed">
                                     {article.aiReason || "This article has undergone deep neural analysis. No significant misinformation markers were detected that would compromise the integrity of this report."}
                                 </p>
@@ -355,7 +476,7 @@ const ArticleDetail = () => {
 
                 <div className="space-y-8">
                     {comments.map(comment => (
-                        <div key={comment.$id} className="bg-bg-secondary p-8 rounded-4xl border-2 border-bg-tertiary shadow-xl hover:shadow-2xl transition-all">
+                        <div key={comment.$id} className="bg-bg-secondary p-8 rounded-4xl border-2 border-bg-tertiary shadow-xl hover:shadow-2xl transition-all relative group">
                             <div className="flex justify-between items-center mb-6">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-2xl bg-bg-primary text-text-secondary flex items-center justify-center font-black uppercase border-2 border-bg-tertiary shadow-sm">
@@ -366,7 +487,14 @@ const ArticleDetail = () => {
                                         <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest truncate max-w-[100px]">Asset Verified</p>
                                     </div>
                                 </div>
-                                <span className="text-[10px] font-black text-text-secondary/50 uppercase tracking-widest">{new Date(comment.createdAt).toLocaleDateString()}</span>
+                                <div className="flex items-center gap-4">
+                                    <span className="text-[10px] font-black text-text-secondary/50 uppercase tracking-widest">{new Date(comment.createdAt).toLocaleDateString()}</span>
+                                    {(user && (user.$id === comment.userId || user.role === 'ADMIN')) && (
+                                        <button onClick={() => handleDeleteComment(comment.$id)} className="text-danger opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-danger/10 rounded-lg">
+                                            <Trash2 size={14} />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                             <p className="text-lg font-bold leading-relaxed text-text-primary/80">{comment.content}</p>
                         </div>

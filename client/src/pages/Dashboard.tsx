@@ -12,6 +12,7 @@ import Overview from './dashboard/Overview';
 import Stats from './dashboard/Stats';
 import Profile from './dashboard/Profile';
 import AIControl from './dashboard/AIControl';
+import AuditLog from './dashboard/AuditLog';
 import NotificationCenter from '../components/NotificationCenter';
 import {
     Menu,
@@ -28,7 +29,8 @@ import {
     Settings,
     LogOut,
     Home,
-    User
+    User,
+    History
 } from 'lucide-react';
 import AdminUsers from './dashboard/AdminUsers';
 
@@ -208,6 +210,13 @@ const Dashboard = () => {
                                 onClick={closeSidebar}
                             />
                             <SidebarItem
+                                to="/dashboard/audit"
+                                label="Audit Trail"
+                                icon={<History size={20} />}
+                                active={isActive('/dashboard/audit')}
+                                onClick={closeSidebar}
+                            />
+                            <SidebarItem
                                 to="/dashboard/stats"
                                 label="Analytics"
                                 icon={<BarChart2 size={20} />}
@@ -250,6 +259,7 @@ const Dashboard = () => {
                         <Route path="/publish" element={<PublishNews />} />
                         <Route path="/stats" element={<Stats />} />
                         <Route path="/ai-control" element={<AIControl />} />
+                        <Route path="/audit" element={<AuditLog />} />
                         <Route path="/users" element={<AdminUsers />} />
                     </Routes>
                 </div>

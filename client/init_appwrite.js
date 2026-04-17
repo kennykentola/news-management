@@ -20,8 +20,10 @@ const usersService = new Users(client);
 const DATABASE_ID = 'main';
 const ARTICLES_COLLECTION_ID = 'articles';
 const COMMENTS_COLLECTION_ID = 'comments';
+const RATINGS_COLLECTION_ID = 'ratings';
 const NOTIFICATIONS_COLLECTION_ID = 'notifications';
 const USERS_METADATA_COLLECTION_ID = 'users_metadata';
+const AUDIT_LOGS_COLLECTION_ID = 'audit_logs';
 
 async function createAttribute(collectionId, attr) {
     try {
@@ -29,6 +31,8 @@ async function createAttribute(collectionId, attr) {
             await databases.createStringAttribute(DATABASE_ID, collectionId, attr.key, attr.size, attr.required, attr.default);
         } else if (attr.type === 'double') {
             await databases.createFloatAttribute(DATABASE_ID, collectionId, attr.key, attr.required);
+        } else if (attr.type === 'integer') {
+            await databases.createIntegerAttribute(DATABASE_ID, collectionId, attr.key, attr.required, attr.min, attr.max, attr.default);
         } else if (attr.type === 'datetime') {
             await databases.createDatetimeAttribute(DATABASE_ID, collectionId, attr.key, attr.required);
         } else if (attr.type === 'boolean') {
@@ -54,8 +58,10 @@ async function init() {
         const collections = [
             { id: ARTICLES_COLLECTION_ID, name: 'Articles' },
             { id: COMMENTS_COLLECTION_ID, name: 'Comments' },
+            { id: RATINGS_COLLECTION_ID, name: 'Ratings' },
             { id: NOTIFICATIONS_COLLECTION_ID, name: 'Notifications' },
-            { id: USERS_METADATA_COLLECTION_ID, name: 'Users Metadata' }
+            { id: USERS_METADATA_COLLECTION_ID, name: 'Users Metadata' },
+            { id: AUDIT_LOGS_COLLECTION_ID, name: 'Audit Logs' }
         ];
 
         for (const col of collections) {
@@ -100,7 +106,9 @@ async function init() {
             { key: 'aiReason', type: 'string', size: 5000, required: false },
             { key: 'aiCredibility', type: 'double', required: false },
             { key: 'aiClassification', type: 'string', size: 50, required: false },
-            { key: 'aiEdgeCases', type: 'string', size: 2000, required: false }
+            { key: 'aiEdgeCases', type: 'string', size: 2000, required: false },
+            { key: 'viewsCount', type: 'integer', required: false, default: 0 },
+            { key: 'sharesCount', type: 'integer', required: false, default: 0 }
         ];
 
         const notificationAttrs = [
@@ -120,6 +128,30 @@ async function init() {
             { key: 'createdAt', type: 'datetime', required: false }
         ];
 
+        const commentAttrs = [
+            { key: 'articleId', type: 'string', size: 100, required: true },
+            { key: 'userId', type: 'string', size: 100, required: true },
+            { key: 'authorName', type: 'string', size: 200, required: true },
+            { key: 'content', type: 'string', size: 5000, required: true },
+            { key: 'createdAt', type: 'datetime', required: false }
+        ];
+
+        const ratingAttrs = [
+            { key: 'articleId', type: 'string', size: 100, required: true },
+            { key: 'userId', type: 'string', size: 100, required: true },
+            { key: 'rating', type: 'integer', required: true, min: 1, max: 5 },
+            { key: 'createdAt', type: 'datetime', required: false }
+        ];
+
+        const auditLogAttrs = [
+            { key: 'userId', type: 'string', size: 100, required: true },
+            { key: 'userName', type: 'string', size: 200, required: true },
+            { key: 'action', type: 'string', size: 100, required: true },
+            { key: 'entityId', type: 'string', size: 100, required: false },
+            { key: 'details', type: 'string', size: 2000, required: false },
+            { key: 'timestamp', type: 'datetime', required: false }
+        ];
+
         console.log('Syncing Article Attributes...');
         for (const attr of articleAttrs) await createAttribute(ARTICLES_COLLECTION_ID, attr);
 
@@ -128,6 +160,15 @@ async function init() {
 
         console.log('Syncing User Metadata Attributes...');
         for (const attr of userMetadataAttrs) await createAttribute(USERS_METADATA_COLLECTION_ID, attr);
+
+        console.log('Syncing Comment Attributes...');
+        for (const attr of commentAttrs) await createAttribute(COMMENTS_COLLECTION_ID, attr);
+
+        console.log('Syncing Rating Attributes...');
+        for (const attr of ratingAttrs) await createAttribute(RATINGS_COLLECTION_ID, attr);
+
+        console.log('Syncing Audit Log Attributes...');
+        for (const attr of auditLogAttrs) await createAttribute(AUDIT_LOGS_COLLECTION_ID, attr);
 
         // --- NEW: Sync Existing Auth Users to Metadata ---
         console.log('Syncing Auth Users to Database Metadata...');

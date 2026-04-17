@@ -19,7 +19,9 @@ export const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID || 'main';
 export const COLLECTION_ID_ARTICLES = import.meta.env.VITE_APPWRITE_COLLECTION_ID_ARTICLES || 'articles';
 export const COLLECTION_ID_USERS_METADATA = import.meta.env.VITE_APPWRITE_COLLECTION_ID_USERS_METADATA || 'users_metadata';
 export const COMMENTS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID_COMMENTS || 'comments';
+export const RATINGS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID_RATINGS || 'ratings';
 export const NOTIFICATIONS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID_NOTIFICATIONS || 'notifications';
+export const AUDIT_LOGS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID_AUDIT_LOGS || 'audit_logs';
 export const BUCKET_ID = import.meta.env.VITE_APPWRITE_BUCKET_ID || 'article_images';
 export const BUCKET_ID_IMAGES = BUCKET_ID; // Restore legacy export for component compatibility
 

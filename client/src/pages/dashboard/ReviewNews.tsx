@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES } from '../../lib/appwrite';
-import { Query } from 'appwrite';
-import { CheckCircle, XCircle, Eye, Search, Filter, ShieldCheck, FileText, AlertTriangle } from 'lucide-react';
+import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES, AUDIT_LOGS_COLLECTION_ID } from '../../lib/appwrite';
+import { Query, ID } from 'appwrite';
+import { CheckCircle, XCircle, Eye, Search, Filter, ShieldCheck, FileText, AlertTriangle, History } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const ReviewNews = () => {
     const [articles, setArticles] = useState<any[]>([]);
@@ -32,12 +33,28 @@ const ReviewNews = () => {
         fetchPendingArticles();
     }, []);
 
+    const { user } = useAuth();
+
     const handleDecision = async (id: string, decision: 'APPROVED' | 'REJECTED', feedback?: string) => {
         try {
+            const article = articles.find(a => a.$id === id);
             await databases.updateDocument(DATABASE_ID, COLLECTION_ID_ARTICLES, id, {
                 status: decision,
                 editorFeedback: feedback || ''
             });
+
+            // Log to Audit Trail
+            if (user) {
+                await databases.createDocument(DATABASE_ID, AUDIT_LOGS_COLLECTION_ID, ID.unique(), {
+                    userId: user.$id,
+                    userName: user.name,
+                    action: decision,
+                    entityId: id,
+                    details: `Article "${article?.title}" was ${decision.toLowerCase()}. Feedback: ${feedback || 'None'}`,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
             setArticles(articles.filter(a => a.$id !== id));
             alert(decision === 'APPROVED' ? 'Article Approved for Admin!' : 'Changes Requested.');
         } catch (e) {
