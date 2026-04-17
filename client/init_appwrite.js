@@ -79,16 +79,8 @@ async function init() {
             }
         }
 
-        // Resize strategy: Delete large ones to fit everything
-        console.log('Optimizing storage layout (Resizing attributes)...');
-        const toResize = ['content', 'aiReason', 'editorFeedback', 'imageUrl', 'sourceUrl', 'aiEdgeCases'];
-        for (const key of toResize) {
-            try {
-                await databases.deleteAttribute(DATABASE_ID, ARTICLES_COLLECTION_ID, key);
-                console.log(`Attribute "${key}" deleted for resizing.`);
-                await new Promise(r => setTimeout(r, 2000)); 
-            } catch (e) { }
-        }
+        // Attribute synchronization
+        console.log('Ensuring schema integrity...');
 
         const articleAttrs = [
             { key: 'title', type: 'string', size: 500, required: true },

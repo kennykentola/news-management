@@ -236,9 +236,12 @@ const ArticleDetail = () => {
                     >
                         {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
                     </button>
+                    <button onClick={handleShare} className="p-3 bg-bg-secondary text-text-primary rounded-xl border-2 border-bg-tertiary hover:scale-105 active:scale-95 transition-all flex items-center gap-2 font-black text-xs uppercase tracking-widest shadow-sm">
+                        <Share2 size={16} /> <span className="hidden md:inline">Share Link</span>
+                    </button>
                     <div className="relative group">
-                        <button className="p-3 bg-bg-secondary text-text-primary rounded-xl border-2 border-bg-tertiary hover:scale-105 active:scale-95 transition-all flex items-center gap-2 font-black text-xs uppercase tracking-widest shadow-sm">
-                            <Share2 size={16} /> <span className="hidden md:inline">Broadcast</span>
+                        <button className="p-3 bg-primary text-white rounded-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/20">
+                            <Zap size={16} /> <span className="hidden md:inline">Broadcast</span>
                         </button>
                         <div className="absolute right-0 mt-2 w-56 bg-bg-primary border-2 border-bg-tertiary rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[100] p-2">
                             <button onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(window.location.href)}`, '_blank')} className="w-full flex items-center gap-3 p-3 hover:bg-bg-secondary rounded-xl transition-colors font-bold text-xs">
@@ -249,10 +252,6 @@ const ArticleDetail = () => {
                             </button>
                             <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(article.title + ' ' + window.location.href)}`, '_blank')} className="w-full flex items-center gap-3 p-3 hover:bg-bg-secondary rounded-xl transition-colors font-bold text-xs">
                                 <MessageCircle size={16} className="text-green-500" /> WhatsApp
-                            </button>
-                            <hr className="my-2 border-bg-tertiary" />
-                            <button onClick={handleShare} className="w-full flex items-center gap-3 p-3 hover:bg-bg-secondary rounded-xl transition-colors font-bold text-xs">
-                                <LinkIcon size={16} /> Copy Verification Link
                             </button>
                         </div>
                     </div>
@@ -343,14 +342,14 @@ const ArticleDetail = () => {
 
                             <div className="flex flex-wrap gap-2 md:gap-4">
                                 <div className={`px-4 md:px-6 py-3 rounded-2xl border-2 font-black text-xs md:text-sm uppercase tracking-widest flex items-center gap-3 shadow-xl transition-all
-                                    ${article.aiClassification === 'FAKE' || article.aiLabel === 'FAKE' ? 'bg-danger/10 text-danger border-danger/20 shadow-danger/10' : 'bg-primary/10 text-primary border-primary/20 shadow-primary/10'}
+                                    ${article.aiLabel === 'FAKE' ? 'bg-danger/10 text-danger border-danger/20 shadow-danger/10' : 'bg-primary/10 text-primary border-primary/20 shadow-primary/10'}
                                 `}>
-                                    {article.aiClassification === 'FAKE' || article.aiLabel === 'FAKE' ? <XCircle size={18} /> : <Zap size={18} />}
-                                    Status: {article.aiClassification || article.aiLabel || 'Verified'}
+                                    {article.aiLabel === 'FAKE' ? <XCircle size={18} /> : <Shield size={18} />}
+                                    Status: {article.aiLabel || 'VERIFIED'}
                                 </div>
                                 <div className="px-6 py-3 rounded-2xl bg-text-primary text-bg-primary border-2 border-text-primary font-black text-sm uppercase tracking-widest flex items-center gap-3 shadow-xl shadow-black/20 transition-colors">
-                                    <Shield size={18} className="text-primary" />
-                                    Trust: {Math.round(article.aiCredibility || article.aiScore || 0)}%
+                                    <Zap size={18} className="text-primary" />
+                                    Trust: {Math.round(article.aiScore || 0)}%
                                 </div>
                             </div>
                         </div>
@@ -379,18 +378,10 @@ const ArticleDetail = () => {
                                 </p>
                             </div>
 
-                            <div className="space-y-6">
-                                <div className="bg-bg-secondary p-6 rounded-3xl border-2 border-bg-tertiary shadow-lg">
-                                    <h4 className="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-3">Linguistic Edge Cases</h4>
-                                    <p className="text-sm font-bold text-text-secondary/70 italic">
-                                        "{article.aiEdgeCases || 'Analysis confirms high confidence in standard Nigerian English and vernacular patterns.'}"
-                                    </p>
-                                </div>
                                 <div className="flex items-center gap-4 text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] px-2 opacity-50">
                                     <div className="w-2 h-2 rounded-full bg-primary"></div>
-                                    Nigerian Language Protocol {article.aiClassification === 'FAKE' ? 'Violation Detected' : 'Clear'}
+                                    Neural Integrity Check Protocol
                                 </div>
-                            </div>
                         </div>
                     </div>
                 </section>
