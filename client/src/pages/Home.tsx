@@ -153,26 +153,28 @@ const Home = () => {
                 <section className="grid grid-cols-1 xl:grid-cols-12 gap-12 items-start">
                     {featuredArticle && (
                         <div className="xl:col-span-8 group relative rounded-4xl overflow-hidden shadow-2xl border-2 border-bg-tertiary bg-bg-secondary transition-all hover:shadow-primary/10">
-                            <Link to={`/article/${featuredArticle.$id}`} className="block relative aspect-16/10 xl:aspect-auto xl:h-[650px] no-underline">
-                                <img 
-                                    src={featuredArticle.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=1200'} 
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
-                                    alt={featuredArticle.title}
-                                />
-                                <div className="absolute inset-0 bg-linear-to-t from-bg-primary via-bg-primary/40 to-transparent flex flex-col justify-end p-8 md:p-16 space-y-6">
-                                    <div className="flex items-center gap-4">
+                            <Link to={`/article/${featuredArticle.$id}`} className="block no-underline">
+                                <div className="relative aspect-16/9 xl:h-[500px] overflow-hidden">
+                                    <img 
+                                        src={featuredArticle.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=1200'} 
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+                                        alt={featuredArticle.title}
+                                    />
+                                    <div className="absolute top-8 left-8 flex items-center gap-4">
                                         <span className="bg-primary text-white px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl">
                                             {featuredArticle.category || 'Featured'}
                                         </span>
-                                        <span className="bg-white/10 backdrop-blur-md text-text-primary px-3 py-1 rounded-lg text-[10px] font-black uppercase border border-white/20 flex items-center gap-1.5">
+                                        <span className="bg-bg-primary/90 backdrop-blur-md text-text-primary px-3 py-1 rounded-lg text-[10px] font-black uppercase border border-bg-tertiary flex items-center gap-1.5">
                                             <Shield size={12} className="text-primary" /> {featuredArticle.aiScore}% Trusted
                                         </span>
                                     </div>
-                                    <h2 className="text-4xl md:text-6xl font-black text-text-primary tracking-tighter leading-[0.9] max-w-3xl group-hover:text-primary transition-colors">
+                                </div>
+                                <div className="p-8 md:p-12 space-y-6">
+                                    <h2 className="text-4xl md:text-6xl font-black text-text-primary tracking-tighter leading-[0.9] group-hover:text-primary transition-colors">
                                         {featuredArticle.title}
                                     </h2>
-                                    <p className="text-lg md:text-xl text-text-secondary font-bold line-clamp-2 max-w-2xl leading-relaxed">
-                                        {featuredArticle.content?.replace(/<[^>]*>/g, '').slice(0, 200)}...
+                                    <p className="text-lg md:text-xl text-text-secondary font-bold line-clamp-2 leading-relaxed">
+                                        {featuredArticle.content?.replace(/<[^>]*>/g, '').slice(0, 300)}...
                                     </p>
                                     <div className="flex items-center gap-4 pt-4">
                                         <div className="w-12 h-12 rounded-2xl bg-text-primary text-bg-primary flex items-center justify-center font-black text-xl shadow-xl">
@@ -198,16 +200,26 @@ const Home = () => {
                                 Full Index
                             </Link>
                         </div>
-                        <div className="space-y-10">
-                            {sideArticles.map((article, idx) => (
-                                <Link key={article.$id} to={`/article/${article.$id}`} className="group flex gap-6 items-start no-underline">
-                                    <span className="text-5xl font-black text-text-secondary/20 transition-colors group-hover:text-primary/20">{idx + 2}</span>
-                                    <div className="space-y-2">
-                                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">{article.category}</span>
-                                        <h4 className="text-xl font-black text-text-primary leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-8">
+                            {sideArticles.map((article) => (
+                                <Link key={article.$id} to={`/article/${article.$id}`} className="group flex flex-col bg-bg-secondary rounded-3xl border-2 border-bg-tertiary overflow-hidden shadow-lg hover:shadow-2xl transition-all no-underline">
+                                    <div className="aspect-video overflow-hidden relative">
+                                        <img 
+                                            src={article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=800'} 
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                            alt=""
+                                        />
+                                        <div className="absolute top-3 left-3">
+                                            <span className="bg-primary text-white px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest shadow-lg">
+                                                {article.category}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="p-5 flex flex-col gap-3">
+                                        <h4 className="text-lg font-black text-text-primary leading-tight group-hover:text-primary transition-colors line-clamp-2">
                                             {article.title}
                                         </h4>
-                                        <div className="flex items-center gap-3 text-[10px] font-bold text-text-secondary uppercase tracking-widest">
+                                        <div className="flex items-center gap-3 text-[10px] font-bold text-text-secondary uppercase tracking-widest pt-2 border-t border-bg-tertiary">
                                             <Clock size={12} /> {new Date(article.createdAt).toLocaleDateString()}
                                         </div>
                                     </div>
