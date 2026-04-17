@@ -137,12 +137,12 @@ const ArticleDetail = () => {
 
     return (
         <div className="min-h-screen bg-bg-primary text-text-primary font-sans selection:bg-primary selection:text-white pb-32 transition-colors">
-            <nav className="sticky top-0 z-50 bg-bg-primary/80 backdrop-blur-md border-b-2 border-bg-tertiary px-[5%] py-4 flex justify-between items-center shadow-lg transition-colors">
+            <nav className="sticky top-0 z-50 bg-bg-primary/80 backdrop-blur-md border-b-2 border-bg-tertiary px-4 sm:px-[5%] py-4 flex justify-between items-center shadow-lg transition-colors">
                 <Link to="/" className="flex items-center gap-2 text-text-primary font-black uppercase text-xs tracking-widest hover:text-primary transition-all no-underline">
-                    <ArrowLeft size={18} /> Back to Hub
+                    <ArrowLeft size={18} /> <span className="hidden sm:inline"> Back</span>
                 </Link>
-                <div className="flex items-center gap-6">
-                    <button 
+                <div className="flex items-center gap-2 md:gap-6">
+                    <button
                         onClick={toggleDarkMode}
                         className="p-1.5 bg-bg-secondary rounded-lg border border-bg-tertiary text-text-primary hover:scale-110 active:scale-95 transition-all shadow-sm"
                         aria-label="Toggle Theme"
@@ -150,37 +150,36 @@ const ArticleDetail = () => {
                         {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
                     </button>
                     <button onClick={handleShare} className="p-3 bg-bg-secondary text-text-primary rounded-xl border-2 border-bg-tertiary hover:scale-105 active:scale-95 transition-all flex items-center gap-2 font-black text-xs uppercase tracking-widest shadow-sm">
-                        <Share2 size={16} /> Share
+                        <Share2 size={16} /> <span className="hidden md:inline">Share</span>
                     </button>
                     {user && (
-                        <button 
-                            onClick={() => id && toggleBookmark(id)} 
-                            className={`p-3 rounded-xl transition-all flex items-center gap-2 font-black text-xs uppercase tracking-widest shadow-lg ${
-                                user.savedArticles?.includes(id!) 
-                                ? 'bg-primary text-white shadow-primary/20' 
-                                : 'bg-bg-secondary text-text-primary border-2 border-bg-tertiary shadow-sm'
-                            }`}
+                        <button
+                            onClick={() => id && toggleBookmark(id)}
+                            className={`p-3 rounded-xl transition-all flex items-center gap-2 font-black text-xs uppercase tracking-widest shadow-lg ${user.savedArticles?.includes(id!)
+                                    ? 'bg-primary text-white shadow-primary/20'
+                                    : 'bg-bg-secondary text-text-primary border-2 border-bg-tertiary shadow-sm'
+                                }`}
                         >
                             {user.savedArticles?.includes(id!) ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
-                            {user.savedArticles?.includes(id!) ? 'Saved' : 'Save for Later'}
+                            <span className="hidden md:inline">{user.savedArticles?.includes(id!) ? 'Saved' : 'Save for Later'}</span>
                         </button>
                     )}
                     {user?.role === 'ADMIN' && (
-                        <button 
+                        <button
                             onClick={async () => {
-                                if(window.confirm("CRITICAL: Permanently delete this article from public archive?")) {
+                                if (window.confirm("CRITICAL: Permanently delete this article from public archive?")) {
                                     try {
                                         await databases.deleteDocument(DATABASE_ID, COLLECTION_ID_ARTICLES, article.$id);
                                         alert("Article Purged.");
                                         window.location.href = '/';
-                                    } catch(e) {
+                                    } catch (e) {
                                         alert("Purge failed.");
                                     }
                                 }
                             }}
                             className="p-3 bg-danger text-white rounded-xl shadow-lg shadow-danger/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 font-black text-xs uppercase tracking-widest"
                         >
-                            <Trash2 size={16} /> Purge Article
+                            <Trash2 size={16} /> <span className="hidden md:inline">Purge Article</span>
                         </button>
                     )}
                 </div>
@@ -190,13 +189,13 @@ const ArticleDetail = () => {
                 <header className="space-y-8">
                     <div className="flex flex-wrap gap-4 items-center">
                         <span className="bg-primary/10 text-primary-dark dark:text-primary px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-primary/20 flex items-center gap-2">
-                             <Globe size={12} /> {article.category || 'General'}
+                            <Globe size={12} /> {article.category || 'General'}
                         </span>
                         <span className="text-text-secondary font-black text-[10px] uppercase tracking-widest flex items-center gap-1.5">
                             <Clock size={14} /> {new Date(article.createdAt).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </span>
                     </div>
-                    <h1 className="text-5xl md:text-7xl font-black text-text-primary tracking-tighter leading-[0.95]">
+                    <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-text-primary tracking-tighter leading-[0.95] wrap-break-word">
                         {article.title}
                     </h1>
                     <div className="flex flex-wrap items-center justify-between gap-8 pt-8 border-t-2 border-bg-tertiary">
@@ -218,13 +217,13 @@ const ArticleDetail = () => {
                         </div>
                     </div>
                 </header>
-                
+
                 {/* AI Verification Logic Block */}
                 <section className="bg-bg-secondary p-8 md:p-10 rounded-4xl border-2 border-bg-tertiary shadow-2xl relative overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
                     <div className={`absolute top-0 right-0 p-10 opacity-5 ${article.aiLabel === 'FAKE' ? 'text-danger' : 'text-primary'}`}>
                         <Cpu size={180} />
                     </div>
-                    
+
                     <div className="relative z-10 space-y-8">
                         <div className="flex flex-wrap items-center justify-between gap-6">
                             <div className="space-y-2">
@@ -234,9 +233,9 @@ const ArticleDetail = () => {
                                 </div>
                                 <p className="text-text-secondary font-bold">Analysis performed by NewsGuard Neural Engine v4.2</p>
                             </div>
-                            
-                            <div className="flex gap-4">
-                                <div className={`px-6 py-3 rounded-2xl border-2 font-black text-sm uppercase tracking-widest flex items-center gap-3 shadow-xl transition-all
+
+                            <div className="flex flex-wrap gap-2 md:gap-4">
+                                <div className={`px-4 md:px-6 py-3 rounded-2xl border-2 font-black text-xs md:text-sm uppercase tracking-widest flex items-center gap-3 shadow-xl transition-all
                                     ${article.aiClassification === 'FAKE' || article.aiLabel === 'FAKE' ? 'bg-danger/10 text-danger border-danger/20 shadow-danger/10' : 'bg-primary/10 text-primary border-primary/20 shadow-primary/10'}
                                 `}>
                                     {article.aiClassification === 'FAKE' || article.aiLabel === 'FAKE' ? <XCircle size={18} /> : <Zap size={18} />}
@@ -258,7 +257,7 @@ const ArticleDetail = () => {
                                     {article.aiReason || "This article has undergone deep neural analysis. No significant misinformation markers were detected that would compromise the integrity of this report."}
                                 </p>
                             </div>
-                            
+
                             <div className="space-y-6">
                                 <div className="bg-bg-secondary p-6 rounded-3xl border-2 border-bg-tertiary shadow-lg">
                                     <h4 className="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-3">Linguistic Edge Cases</h4>
@@ -277,19 +276,19 @@ const ArticleDetail = () => {
 
                 {article.imageUrl && (
                     <div className="relative rounded-4xl overflow-hidden border-2 border-bg-tertiary shadow-2xl aspect-video group">
-                         <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
+                        <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
                     </div>
                 )}
 
-                <section 
+                <section
                     className="article-content prose prose-2xl dark:prose-invert prose-black dark:prose-white max-w-none text-xl md:text-2xl font-medium leading-relaxed md:leading-[1.8] text-text-primary/90 space-y-8 prose-img:rounded-3xl prose-img:shadow-2xl"
-                    dangerouslySetInnerHTML={{ 
+                    dangerouslySetInnerHTML={{
                         __html: (article.content || article.text || article.body || '')
-                        .replace(/&nbsp;/g, ' ')
-                        .replace(/&quot;/g, '"')
-                        .replace(/&#39;/g, "'")
-                        .replace(/&amp;/g, '&')
-                        .replace(/<p><br><\/p>/g, '') // Remove empty quill lines
+                            .replace(/&nbsp;/g, ' ')
+                            .replace(/&quot;/g, '"')
+                            .replace(/&#39;/g, "'")
+                            .replace(/&amp;/g, '&')
+                            .replace(/<p><br><\/p>/g, '') // Remove empty quill lines
                     }}
                 />
 
@@ -303,10 +302,10 @@ const ArticleDetail = () => {
                                 </h4>
                                 <h3 className="text-2xl font-black text-text-primary italic tracking-tight">Verified External Intelligence Dispatch</h3>
                                 <p className="text-text-secondary font-bold max-w-md">This report is backed by data from a verified external domain. You can audit the original source below.</p>
-                                <a 
-                                    href={article.sourceUrl} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
+                                <a
+                                    href={article.sourceUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="inline-flex items-center gap-3 px-8 py-4 bg-primary text-white font-black rounded-2xl shadow-xl hover:scale-105 transition-all no-underline text-xs uppercase tracking-widest mt-4"
                                 >
                                     <ExternalLink size={18} /> Open Original Source
@@ -348,9 +347,9 @@ const ArticleDetail = () => {
                     </form>
                 ) : (
                     <div className="bg-bg-secondary border-2 border-bg-tertiary p-12 rounded-4xl text-center space-y-6">
-                         <User className="mx-auto text-text-secondary/50" size={48} />
-                         <p className="text-xl font-black text-text-secondary uppercase tracking-tighter">Authentication Required to provide insight.</p>
-                         <Link to="/login" className="inline-block px-10 py-4 bg-text-primary text-bg-primary rounded-2xl font-black shadow-xl hover:scale-105 transition-all no-underline">Authorize & Continue</Link>
+                        <User className="mx-auto text-text-secondary/50" size={48} />
+                        <p className="text-xl font-black text-text-secondary uppercase tracking-tighter">Authentication Required to provide insight.</p>
+                        <Link to="/login" className="inline-block px-10 py-4 bg-text-primary text-bg-primary rounded-2xl font-black shadow-xl hover:scale-105 transition-all no-underline">Authorize & Continue</Link>
                     </div>
                 )}
 

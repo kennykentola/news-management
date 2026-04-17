@@ -1,12 +1,18 @@
 import os
 import pandas as pd
 import requests
+import joblib
+import numpy as np
 from dotenv import load_dotenv
 from appwrite.client import Client
 from appwrite.services.databases import Databases
 from appwrite.id import ID
 from datetime import datetime
 import html
+try:
+    from textblob import TextBlob
+except ImportError:
+    TextBlob = None
 
 load_dotenv()
 
@@ -16,6 +22,57 @@ PROJECT_ID = os.getenv('APPWRITE_PROJECT_ID')
 API_KEY = os.getenv('APPWRITE_API_KEY')
 DATABASE_ID = os.getenv('APPWRITE_DATABASE_ID', 'main')
 COLLECTION_ID = os.getenv('APPWRITE_COLLECTION_ID_ARTICLES', 'articles')
+
+# Load AI Model
+MODEL_PATH = 'model.pkl'
+model = None
+vectorizer = None
+
+if os.path.exists(MODEL_PATH):
+    try:
+        print(f"Loading AI Model from {MODEL_PATH}...")
+        model, vectorizer = joblib.load(MODEL_PATH)
+        print("Model loaded successfully.")
+    except Exception as e:
+        print(f"Failed to load AI model: {e}")
+
+def predict_news(text):
+    """
+    Analyzes news text using the trained model and returns high-fidelity metrics.
+    """
+    if not model or not vectorizer or not text:
+        return 'UNVERIFIED', 50.0, "AI analysis skipped: Model or content missing."
+
+    try:
+        tfidf_text = vectorizer.transform([text])
+        prediction = model.predict(tfidf_text)[0] # 'REAL' or 'FAKE' or [0, 1]
+        proba = model.predict_proba(tfidf_text)[0]
+        
+        # Determine score based on 'REAL' probability
+        classes = list(model.classes_)
+        real_idx = classes.index('REAL') if 'REAL' in classes else (0 if classes[0] == 0 else -1)
+        
+        if real_idx != -1:
+            reliability_score = proba[real_idx] * 100
+        else:
+            reliability_score = proba.max() * 100 # Fallback
+            if str(prediction) == '1' or str(prediction).upper() == 'FAKE':
+                reliability_score = 100 - reliability_score
+
+        # Readable label
+        label = 'REAL' if (str(prediction) == '0' or str(prediction).upper() == 'REAL') else 'FAKE'
+        
+        # Basic Reason generation
+        reason = f"Automated analysis indicates this content aligns with {label.lower()} news patterns."
+        if TextBlob:
+            sentiment = TextBlob(text).sentiment.polarity
+            if abs(sentiment) > 0.6:
+                reason += f" High emotional bias detected (polarity: {sentiment:.2f})."
+        
+        return label, round(float(reliability_score), 2), reason
+    except Exception as e:
+        print(f"Prediction error: {e}")
+        return 'UNVERIFIED', 50.0, f"Analysis failed: {e}"
 
 def sync_data():
     if not PROJECT_ID or not API_KEY:
@@ -35,7 +92,8 @@ def sync_data():
         return
 
     try:
-        df = pd.read_csv(DATASET_PATH).head(20) # Get top 20 news
+        # User requested just 2 articles per sync
+        df = pd.read_csv(DATASET_PATH).head(10) # Load 10, but we cap at 2 success
         df = df.fillna('')
         
         # Clean col names
@@ -44,9 +102,11 @@ def sync_data():
         count = 0
         duplicates = 0
         for _, row in df.iterrows():
+            if count >= 2: break # Cap at 2 NEW articles as per user request
+
             try:
                 # 1. High-Fidelity Data Extraction
-                potential_text = row.get('text') or row.get('content') or 'No content available'
+                potential_text = row.get('text') or row.get('content') or row.get('title') or 'No content available'
                 potential_title = row.get('title') 
                 potential_link = row.get('link') or row.get('url') or ''
                 
@@ -58,7 +118,6 @@ def sync_data():
                     clean_title = html.unescape(str(potential_title)).strip()
 
                 # 2. Neural Deduplication Logic
-                # Check if an article with this title or link already exists
                 from appwrite.query import Query
                 existing = databases.list_documents(
                     DATABASE_ID,
@@ -69,15 +128,14 @@ def sync_data():
                     ]
                 )
                 
-                # Appwrite SDK returns a DocumentList object, use attribute access
                 if getattr(existing, 'total', 0) > 0:
                     duplicates += 1
-                    continue # Skip ingestion of redundant asset
+                    continue
 
-                label = row.get('label', 'UNVERIFIED')
-                score = 0 # Default to 0 for unverified sync
+                # 3. AI Verification (Live Analysis)
+                ai_label, ai_score, ai_reason = predict_news(clean_content)
                 
-                # 3. High-Fidelity Asset Resolution (Banner Imagery)
+                # 4. Image Resolution
                 scraped_image = row.get('image_url')
                 default_banner = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=800'
                 final_image = scraped_image if scraped_image and str(scraped_image).startswith('http') else default_banner
@@ -91,10 +149,10 @@ def sync_data():
                         'content': clean_content,
                         'authorName': 'AI News Syncer',
                         'authorId': 'ai_system',
-                        'status': 'PENDING', 
-                        'aiLabel': str(label)[:50],
-                        'aiScore': float(score),
-                        'aiReason': "This article was automatically ingested from an external source. Content authenticity has not yet been manually verified by an editor.",
+                        'status': 'PENDING', # Always PENDING as per user request
+                        'aiLabel': ai_label,
+                        'aiScore': ai_score,
+                        'aiReason': ai_reason,
                         'createdAt': datetime.now().isoformat(),
                         'category': 'General',
                         'sourceUrl': potential_link[:500],
@@ -102,11 +160,11 @@ def sync_data():
                     }
                 )
                 count += 1
-                if count >= 20: break # Cap at 20 articles per sync
+                print(f"  + Synced: {clean_title[:60]}... [AI: {ai_label} {ai_score}%]")
             except Exception as e:
                 print(f"Failed to sync row: {e}")
                 
-        print(f"Successfully synced {count} articles to Appwrite.")
+        print(f"Successfully synced {count} new articles to Appwrite. (Duplicates skipped: {duplicates})")
     except Exception as e:
         print(f"Error reading dataset: {e}")
 

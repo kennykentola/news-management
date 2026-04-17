@@ -179,7 +179,7 @@ const Overview = () => {
                             <div className="space-y-4">
                                 {recentArticles.map(article => (
                                     <Link key={article.$id} to={`/article/${article.$id}`} className="flex gap-6 p-6 bg-bg-secondary rounded-[2rem] border-2 border-bg-tertiary hover:border-primary/30 transition-all no-underline group shadow-sm">
-                                        <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 bg-bg-tertiary">
+                                        <div className="w-24 h-24 rounded-2xl overflow-hidden shrink-0 bg-bg-tertiary">
                                             <img src={article.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-all" alt="" />
                                         </div>
                                         <div className="flex-1 min-w-0 flex flex-col justify-center">
@@ -334,7 +334,7 @@ const Overview = () => {
                                 to={`/article/${article.$id}`}
                                 className="flex items-center gap-4 p-4 bg-bg-secondary rounded-2xl border-2 border-bg-tertiary hover:border-primary/30 transition-all no-underline group"
                             >
-                                <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-bg-tertiary">
+                                <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-bg-tertiary">
                                     <img
                                         src={article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=200'}
                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
@@ -345,7 +345,7 @@ const Overview = () => {
                                     <p className="font-black text-text-primary text-sm line-clamp-1 group-hover:text-primary transition-colors">{article.title}</p>
                                     <p className="text-xs text-text-secondary font-bold mt-1">{article.authorName} · {new Date(article.createdAt).toLocaleDateString()}</p>
                                 </div>
-                                <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest flex-shrink-0 ${
+                                <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shrink-0 ${
                                     article.status === 'PUBLISHED' ? 'bg-green-500/10 text-green-500' :
                                     article.status === 'PENDING' ? 'bg-amber-500/10 text-amber-500' :
                                     'bg-danger/10 text-danger'

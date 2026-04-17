@@ -8,77 +8,82 @@ OUTPUT = 'dataset.csv'
 
 def scrape_full_article(url):
     """
-    High-Fidelity Deep Scraper: Follows redirect chains (Google News -> real article)
-    and extracts the full manuscript and banner image from the actual source page.
+    High-Fidelity Deep Scraper: Follows redirect chains and extracts full manuscript
+    and banner images. Uses aggressive headers to bypass 406 blocks.
     """
     try:
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
+            'Referer': 'https://news.google.com/',
+            'DNT': '1',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1'
         }
         
-        # Follow full redirect chain to reach the real news site
         session = requests.Session()
         response = session.get(url, timeout=15, headers=headers, allow_redirects=True)
         final_url = response.url
-        print(f"  -> Resolved to: {final_url[:80]}")
         
         if response.status_code != 200:
-            print(f"  -> HTTP {response.status_code}, skipping.")
+            print(f"  -> HTTP {response.status_code} for {final_url[:50]}")
             return None
         
         soup = BeautifulSoup(response.content, 'html.parser')
         
-        # 1. Banner Image: Extract from Open Graph meta tag
+        # 1. Image Extraction (Multi-Tag Logic)
         image_url = None
-        og_image = soup.find("meta", property="og:image")
-        if og_image and og_image.get("content"):
-            image_url = og_image["content"]
+        for prop in ["og:image", "twitter:image", "og:image:url"]:
+            tag = soup.find("meta", property=prop) or soup.find("meta", attrs={"name": prop})
+            if tag and tag.get("content"):
+                image_url = tag["content"]
+                break
         
-        # 2. Full Manuscript Extraction — try multiple common news site patterns
+        if not image_url:
+            # Fallback to first large image
+            for img in soup.find_all('img', src=True):
+                if 'logo' not in img['src'].lower() and ('banner' in img['src'].lower() or 'article' in img['src'].lower()):
+                    image_url = img['src']
+                    break
+        
+        # 2. Content Extraction
         article_body = []
-        
-        # Priority: standard <article> tag or known content divs
         container = (
             soup.find('article') or
-            soup.find('div', class_=lambda c: c and any(k in c for k in ['article-body', 'article-content', 'story-body', 'post-content', 'entry-content', 'article__body'])) or
+            soup.find('div', class_=lambda c: c and any(k in c for k in ['article-body', 'article-content', 'story-body', 'post-content', 'entry-content', 'article__body', 'td-post-content'])) or
             soup.find('main')
         )
         
         if container:
-            for p in container.find_all('p'):
+            for p in container.find_all(['p', 'div']):
+                if p.name == 'div' and p.find('p'): continue # Avoid double counting
                 text = p.get_text(separator=' ').strip()
-                if len(text) > 40:
-                    article_body.append(text)
-        
-        # Fallback: scan all page paragraphs if container-based extraction failed or is thin
-        if not article_body or len('\n'.join(article_body)) < 300:
-            article_body = []
-            for p in soup.find_all('p'):
-                text = p.get_text(separator=' ').strip()
-                if (len(text) > 50 and 
-                    not text.lower().startswith('copyright') and 
-                    not text.lower().startswith('all rights') and
-                    not text.lower().startswith('sign up') and
-                    not text.lower().startswith('subscribe')):
+                if len(text) > 40 and not any(x in text.lower() for x in ['subscribe', 'cookie', 'javascript']):
                     article_body.append(text)
         
         full_content = '\n\n'.join(article_body)
-        print(f"  -> Extracted {len(full_content)} chars of content, image: {'YES' if image_url else 'NO'}")
         
+        # 3. Fallback to Meta Description if body is thin
+        if len(full_content) < 200:
+            meta_desc = soup.find("meta", property="og:description") or soup.find("meta", attrs={"name": "description"})
+            if meta_desc and meta_desc.get("content"):
+                full_content = meta_desc["content"]
+                print(f"  -> Falling back to meta description.")
+
         return {
-            'content': full_content if len(full_content) > 150 else None,
-            'image_url': image_url
+            'content': full_content if len(full_content) > 50 else None,
+            'image_url': image_url,
+            'resolved_url': final_url
         }
     except Exception as e:
-        print(f"  -> Extraction error for {url[:60]}: {e}")
+        print(f"  -> Extraction error: {e}")
         return None
 
 
 def fetch_google_news_nigeria():
     """
-    Fetches latest Nigerian news and deep-scans the REAL article URLs (not Google redirects).
+    Fetches latest Nigerian news and deep-scans the REAL article URLs.
     """
     today = datetime.now().strftime('%Y-%m-%d')
     print(f"Initiating High-Fidelity Nigerian Social Sync for {today}...")
@@ -88,34 +93,27 @@ def fetch_google_news_nigeria():
     rss_url = f"https://news.google.com/rss/search?q={query}&hl=en-NG&gl=NG&ceid=NG:en"
     
     try:
-        response = requests.get(rss_url, timeout=10)
+        response = requests.get(rss_url, timeout=30)
         soup = BeautifulSoup(response.content, features="xml")
-        items = soup.find_all('item')
+        items = soup.find_all('item')[:10] # Reduced to top 10 for speed
         
-        for item in items[:20]:
-            title_tag = item.find('title')
-            link_tag = item.find('link')
-            source_tag = item.find('source')  # <source url="https://actual-site.com">
-            
-            title = title_tag.text.strip() if title_tag else "No Title"
-            google_link = link_tag.text.strip() if link_tag else "#"
-            
-            # Use the direct source URL from <source url="..."> to bypass Google redirect
-            real_url = source_tag.get('url') if source_tag else google_link
-            # Fallback: if source url is just a domain, use the google link for redirect-following
-            if real_url and not real_url.startswith('http'):
-                real_url = google_link
+        for item in items:
+            title = item.find('title').text.strip() if item.find('title') else "No Title"
+            google_link = item.find('link').text.strip() if item.find('link') else "#"
             
             print(f"Scanning: {title[:60]}...")
-            print(f"  Source URL: {real_url[:80]}")
-            deep_data = scrape_full_article(real_url)
+            deep_data = scrape_full_article(google_link)
+            
+            # Content fallback: if deep data fails, use the title but mark as unverified
+            content = deep_data['content'] if deep_data and deep_data['content'] else title
+            image = deep_data['image_url'] if deep_data and deep_data['image_url'] else None
             
             data.append({
                 'title': title,
-                'text': deep_data['content'] if deep_data and deep_data['content'] else title,
-                'link': google_link,
-                'image_url': deep_data['image_url'] if deep_data else None,
-                'label': 0,
+                'text': content,
+                'link': deep_data['resolved_url'] if deep_data else google_link,
+                'image_url': image,
+                'label': 'UNVERIFIED',
                 'source': 'Social/RSS',
                 'language': 'English'
             })
@@ -135,8 +133,11 @@ def main():
     new_df = pd.DataFrame(social_data)
     
     if os.path.exists(OUTPUT):
-        existing_df = pd.read_csv(OUTPUT)
-        combined = pd.concat([existing_df, new_df]).drop_duplicates(subset=['link'])
+        try:
+            existing_df = pd.read_csv(OUTPUT)
+            combined = pd.concat([existing_df, new_df]).drop_duplicates(subset=['link'], keep='last')
+        except:
+            combined = new_df
     else:
         combined = new_df
         
