@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import LoadingScreen from '../components/LoadingScreen';
 import Footer from '../components/Footer';
-import { Shield, Clock, User, Share2, MessageSquare, ArrowLeft, Globe, Zap, Cpu, Link as LinkIcon, XCircle, ExternalLink, Trash2, Sun, Moon, Bookmark, BookmarkCheck, Star, Facebook, MessageCircle } from 'lucide-react';
+import { Shield, Clock, User, Share2, MessageSquare, ArrowLeft, Globe, Zap, Cpu, Link as LinkIcon, XCircle, ExternalLink, Trash2, Sun, Moon, Bookmark, BookmarkCheck, Star, Facebook, MessageCircle, Eye } from 'lucide-react';
 
 const ArticleDetail = () => {
     const { id } = useParams<{ id: string }>();

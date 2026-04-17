@@ -1,6 +1,7 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, CartesianGrid } from 'recharts';
 import { useEffect, useState } from 'react';
 import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES } from '../../lib/appwrite';
+import { Zap } from 'lucide-react';
 
 const COLORS = ['#ef4444', '#22c55e', '#eab308'];
 

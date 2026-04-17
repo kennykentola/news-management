@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { databases, DATABASE_ID, AUDIT_LOGS_COLLECTION_ID } from '../../lib/appwrite';
 import { Query } from 'appwrite';
-import { History, User, Activity, Clock, ShieldInfo, Search, Trash2 } from 'lucide-react';
+import { History, User, Activity, Clock, Info, Search, Trash2 } from 'lucide-react';
 
 const AuditLog = () => {
     const [logs, setLogs] = useState<any[]>([]);
@@ -85,7 +85,7 @@ const AuditLog = () => {
                                     {new Date(log.timestamp).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
                                 </div>
                                 <div className="text-[10px] font-bold text-text-secondary/30 flex items-center gap-1">
-                                    <ShieldInfo size={10} /> Node: {log.entityId || 'SYS-KRNL'}
+                                    <Info size={10} /> Node: {log.entityId || 'SYS-KRNL'}
                                 </div>
                             </div>
                         </div>
