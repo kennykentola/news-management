@@ -3,10 +3,12 @@ from flask_cors import CORS
 from data_cleaner import clean_news_data
 import joblib
 import os
+import json
 import subprocess
 import numpy as np
 import psutil
 import logging
+import requests
 from dotenv import load_dotenv
 
 # Set up logging
@@ -14,6 +16,14 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 load_dotenv()
+
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '').strip()
+GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash').strip()
+GEMINI_ENABLED = os.getenv('GEMINI_ENABLED', 'true').lower() in ('1', 'true', 'yes', 'on') and bool(GEMINI_API_KEY)
+GEMINI_TEMPERATURE = float(os.getenv('GEMINI_TEMPERATURE', '0.2'))
+GEMINI_ENDPOINT = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
+if GEMINI_ENABLED:
+    logger.info("Gemini support enabled with model %s", GEMINI_MODEL)
 
 def log_memory_usage(stage):
     process = psutil.Process(os.getpid())
@@ -51,10 +61,95 @@ def load_model():
             log_memory_usage("After Loading Model")
         except Exception as e:
             logger.error(f"Error loading model: {e}")
-    else:
-        logger.warning(f"Model file {MODEL_PATH} not found. Some endpoints may fail.")
+        else:
+            logger.warning(f"Model file {MODEL_PATH} not found. Some endpoints may fail.")
 
 load_model()
+
+def run_gemini_assessment(text):
+    if not GEMINI_ENABLED:
+        return None
+
+    prompt = f"""
+You are assisting a news verification system.
+Review the text below and decide whether it is likely REAL, FAKE, or REQUIRES_REVIEW.
+
+Return JSON only with these fields:
+- label: REAL, FAKE, or REQUIRES_REVIEW
+- confidence: number from 0 to 100
+- rationale: short explanation
+- risk_signals: array of short strings
+- recommendation: one short sentence for the editor
+
+Text:
+{text}
+"""
+
+    schema = {
+        "type": "object",
+        "properties": {
+            "label": {
+                "type": "string",
+                "enum": ["REAL", "FAKE", "REQUIRES_REVIEW"]
+            },
+            "confidence": {
+                "type": "number"
+            },
+            "rationale": {
+                "type": "string"
+            },
+            "risk_signals": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "recommendation": {
+                "type": "string"
+            }
+        },
+        "required": ["label", "confidence", "rationale", "risk_signals", "recommendation"]
+    }
+
+    payload = {
+        "contents": [
+            {
+                "role": "user",
+                "parts": [{"text": prompt}]
+            }
+        ],
+        "generationConfig": {
+            "temperature": GEMINI_TEMPERATURE,
+            "responseMimeType": "application/json",
+            "responseSchema": schema
+        }
+    }
+
+    response = requests.post(
+        GEMINI_ENDPOINT,
+        headers={
+            "Content-Type": "application/json",
+            "x-goog-api-key": GEMINI_API_KEY
+        },
+        json=payload,
+        timeout=30,
+    )
+    response.raise_for_status()
+    body = response.json()
+
+    raw_text = (
+        body.get("candidates", [{}])[0]
+        .get("content", {})
+        .get("parts", [{}])[0]
+        .get("text", "")
+    )
+    if not raw_text:
+        return None
+
+    parsed = json.loads(raw_text)
+    parsed["confidence"] = float(parsed.get("confidence", 0))
+    parsed["risk_signals"] = parsed.get("risk_signals", []) or []
+    return parsed
 
 @app.route('/', methods=['GET'])
 def index():
@@ -100,7 +195,26 @@ def detect():
                 reliability_score = proba.max() * 100
                 if prediction == 'FAKE':
                     reliability_score = 100 - reliability_score
-            
+
+            gemini_result = None
+            gemini_label = None
+            gemini_confidence = None
+            gemini_rationale = None
+            gemini_risk_signals = []
+            gemini_recommendation = None
+
+            try:
+                gemini_result = run_gemini_assessment(text)
+            except Exception as e:
+                logger.warning("Gemini assessment failed: %s", e)
+
+            if gemini_result:
+                gemini_label = str(gemini_result.get('label', '')).upper()
+                gemini_confidence = float(gemini_result.get('confidence', 0))
+                gemini_rationale = gemini_result.get('rationale', '')
+                gemini_risk_signals = gemini_result.get('risk_signals', [])
+                gemini_recommendation = gemini_result.get('recommendation', '')
+
             # --- Advanced Analysis (Explainable AI) ---
             from textblob import TextBlob
             blob = TextBlob(text)
@@ -126,14 +240,32 @@ def detect():
                 if not found_triggers:
                     explanation.append("The language is relatively neutral and professional.")
 
+            final_result = str(prediction)
+            if gemini_label == 'REQUIRES_REVIEW':
+                final_result = 'REVIEW'
+            elif gemini_label in ('REAL', 'FAKE'):
+                if gemini_label == prediction:
+                    final_result = gemini_label
+                    reliability_score = (reliability_score + gemini_confidence) / 2 if gemini_confidence is not None else reliability_score
+                else:
+                    final_result = 'REVIEW'
+
+            if gemini_result:
+                explanation.append(
+                    f"Gemini review suggests {gemini_label} with {gemini_confidence:.1f}% confidence."
+                )
+                if gemini_rationale:
+                    explanation.append(gemini_rationale)
+
             # Ensure types are native Python types for JSON serialization
-            prediction_label = str(prediction)
+            prediction_label = str(final_result)
             reliability_score_val = float(reliability_score)
             sentiment_val = float(sentiment_polarity)
 
             return jsonify({
                 'result': prediction_label,
                 'score': round(reliability_score_val, 2),
+                'gemini': gemini_result,
                 'analysis': {
                     'sentiment': round(sentiment_val, 2),
                     'triggers': found_triggers,

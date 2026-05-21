@@ -4,6 +4,7 @@ import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES, AUDIT_LOGS_COLLECTION_I
 import { Query, ID } from 'appwrite';
 import { CheckCircle, XCircle, Eye, Search, Filter, ShieldCheck, FileText, AlertTriangle, History } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { normalizePlainText } from '../../lib/content';
 
 const ReviewNews = () => {
     const [articles, setArticles] = useState<any[]>([]);
@@ -155,11 +156,7 @@ const ReviewNews = () => {
                                 )}
 
                                 <p className="text-text-secondary font-medium leading-relaxed">
-                                    {(article.content || article.text || '')
-                                        .replace(/<[^>]*>/g, '')
-                                        .replace(/&nbsp;/g, ' ')
-                                        .replace(/&amp;nbsp;/g, ' ')
-                                        .substring(0, 250)}...
+                                    {normalizePlainText(article.content || article.text || '').substring(0, 250)}...
                                 </p>
 
                                 <div className="flex flex-wrap gap-4 pt-4 border-t border-bg-tertiary">

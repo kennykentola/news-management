@@ -34,6 +34,8 @@ import {
 } from 'lucide-react';
 import AdminUsers from './dashboard/AdminUsers';
 
+const SHOW_AI_CONTROL = import.meta.env.VITE_SHOW_AI_CONTROL === 'true';
+
 
 interface SidebarItemProps {
     to: string;
@@ -202,13 +204,15 @@ const Dashboard = () => {
                                 active={isActive('/dashboard/publish')}
                                 onClick={closeSidebar}
                             />
-                            <SidebarItem
-                                to="/dashboard/ai-control"
-                                label="AI Management"
-                                icon={<Cpu size={20} />}
-                                active={isActive('/dashboard/ai-control')}
-                                onClick={closeSidebar}
-                            />
+                            {SHOW_AI_CONTROL && (
+                                <SidebarItem
+                                    to="/dashboard/ai-control"
+                                    label="AI Management"
+                                    icon={<Cpu size={20} />}
+                                    active={isActive('/dashboard/ai-control')}
+                                    onClick={closeSidebar}
+                                />
+                            )}
                             <SidebarItem
                                 to="/dashboard/audit"
                                 label="Audit Trail"
@@ -258,7 +262,7 @@ const Dashboard = () => {
                         <Route path="/review" element={<ReviewNews />} />
                         <Route path="/publish" element={<PublishNews />} />
                         <Route path="/stats" element={<Stats />} />
-                        <Route path="/ai-control" element={<AIControl />} />
+                        {SHOW_AI_CONTROL && <Route path="/ai-control" element={<AIControl />} />}
                         <Route path="/audit" element={<AuditLog />} />
                         <Route path="/users" element={<AdminUsers />} />
                     </Routes>

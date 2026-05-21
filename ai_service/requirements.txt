@@ -2,8 +2,6 @@ flask
 flask-cors
 requests
 textblob
-torch
-transformers
 beautifulsoup4
 python-dotenv
 nltk
@@ -11,7 +9,6 @@ pandas
 numpy
 scikit-learn
 joblib
-datasets
 appwrite
 gunicorn
 psutil

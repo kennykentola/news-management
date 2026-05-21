@@ -7,6 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 import LoadingScreen from '../components/LoadingScreen';
 import Footer from '../components/Footer';
 import { Shield, Clock, User, Share2, MessageSquare, ArrowLeft, Globe, Zap, Cpu, Link as LinkIcon, XCircle, ExternalLink, Trash2, Sun, Moon, Bookmark, BookmarkCheck, Star, Facebook, MessageCircle, Eye } from 'lucide-react';
+import { normalizeHtmlContent } from '../lib/content';
 
 const ArticleDetail = () => {
     const { id } = useParams<{ id: string }>();
@@ -395,12 +396,7 @@ const ArticleDetail = () => {
                 <section
                     className="article-content prose prose-2xl dark:prose-invert prose-black dark:prose-white max-w-none text-xl md:text-2xl font-medium leading-relaxed md:leading-[1.8] text-text-primary/90 space-y-8 prose-img:rounded-3xl prose-img:shadow-2xl"
                     dangerouslySetInnerHTML={{
-                        __html: (article.content || article.text || article.body || '')
-                            .replace(/&nbsp;/g, ' ')
-                            .replace(/&quot;/g, '"')
-                            .replace(/&#39;/g, "'")
-                            .replace(/&amp;/g, '&')
-                            .replace(/<p><br><\/p>/g, '') // Remove empty quill lines
+                        __html: normalizeHtmlContent(article.content || article.text || article.body || '')
                     }}
                 />
 

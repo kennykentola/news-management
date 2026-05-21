@@ -6,6 +6,7 @@ import { ID, Query } from 'appwrite';
 import { useAuth } from '../../context/AuthContext';
 import { Sparkles, BarChart3, CheckCheck, AlertCircle, Upload, Link as LinkIcon, X, Info, Zap } from 'lucide-react';
 import LoadingScreen from '../../components/LoadingScreen';
+import { normalizeHtmlForStorage } from '../../lib/content';
 
 const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:5000';
 const MAX_CONTENT_LENGTH = 49500; // Buffer for 50k schema expansion
@@ -88,11 +89,12 @@ const SubmitNews = () => {
         e.preventDefault();
         
         // Validation Checks
-        const plainText = content.replace(/<[^>]*>/g, '');
+        const normalizedContent = normalizeHtmlForStorage(content);
+        const plainText = normalizedContent.replace(/<[^>]*>/g, '');
         if (!plainText.trim()) return alert("Please provide article content.");
-        
-        if (content.length > MAX_CONTENT_LENGTH) {
-            return alert(`Manuscript is too large (${content.length.toLocaleString()} characters). Please reduce content or inline media to stay below ${MAX_CONTENT_LENGTH.toLocaleString()} characters.`);
+
+        if (normalizedContent.length > MAX_CONTENT_LENGTH) {
+            return alert(`Manuscript is too large (${normalizedContent.length.toLocaleString()} characters). Please reduce content or inline media to stay below ${MAX_CONTENT_LENGTH.toLocaleString()} characters.`);
         }
         
         setLoading(true);
@@ -176,7 +178,7 @@ const SubmitNews = () => {
                 ID.unique(),
                 {
                     title,
-                    content, // Save HTML content
+                    content: normalizedContent, // Save normalized HTML content
                     authorId: user?.$id,
                     authorName: user?.name,
                     status: status,

@@ -5,6 +5,7 @@ import 'react-quill-new/dist/quill.snow.css';
 import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES } from '../../lib/appwrite';
 import { useAuth } from '../../context/AuthContext';
 import { Sparkles, ArrowLeft, Save } from 'lucide-react';
+import { normalizeHtmlForStorage } from '../../lib/content';
 
 const EditArticle = () => {
     const { id } = useParams<{ id: string }>();
@@ -75,13 +76,14 @@ const EditArticle = () => {
         setSaving(true);
 
         try {
+            const normalizedContent = normalizeHtmlForStorage(content);
             await databases.updateDocument(
                 DATABASE_ID,
                 COLLECTION_ID_ARTICLES,
                 id,
                 {
                     title,
-                    content,
+                    content: normalizedContent,
                     category: catValue,
                     imageUrl,
                     sourceUrl,

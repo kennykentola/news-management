@@ -7,6 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 import { Shield, ChevronRight, TrendingUp, Clock, Search, User, ArrowRight, Menu, X, Sparkles, Sun, Moon } from 'lucide-react';
 import LoadingScreen from '../components/LoadingScreen';
 import Footer from '../components/Footer';
+import { normalizePlainText } from '../lib/content';
 
 const Home = () => {
     const { user } = useAuth();
@@ -174,7 +175,7 @@ const Home = () => {
                                         {featuredArticle.title}
                                     </h2>
                                     <p className="text-lg md:text-xl text-text-secondary font-bold line-clamp-2 leading-relaxed">
-                                        {featuredArticle.content?.replace(/<[^>]*>/g, '').slice(0, 300)}...
+                                        {normalizePlainText(featuredArticle.content)?.slice(0, 300)}...
                                     </p>
                                     <div className="flex items-center gap-4 pt-4">
                                         <div className="w-12 h-12 rounded-2xl bg-text-primary text-bg-primary flex items-center justify-center font-black text-xl shadow-xl">
@@ -277,7 +278,7 @@ const Home = () => {
                                         {article.title}
                                     </h4>
                                     <p className="text-sm text-text-secondary font-bold line-clamp-3 mb-8 flex-1">
-                                        {(article.content || article.text)?.replace(/<[^>]*>/g, '') || ''}
+                                        {normalizePlainText(article.content || article.text)}
                                     </p>
                                     <div className="flex items-center justify-between pt-6 border-t border-bg-tertiary">
                                         <div className="flex items-center gap-2 text-text-secondary font-black text-[10px] uppercase tracking-widest">
