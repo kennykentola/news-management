@@ -1,6 +1,7 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, CartesianGrid } from 'recharts';
 import { useEffect, useState } from 'react';
-import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES } from '../../lib/appwrite';
+import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES, VIEWS_COLLECTION_ID } from '../../lib/appwrite';
+import { Query } from 'appwrite';
 import { Zap } from 'lucide-react';
 
 const COLORS = ['#ef4444', '#22c55e', '#eab308'];
@@ -128,12 +129,40 @@ const Stats = () => {
                 });
                 setTrendData(dynamicTrends);
 
-                // Generate Engagement Data
+                // Generate Real Engagement Data
                 const totalViews = docs.reduce((acc, d) => acc + (d.viewsCount || 0), 0);
+                
+                let viewCountsMap: Record<string, number> = {};
+                last7Days.forEach(d => viewCountsMap[formatDateKey(d)] = 0);
+
+                try {
+                    const viewsRes = await databases.listDocuments(
+                        DATABASE_ID,
+                        VIEWS_COLLECTION_ID,
+                        [
+                            Query.greaterThanEqual('timestamp', last7Days[0].toISOString()),
+                            Query.limit(1000)
+                        ]
+                    );
+
+                    viewsRes.documents.forEach(v => {
+                        if (v.timestamp) {
+                            try {
+                                const date = new Date(v.timestamp);
+                                const key = formatDateKey(date);
+                                if (viewCountsMap[key] !== undefined) {
+                                    viewCountsMap[key]++;
+                                }
+                            } catch (e) {}
+                        }
+                    });
+                } catch (e) {
+                    console.warn("Could not fetch realtime view analytics", e);
+                }
+
                 const engagement = last7Days.map(d => ({
                     name: formatLabel(d),
-                    views: Math.floor(totalViews * (0.1 + Math.random() * 0.2)),
-                    engagement: Math.floor((totalViews / 10) * (Math.random() * 0.5))
+                    views: viewCountsMap[formatDateKey(d)]
                 }));
                 setEngagementData(engagement);
 

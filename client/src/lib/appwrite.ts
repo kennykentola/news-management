@@ -22,6 +22,7 @@ export const COMMENTS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_I
 export const RATINGS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID_RATINGS || 'ratings';
 export const NOTIFICATIONS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID_NOTIFICATIONS || 'notifications';
 export const AUDIT_LOGS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID_AUDIT_LOGS || 'audit_logs';
+export const VIEWS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID_VIEWS || 'article_views';
 export const BUCKET_ID = import.meta.env.VITE_APPWRITE_BUCKET_ID || 'article_images';
 export const BUCKET_ID_IMAGES = BUCKET_ID; // Restore legacy export for component compatibility
 

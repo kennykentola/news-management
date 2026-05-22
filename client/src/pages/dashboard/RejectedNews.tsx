@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES } from '../../lib/appwrite';
 import { Query } from 'appwrite';
-import { Trash2, AlertTriangle, Eye, ShieldCheck, CheckSquare, Square, RefreshCcw } from 'lucide-react';
+import { Trash2, AlertTriangle, Eye, ShieldCheck, CheckSquare, Square, RefreshCcw, CheckCircle } from 'lucide-react';
 import { normalizePlainText } from '../../lib/content';
 
 const RejectedNews = () => {
@@ -67,6 +67,22 @@ const RejectedNews = () => {
             alert('Failed to delete some articles.');
         } finally {
             setIsDeleting(false);
+        }
+    };
+
+    const handleRestore = async (id: string) => {
+        const confirmRestore = window.confirm('Are you sure you want to restore and publish this article?');
+        if (!confirmRestore) return;
+        
+        try {
+            await databases.updateDocument(DATABASE_ID, COLLECTION_ID_ARTICLES, id, {
+                status: 'PUBLISHED'
+            });
+            setArticles(articles.filter(a => a.$id !== id));
+            alert('Article successfully restored to Published status.');
+        } catch (error) {
+            console.error('Failed to restore article', error);
+            alert('Failed to restore article.');
         }
     };
 
@@ -189,7 +205,10 @@ const RejectedNews = () => {
                                         {normalizePlainText(article.content || '').substring(0, 200)}...
                                     </p>
 
-                                    <div className="flex justify-end pt-2 border-t border-bg-tertiary">
+                                    <div className="flex justify-end gap-3 pt-2 border-t border-bg-tertiary">
+                                        <button onClick={() => handleRestore(article.$id)} className="flex items-center gap-2 px-4 py-2 bg-bg-secondary border-2 border-primary text-primary rounded-xl text-xs font-black hover:bg-primary/10 transition-all shadow-sm">
+                                            <CheckCircle size={16} /> Restore & Publish
+                                        </button>
                                         <Link to={`/article/${article.$id}`} className="flex items-center gap-2 px-4 py-2 bg-bg-primary border border-bg-tertiary rounded-xl text-text-primary text-xs font-black hover:bg-primary hover:text-white transition-all shadow-sm">
                                             <Eye size={16} /> Read / Reconfirm
                                         </Link>

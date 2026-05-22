@@ -24,6 +24,7 @@ const RATINGS_COLLECTION_ID = 'ratings';
 const NOTIFICATIONS_COLLECTION_ID = 'notifications';
 const USERS_METADATA_COLLECTION_ID = 'users_metadata';
 const AUDIT_LOGS_COLLECTION_ID = 'audit_logs';
+const VIEWS_COLLECTION_ID = 'article_views';
 
 async function createAttribute(collectionId, attr) {
     try {
@@ -61,7 +62,8 @@ async function init() {
             { id: RATINGS_COLLECTION_ID, name: 'Ratings' },
             { id: NOTIFICATIONS_COLLECTION_ID, name: 'Notifications' },
             { id: USERS_METADATA_COLLECTION_ID, name: 'Users Metadata' },
-            { id: AUDIT_LOGS_COLLECTION_ID, name: 'Audit Logs' }
+            { id: AUDIT_LOGS_COLLECTION_ID, name: 'Audit Logs' },
+            { id: VIEWS_COLLECTION_ID, name: 'Article Views' }
         ];
 
         for (const col of collections) {
@@ -144,6 +146,11 @@ async function init() {
             { key: 'timestamp', type: 'datetime', required: false }
         ];
 
+        const viewAttrs = [
+            { key: 'articleId', type: 'string', size: 100, required: true },
+            { key: 'timestamp', type: 'datetime', required: true }
+        ];
+
         console.log('Syncing Article Attributes...');
         for (const attr of articleAttrs) await createAttribute(ARTICLES_COLLECTION_ID, attr);
 
@@ -161,6 +168,9 @@ async function init() {
 
         console.log('Syncing Audit Log Attributes...');
         for (const attr of auditLogAttrs) await createAttribute(AUDIT_LOGS_COLLECTION_ID, attr);
+
+        console.log('Syncing View Tracking Attributes...');
+        for (const attr of viewAttrs) await createAttribute(VIEWS_COLLECTION_ID, attr);
 
         // --- NEW: Sync Existing Auth Users to Metadata ---
         console.log('Syncing Auth Users to Database Metadata...');

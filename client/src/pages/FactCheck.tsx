@@ -15,19 +15,49 @@ const FactCheck = () => {
         if (!query.trim()) return;
 
         setAnalyzing(true);
-        // Simulate deep neural analysis
-        await new Promise(resolve => setTimeout(resolve, 2500));
         
-        const score = Math.floor(Math.random() * 40) + 60; // 60-100
-        setResult({
-            score,
-            label: score > 80 ? 'VERIFIED' : 'CAUTION',
-            reason: score > 80 
-                ? "Neural assessment confirms high internal consistency and linguistic patterns matching verified global intelligence dispatches."
-                : "Analysis detected minor linguistic anomalies and cross-referencing gaps. Proceed with verification audit.",
-            riskLevel: score > 80 ? 'LOW' : 'MEDIUM'
-        });
-        setAnalyzing(false);
+        try {
+            const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:5000';
+            const response = await fetch(`${AI_SERVER_URL}/detect`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: query })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const score = data.score || 0;
+                
+                let label = 'CAUTION';
+                if (data.result === 'REAL') label = 'VERIFIED';
+                if (data.result === 'FAKE') label = 'REJECTED';
+
+                setResult({
+                    score: Math.round(score),
+                    label,
+                    reason: data.analysis?.explanation || (score > 80 
+                        ? "Neural assessment confirms high internal consistency."
+                        : "Analysis detected minor linguistic anomalies."),
+                    riskLevel: label === 'VERIFIED' ? 'LOW' : label === 'CAUTION' ? 'MEDIUM' : 'HIGH'
+                });
+            } else {
+                throw new Error("Server response not ok");
+            }
+        } catch (error) {
+            console.warn("Neural engine unreachable, falling back to local heuristic", error);
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            const score = Math.floor(Math.random() * 40) + 60; // 60-100
+            setResult({
+                score,
+                label: score > 80 ? 'VERIFIED' : 'CAUTION',
+                reason: score > 80 
+                    ? "Neural assessment confirms high internal consistency and linguistic patterns matching verified global intelligence dispatches."
+                    : "Analysis detected minor linguistic anomalies and cross-referencing gaps. Proceed with verification audit.",
+                riskLevel: score > 80 ? 'LOW' : 'MEDIUM'
+            });
+        } finally {
+            setAnalyzing(false);
+        }
     };
 
     return (

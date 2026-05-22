@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES, COMMENTS_COLLECTION_ID, RATINGS_COLLECTION_ID, COLLECTION_ID_USERS_METADATA } from '../lib/appwrite';
+import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES, COMMENTS_COLLECTION_ID, RATINGS_COLLECTION_ID, COLLECTION_ID_USERS_METADATA, VIEWS_COLLECTION_ID } from '../lib/appwrite';
 import { ID, Query } from 'appwrite';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -29,6 +29,12 @@ const ArticleDetail = () => {
                 const current = await databases.getDocument(DATABASE_ID, COLLECTION_ID_ARTICLES, id);
                 await databases.updateDocument(DATABASE_ID, COLLECTION_ID_ARTICLES, id, {
                     viewsCount: (current.viewsCount || 0) + 1
+                });
+
+                // Track analytics view event
+                await databases.createDocument(DATABASE_ID, VIEWS_COLLECTION_ID, ID.unique(), {
+                    articleId: id,
+                    timestamp: new Date().toISOString()
                 });
             } catch (e) {
                 console.warn('View count increment failed', e);
@@ -367,6 +373,8 @@ const ArticleDetail = () => {
                                                 key={star} 
                                                 onClick={() => handleRating(star)}
                                                 className={`transition-all hover:scale-125 ${(userRating || Math.round(averageRating)) >= star ? 'text-amber-500 fill-amber-500' : 'text-text-secondary/20'}`}
+                                                aria-label={`Rate ${star} stars`}
+                                                title={`Rate ${star} stars`}
                                             >
                                                 <Star size={16} />
                                             </button>
@@ -477,7 +485,7 @@ const ArticleDetail = () => {
                                 <div className="flex items-center gap-4">
                                     <span className="text-[10px] font-black text-text-secondary/50 uppercase tracking-widest">{new Date(comment.createdAt).toLocaleDateString()}</span>
                                     {(user && (user.$id === comment.userId || user.role === 'ADMIN')) && (
-                                        <button onClick={() => handleDeleteComment(comment.$id)} className="text-danger opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-danger/10 rounded-lg">
+                                        <button onClick={() => handleDeleteComment(comment.$id)} className="text-danger opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-danger/10 rounded-lg" aria-label="Delete comment" title="Delete comment">
                                             <Trash2 size={14} />
                                         </button>
                                     )}

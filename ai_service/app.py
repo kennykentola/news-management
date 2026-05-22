@@ -229,17 +229,7 @@ def detect():
             
             # Generate Explanation
             explanation = []
-            if prediction == 'FAKE':
-                explanation.append("The article pattern matches known misinformation styles.")
-                if abs(sentiment_polarity) > 0.5:
-                    explanation.append(f"The text is highly {'positive' if sentiment_polarity > 0 else 'negative'} ({sentiment_polarity:.2f}), which often indicates bias.")
-                if found_triggers:
-                    explanation.append(f"It uses sensationalist clickbait words: {', '.join(found_triggers)}.")
-            else:
-                explanation.append("The content aligns with patterns found in reliable news sources.")
-                if not found_triggers:
-                    explanation.append("The language is relatively neutral and professional.")
-
+            
             final_result = str(prediction)
             if gemini_label == 'REQUIRES_REVIEW':
                 final_result = 'REVIEW'
@@ -250,12 +240,21 @@ def detect():
                 else:
                     final_result = 'REVIEW'
 
-            if gemini_result:
-                explanation.append(
-                    f"Gemini review suggests {gemini_label} with {gemini_confidence:.1f}% confidence."
-                )
-                if gemini_rationale:
-                    explanation.append(gemini_rationale)
+            if gemini_result and gemini_rationale:
+                # Use ONLY the high-quality Gemini rationale if available
+                explanation.append(gemini_rationale)
+            else:
+                # Fallback static heuristics
+                if prediction == 'FAKE':
+                    explanation.append("The article pattern matches known misinformation styles.")
+                    if abs(sentiment_polarity) > 0.5:
+                        explanation.append(f"The text is highly {'positive' if sentiment_polarity > 0 else 'negative'} ({sentiment_polarity:.2f}), which often indicates bias.")
+                    if found_triggers:
+                        explanation.append(f"It uses sensationalist clickbait words: {', '.join(found_triggers)}.")
+                else:
+                    explanation.append("The content aligns with patterns found in reliable news sources.")
+                    if not found_triggers:
+                        explanation.append("The language is relatively neutral and professional.")
 
             # Ensure types are native Python types for JSON serialization
             prediction_label = str(final_result)
@@ -283,17 +282,78 @@ def proofread():
         return jsonify({'error': 'No text provided'}), 400
     
     try:
-        blob = TextBlob(text)
-        corrected = str(blob.correct())
-        # Basic check to see if anything changed
-        has_changes = (corrected != text)
+        if not GEMINI_ENABLED:
+            return jsonify({'error': 'Gemini AI is disabled on the server.'}), 503
+
+        prompt = f"""
+You are a professional editorial proofreader for a high-quality news platform.
+Review the following text for grammar, spelling, clarity, and tone.
+Fix any errors and improve flow while preserving the original meaning.
+
+Return JSON only with these fields:
+- corrected: the full corrected text
+- has_changes: true if you made changes, false if the text was already perfect
+
+Text:
+{text}
+"""
+        schema = {
+            "type": "object",
+            "properties": {
+                "corrected": {"type": "string"},
+                "has_changes": {"type": "boolean"}
+            },
+            "required": ["corrected", "has_changes"]
+        }
         
-        return jsonify({
-            'original': text,
-            'corrected': corrected if has_changes else None,
-            'message': 'Corrections suggested' if has_changes else 'No corrections needed'
-        })
+        payload = {
+            "contents": [
+                {"role": "user", "parts": [{"text": prompt}]}
+            ],
+            "generationConfig": {
+                "temperature": 0.2,
+                "responseMimeType": "application/json",
+                "responseSchema": schema
+            }
+        }
+        
+        response = requests.post(
+            GEMINI_ENDPOINT,
+            headers={
+                "Content-Type": "application/json",
+                "x-goog-api-key": GEMINI_API_KEY
+            },
+            json=payload,
+            timeout=30,
+        )
+        response.raise_for_status()
+        body = response.json()
+        
+        raw_text = (
+            body.get("candidates", [{}])[0]
+            .get("content", {})
+            .get("parts", [{}])[0]
+            .get("text", "")
+        )
+        if not raw_text:
+             return jsonify({'corrected': None})
+             
+        parsed = json.loads(raw_text)
+        if parsed.get("has_changes"):
+            return jsonify({
+                'original': text,
+                'corrected': parsed.get("corrected"),
+                'message': 'Corrections suggested'
+            })
+        else:
+            return jsonify({
+                'original': text,
+                'corrected': None,
+                'message': 'No corrections needed'
+            })
+
     except Exception as e:
+        logger.error(f"Proofread error: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/analytics', methods=['GET'])
