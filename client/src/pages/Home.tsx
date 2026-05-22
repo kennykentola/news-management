@@ -188,6 +188,22 @@ const Home = () => {
                                     </div>
                                 </div>
                             </Link>
+                            
+                            {/* Premium CTA Card (Moved from Sidebar) */}
+                            <div className="px-8 pb-8 md:px-12 md:pb-12 flex justify-center">
+                                <div className="bg-primary p-10 rounded-4xl shadow-2xl relative overflow-hidden group max-w-2xl w-full text-center">
+                                    <Sparkles className="absolute -bottom-4 -right-4 text-white/20 w-32 h-32 rotate-12 transition-transform group-hover:scale-125" />
+                                    <div className="relative z-10 space-y-6">
+                                        <h4 className="text-2xl font-black text-white leading-none tracking-tighter italic">"Truth is the only currency that matters."</h4>
+                                        <p className="text-white/80 font-bold text-sm tracking-tight leading-relaxed">
+                                            Deploy our neural assessment tools to verify the integrity of any information asset in real-time.
+                                        </p>
+                                        <Link to="/check" className="inline-flex items-center gap-2 bg-text-primary text-bg-primary px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all no-underline mx-auto">
+                                            Fact Check Lab <ArrowRight size={16} />
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     )}
 
@@ -226,20 +242,6 @@ const Home = () => {
                                     </div>
                                 </Link>
                             ))}
-                        </div>
-                        
-                        {/* Premium CTA Card */}
-                        <div className="bg-primary p-10 rounded-4xl shadow-2xl relative overflow-hidden group">
-                            <Sparkles className="absolute -bottom-4 -right-4 text-white/20 w-32 h-32 rotate-12 transition-transform group-hover:scale-125" />
-                            <div className="relative z-10 space-y-6">
-                                <h4 className="text-2xl font-black text-white leading-none tracking-tighter italic">"Truth is the only currency that matters."</h4>
-                                <p className="text-white/80 font-bold text-sm tracking-tight leading-relaxed">
-                                    Deploy our neural assessment tools to verify the integrity of any information asset in real-time.
-                                </p>
-                                <Link to="/check" className="inline-flex items-center gap-2 bg-text-primary text-bg-primary px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all no-underline">
-                                    Fact Check Lab <ArrowRight size={16} />
-                                </Link>
-                            </div>
                         </div>
                     </div>
                 </section>
