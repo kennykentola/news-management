@@ -56,7 +56,10 @@ const EditArticle = () => {
         try {
             const response = await fetch(`${AI_SERVER_URL}/proofread`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-api-key': import.meta.env.VITE_AI_SECRET_TOKEN || ''
+                },
                 body: JSON.stringify({ text: content.replace(/<[^>]*>/g, '') })
             });
             if (response.ok) {
@@ -115,7 +118,7 @@ const EditArticle = () => {
     return (
         <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
             <div className="flex items-center gap-4">
-                <button onClick={() => navigate('/dashboard/my-articles')} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <button aria-label="Go Back" title="Go Back" onClick={() => navigate('/dashboard/my-articles')} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                     <ArrowLeft size={24} />
                 </button>
                 <h2 className="text-3xl font-black text-black tracking-tighter">Refine Your Article</h2>
@@ -131,8 +134,7 @@ const EditArticle = () => {
             <form onSubmit={handleUpdate} className="bg-white p-10 rounded-4xl border-2 border-bg-tertiary shadow-2xl space-y-8">
                 <div>
                     <label className="block mb-2 text-black font-black uppercase text-xs tracking-widest opacity-50">Headline</label>
-                    <input
-                        value={title} onChange={e => setTitle(e.target.value)} required
+                    <input title="Headline" aria-label="Headline" value={title} onChange={e => setTitle(e.target.value)} required
                         className="w-full p-4 rounded-xl bg-white border-2 border-bg-tertiary text-black font-black text-xl focus:border-primary outline-none transition-all"
                     />
                 </div>
@@ -140,8 +142,7 @@ const EditArticle = () => {
                 <div className="grid grid-cols-2 gap-6">
                     <div>
                         <label className="block mb-2 text-black font-black uppercase text-xs tracking-widest opacity-50">Category</label>
-                        <select
-                            value={catValue}
+                        <select title="Category" aria-label="Category" value={catValue}
                             onChange={(e) => setCatValue(e.target.value)}
                             className="w-full p-4 rounded-xl bg-white border-2 border-bg-tertiary text-black font-bold outline-none cursor-pointer"
                         >
@@ -182,15 +183,13 @@ const EditArticle = () => {
                 <div className="grid grid-cols-2 gap-6">
                     <div>
                         <label className="block mb-2 text-black font-black uppercase text-xs tracking-widest opacity-50">Cover Image URL</label>
-                        <input
-                            value={imageUrl} onChange={e => setImageUrl(e.target.value)}
+                        <input title="Cover Image URL" aria-label="Cover Image URL" value={imageUrl} onChange={e => setImageUrl(e.target.value)}
                             className="w-full p-4 rounded-xl bg-white border-2 border-bg-tertiary text-black font-bold outline-none"
                         />
                     </div>
                     <div>
                         <label className="block mb-2 text-black font-black uppercase text-xs tracking-widest opacity-50">Primary Source</label>
-                        <input
-                            value={sourceUrl} onChange={e => setSourceUrl(e.target.value)}
+                        <input title="Primary Source" aria-label="Primary Source" value={sourceUrl} onChange={e => setSourceUrl(e.target.value)}
                             className="w-full p-4 rounded-xl bg-white border-2 border-bg-tertiary text-black font-bold outline-none"
                         />
                     </div>

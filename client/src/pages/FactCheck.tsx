@@ -20,7 +20,10 @@ const FactCheck = () => {
             const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:5000';
             const response = await fetch(`${AI_SERVER_URL}/detect`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-api-key': import.meta.env.VITE_AI_SECRET_TOKEN || ''
+                },
                 body: JSON.stringify({ text: query })
             });
 

@@ -26,6 +26,9 @@ const AIControl = () => {
         try {
             const response = await fetch(`${AI_SERVER_URL}/admin/clean-data`, {
                 method: 'POST',
+                headers: { 
+                    'x-api-key': import.meta.env.VITE_AI_SECRET_TOKEN || ''
+                },
                 body: formData,
             });
 
@@ -67,7 +70,10 @@ const AIControl = () => {
         try {
             const res = await fetch(`${AI_SERVER_URL}${endpoint}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-api-key': import.meta.env.VITE_AI_SECRET_TOKEN || ''
+                },
                 body: JSON.stringify(params || {})
             });
             
@@ -179,6 +185,8 @@ const AIControl = () => {
                             <div className="relative group p-6 rounded-3xl border-2 border-green-500/20 bg-green-50/50 hover:bg-green-50 transition-all border-dashed">
                                 <input
                                     type="file"
+                                    title="Upload Data File"
+                                    aria-label="Upload Data File"
                                     accept=".csv,.xlsx,.xls"
                                     onChange={handleDataClean}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"

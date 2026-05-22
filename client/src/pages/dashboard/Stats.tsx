@@ -171,7 +171,10 @@ const Stats = () => {
                     const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:5000';
                     const forecastRes = await fetch(`${AI_SERVER_URL}/forecast`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'x-api-key': import.meta.env.VITE_AI_SECRET_TOKEN || ''
+                        },
                         body: JSON.stringify({
                             total,
                             fake: fakeCount,

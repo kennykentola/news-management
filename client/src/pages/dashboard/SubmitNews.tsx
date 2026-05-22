@@ -65,7 +65,10 @@ const SubmitNews = () => {
         try {
             const response = await fetch(`${AI_SERVER_URL}/proofread`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-api-key': import.meta.env.VITE_AI_SECRET_TOKEN || ''
+                },
                 body: JSON.stringify({ text: content.replace(/<[^>]*>/g, '') })
             });
             if (response.ok) {
@@ -94,7 +97,10 @@ const SubmitNews = () => {
         try {
             const response = await fetch(`${AI_SERVER_URL}/generate`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-api-key': import.meta.env.VITE_AI_SECRET_TOKEN || ''
+                },
                 body: JSON.stringify({ topic: aiPrompt })
             });
             if (response.ok) {
@@ -168,7 +174,10 @@ const SubmitNews = () => {
             try {
                 const response = await fetch(`${AI_SERVER_URL}/detect`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-api-key': import.meta.env.VITE_AI_SECRET_TOKEN || ''
+                    },
                     body: JSON.stringify({ text: plainText })
                 });
                 if (response.ok) {

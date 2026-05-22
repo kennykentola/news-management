@@ -10,6 +10,7 @@ import psutil
 import logging
 import requests
 from dotenv import load_dotenv
+from functools import wraps
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -32,6 +33,19 @@ def log_memory_usage(stage):
 
 app = Flask(__name__)
 CORS(app)
+
+def require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('x-api-key')
+        secret = os.getenv('API_SECRET_TOKEN')
+        if not secret:
+            return jsonify({'error': 'Server misconfigured: missing API_SECRET_TOKEN'}), 500
+        if not token or token != secret:
+            return jsonify({'error': 'Unauthorized access'}), 401
+        return f(*args, **kwargs)
+    return decorated
+
 
 # Load model if exists
 MODEL_PATH = 'model.pkl'
@@ -164,11 +178,13 @@ def index():
     })
 
 @app.route('/reload', methods=['POST'])
+@require_auth
 def reload_model_route():
     load_model()
     return jsonify({'status': 'Model reloaded successfully'})
 
 @app.route('/detect', methods=['POST'])
+@require_auth
 def detect():
     data = request.json
     text = data.get('text', '')
@@ -276,6 +292,7 @@ def detect():
              return jsonify({'error': str(e)}), 500
     
 @app.route('/proofread', methods=['POST'])
+@require_auth
 def proofread():
     data = request.json
     text = data.get('text', '')
@@ -359,6 +376,7 @@ Text:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/generate', methods=['POST'])
+@require_auth
 def generate_news():
     data = request.json or {}
     topic = data.get('topic', '')
@@ -432,6 +450,7 @@ IMPORTANT: Never refer to yourself as Gemini. Do not include any markdown format
         return jsonify({'error': str(e)}), 500
 
 @app.route('/analytics', methods=['GET'])
+@require_auth
 def get_global_analytics():
     return jsonify({
         'system_health': 'optimal',
@@ -441,6 +460,7 @@ def get_global_analytics():
     })
 
 @app.route('/forecast', methods=['POST'])
+@require_auth
 def forecast():
     data = request.json
     total = data.get('total', 0)
@@ -520,6 +540,7 @@ def forecast():
 # --- Admin Maintenance Endpoints ---
 
 @app.route('/admin/scrape-social', methods=['POST'])
+@require_auth
 def run_scrape_social():
     try:
         # Run the fetch_social_trends.py script
@@ -533,6 +554,7 @@ def run_scrape_social():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/admin/sync', methods=['POST'])
+@require_auth
 def run_sync():
     try:
         # Run the sync_to_appwrite.py script
@@ -546,6 +568,7 @@ def run_sync():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/admin/scrape', methods=['POST'])
+@require_auth
 def run_scrape():
     try:
         # Run the fetch_african_facts.py script
@@ -559,6 +582,7 @@ def run_scrape():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/admin/clean', methods=['POST'])
+@require_auth
 def run_clean():
     try:
         result = subprocess.run(['python', 'clean_data.py'], capture_output=True, text=True)
@@ -571,6 +595,7 @@ def run_clean():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/admin/train', methods=['POST'])
+@require_auth
 def run_train():
     try:
         # We start it in the background as it might take time
@@ -583,6 +608,7 @@ def run_train():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/admin/clean-data', methods=['POST'])
+@require_auth
 def clean_data():
     if 'file' not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
