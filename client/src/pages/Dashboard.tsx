@@ -7,6 +7,7 @@ import ReviewNews from './dashboard/ReviewNews';
 import MyArticles from './dashboard/MyArticles';
 import EditArticle from './dashboard/EditArticle';
 import PublishNews from './dashboard/PublishNews';
+import RejectedNews from './dashboard/RejectedNews';
 
 import Overview from './dashboard/Overview';
 import Stats from './dashboard/Stats';
@@ -30,7 +31,8 @@ import {
     LogOut,
     Home,
     User,
-    History
+    History,
+    Trash2
 } from 'lucide-react';
 import AdminUsers from './dashboard/AdminUsers';
 
@@ -179,13 +181,22 @@ const Dashboard = () => {
                     )}
 
                     {(user?.role === 'EDITOR' || user?.role === 'ADMIN') && (
-                        <SidebarItem
-                            to="/dashboard/review"
-                            label="Review Queue"
-                            icon={<CheckSquare size={20} />}
-                            active={isActive('/dashboard/review')}
-                            onClick={closeSidebar}
-                        />
+                        <>
+                            <SidebarItem
+                                to="/dashboard/review"
+                                label="Review Queue"
+                                icon={<CheckSquare size={20} />}
+                                active={isActive('/dashboard/review')}
+                                onClick={closeSidebar}
+                            />
+                            <SidebarItem
+                                to="/dashboard/rejected"
+                                label="Rejected News"
+                                icon={<Trash2 size={20} />}
+                                active={isActive('/dashboard/rejected')}
+                                onClick={closeSidebar}
+                            />
+                        </>
                     )}
 
                     {user?.role === 'ADMIN' && (
@@ -260,6 +271,7 @@ const Dashboard = () => {
                         <Route path="/edit/:id" element={<EditArticle />} />
                         <Route path="/submit" element={<SubmitNews />} />
                         <Route path="/review" element={<ReviewNews />} />
+                        <Route path="/rejected" element={<RejectedNews />} />
                         <Route path="/publish" element={<PublishNews />} />
                         <Route path="/stats" element={<Stats />} />
                         {SHOW_AI_CONTROL && <Route path="/ai-control" element={<AIControl />} />}

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES, AUDIT_LOGS_COLLECTION_ID } from '../../lib/appwrite';
 import { Query, ID } from 'appwrite';
-import { CheckCircle, XCircle, Eye, Search, Filter, ShieldCheck, FileText, AlertTriangle, History } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Search, Filter, ShieldCheck, FileText, AlertTriangle, History, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { normalizePlainText } from '../../lib/content';
 
@@ -82,17 +82,24 @@ const ReviewNews = () => {
                     <h2 className="text-4xl font-black text-text-primary tracking-tighter">Editorial Review</h2>
                     <p className="text-text-secondary font-bold mt-2">Verify and validate articles before they go live.</p>
                 </div>
-                <div className="flex items-center gap-4 bg-bg-secondary p-2 rounded-2xl border-2 border-bg-tertiary shadow-sm focus-within:border-primary transition-all">
-                    <Search className="text-text-secondary/50 ml-2" size={20} />
-                    <input 
-                        placeholder="Search queue..." 
-                        className="bg-transparent border-none outline-none font-bold text-text-primary p-2"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    <button className="p-2 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                        <Filter size={18} className="text-gray-500" />
-                    </button>
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 bg-bg-secondary p-2 rounded-2xl border-2 border-bg-tertiary shadow-sm focus-within:border-primary transition-all">
+                        <Search className="text-text-secondary/50 ml-2" size={20} />
+                        <input 
+                            placeholder="Search queue..." 
+                            className="bg-transparent border-none outline-none font-bold text-text-primary p-2 w-full md:w-auto"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        <button aria-label="Filter queue" title="Filter queue" className="p-2 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors hidden md:block">
+                            <Filter size={18} className="text-gray-500" />
+                        </button>
+                    </div>
+                    
+                    <Link to="/dashboard/rejected" className="flex items-center justify-center gap-2 bg-bg-secondary border-2 border-danger/20 hover:bg-danger/10 text-danger p-3 px-5 rounded-2xl transition-all shadow-sm font-black whitespace-nowrap">
+                        <Trash2 size={20} />
+                        Trash Bin
+                    </Link>
                 </div>
             </div>
 

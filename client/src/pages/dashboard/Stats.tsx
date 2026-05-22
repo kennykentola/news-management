@@ -17,6 +17,7 @@ const Stats = () => {
     const [pieData, setPieData] = useState<any[]>([]);
     const [trendData, setTrendData] = useState<any[]>([]);
     const [engagementData, setEngagementData] = useState<any[]>([]);
+    const [activityData, setActivityData] = useState<any[]>([]);
     const [prediction, setPrediction] = useState<{ risk: string, trend: string }>({ risk: 'Low', trend: 'Stable' });
     const [loading, setLoading] = useState(true);
 
@@ -35,24 +36,69 @@ const Stats = () => {
                 let fakeCount = 0;
                 let verifiedCount = 0;
                 let unsureCount = 0;
+                const activityCounts: Record<string, number> = {};
+                const trendCounts: Record<string, { fake: number, verified: number }> = {};
+
+                // Generate last 7 days
+                const last7Days = Array.from({length: 7}, (_, i) => {
+                    const d = new Date();
+                    d.setDate(d.getDate() - (6 - i));
+                    return d;
+                });
+
+                const formatDateKey = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); // e.g. "Oct 21, 2023"
+                const formatLabel = (d: Date) => `${d.toLocaleDateString('en-US', { weekday: 'short' })} ${d.getDate()}`; // e.g. "Mon 21"
+
+                last7Days.forEach(d => {
+                    const key = formatDateKey(d);
+                    activityCounts[key] = 0;
+                    trendCounts[key] = { fake: 0, verified: 0 };
+                });
 
                 docs.forEach(doc => {
                     // Logic to determine category
-                    // If AI Score > 70 => Verified
-                    // If AI Score < 50 or Result 'FAKE' => Fake
-                    // Else => Unsure
-
                     const score = doc.aiScore || 0;
                     const result = doc.aiLabel || 'UNKNOWN';
+                    let category = 'unsure';
 
                     if (result.includes('FAKE') || score < 50) {
                         fakeCount++;
+                        category = 'fake';
                     } else if (score >= 70) {
                         verifiedCount++;
+                        category = 'verified';
                     } else {
                         unsureCount++;
                     }
+
+                    // Calculate Weekly Activity and Trends
+                    const dateStr = doc.$createdAt || doc.createdAt || doc.date_published;
+                    if (dateStr) {
+                        try {
+                            const date = new Date(dateStr);
+                            const key = formatDateKey(date);
+                            if (activityCounts[key] !== undefined) {
+                                activityCounts[key]++;
+                                if (category === 'fake') {
+                                    trendCounts[key].fake++;
+                                } else if (category === 'verified') {
+                                    trendCounts[key].verified++;
+                                }
+                            }
+                        } catch (e) {
+                            // Ignore invalid dates
+                        }
+                    }
                 });
+
+                const dynamicActivityData = last7Days.map(d => {
+                    const key = formatDateKey(d);
+                    return {
+                        name: formatLabel(d),
+                        checks: activityCounts[key]
+                    };
+                });
+                setActivityData(dynamicActivityData);
 
                 const accuracy = total > 0 ? ((verifiedCount + fakeCount) / total) * 100 : 0; // Simplified accuracy metric
 
@@ -70,31 +116,57 @@ const Stats = () => {
                     { name: 'Unsure', value: unsureCount },
                 ]);
 
-                // Generate Trend Data (Last 7 days simulation based on real volume)
-                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                const trends = days.map((day, i) => ({
-                    name: day,
-                    fake: Math.floor(fakeCount * (0.1 + Math.random() * 0.2)),
-                    verified: Math.floor(verifiedCount * (0.1 + Math.random() * 0.2)),
-                    signals: Math.floor(total * (0.05 + Math.random() * 0.15))
-                }));
-                setTrendData(trends);
+                // Set Dynamic Trend Data
+                const dynamicTrends = last7Days.map(d => {
+                    const key = formatDateKey(d);
+                    return {
+                        name: formatLabel(d),
+                        fake: trendCounts[key].fake,
+                        verified: trendCounts[key].verified,
+                        signals: trendCounts[key].fake + trendCounts[key].verified
+                    };
+                });
+                setTrendData(dynamicTrends);
 
                 // Generate Engagement Data
                 const totalViews = docs.reduce((acc, d) => acc + (d.viewsCount || 0), 0);
-                const engagement = days.map(day => ({
-                    name: day,
+                const engagement = last7Days.map(d => ({
+                    name: formatLabel(d),
                     views: Math.floor(totalViews * (0.1 + Math.random() * 0.2)),
                     engagement: Math.floor((totalViews / 10) * (Math.random() * 0.5))
                 }));
                 setEngagementData(engagement);
 
-                // Predictive Logic: If fake/total ratio > 0.3, risk is High
-                const ratio = total > 0 ? fakeCount / total : 0;
-                setPrediction({
-                    risk: ratio > 0.4 ? 'Critical' : ratio > 0.2 ? 'Moderate' : 'Low',
-                    trend: ratio > 0.3 ? 'Ascending' : 'Plateau'
-                });
+                // Predictive Logic with Gemini API and Fallback
+                try {
+                    const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:5000';
+                    const forecastRes = await fetch(`${AI_SERVER_URL}/forecast`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            total,
+                            fake: fakeCount,
+                            verified: verifiedCount,
+                            unsure: unsureCount
+                        })
+                    });
+                    if (forecastRes.ok) {
+                        const forecastData = await forecastRes.json();
+                        setPrediction({
+                            risk: forecastData.risk || 'Low',
+                            trend: forecastData.trend || 'Plateau'
+                        });
+                    } else {
+                        throw new Error("Forecast API failed");
+                    }
+                } catch (e) {
+                    console.error("Gemini forecast failed, using fallback logic", e);
+                    const ratio = total > 0 ? fakeCount / total : 0;
+                    setPrediction({
+                        risk: ratio > 0.4 ? 'Critical' : ratio > 0.2 ? 'Moderate' : 'Low',
+                        trend: ratio > 0.3 ? 'Ascending' : 'Plateau'
+                    });
+                }
 
             } catch (error) {
                 console.error("Failed to fetch stats:", error);
@@ -105,16 +177,6 @@ const Stats = () => {
 
         fetchStats();
     }, []);
-
-    const activityData = [
-        { name: 'Mon', checks: 4 },
-        { name: 'Tue', checks: 3 },
-        { name: 'Wed', checks: 2 },
-        { name: 'Thu', checks: 7 },
-        { name: 'Fri', checks: 1 },
-        { name: 'Sat', checks: 2 },
-        { name: 'Sun', checks: 3 },
-    ];
 
     if (loading) return <div className="text-text-primary font-black uppercase tracking-widest p-20 text-center animate-pulse">Synchronizing metrics...</div>;
 

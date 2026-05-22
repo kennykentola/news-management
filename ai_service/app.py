@@ -305,6 +305,83 @@ def get_global_analytics():
         'flagged_content_rate': 0.12
     })
 
+@app.route('/forecast', methods=['POST'])
+def forecast():
+    data = request.json
+    total = data.get('total', 0)
+    fake = data.get('fake', 0)
+    verified = data.get('verified', 0)
+    unsure = data.get('unsure', 0)
+    
+    # Fallback math logic
+    ratio = fake / total if total > 0 else 0
+    fallback_risk = 'Critical' if ratio > 0.4 else 'Moderate' if ratio > 0.2 else 'Low'
+    fallback_trend = 'Ascending' if ratio > 0.3 else 'Plateau'
+    
+    if not GEMINI_ENABLED:
+        return jsonify({'risk': fallback_risk, 'trend': fallback_trend, 'source': 'math'})
+
+    try:
+        prompt = f"""
+        You are a neural forecasting unit for a news verification platform.
+        Analyze the current system stats:
+        Total Articles Scanned: {total}
+        Fake Articles Detected: {fake}
+        Verified Articles: {verified}
+        Unsure Articles: {unsure}
+
+        Based on the frequency of misinformation versus verified facts, determine:
+        1. risk: The current threat level of misinformation spread. Must be exactly one of: "Low", "Moderate", "Critical".
+        2. trend: The current direction of the threat. Must be exactly one of: "Plateau", "Ascending", "Descending".
+
+        Return ONLY JSON with the fields:
+        - risk
+        - trend
+        """
+        
+        schema = {
+            "type": "object",
+            "properties": {
+                "risk": { "type": "string", "enum": ["Low", "Moderate", "Critical"] },
+                "trend": { "type": "string", "enum": ["Plateau", "Ascending", "Descending"] }
+            },
+            "required": ["risk", "trend"]
+        }
+
+        payload = {
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "temperature": 0.1,
+                "responseMimeType": "application/json",
+                "responseSchema": schema
+            }
+        }
+
+        response = requests.post(
+            GEMINI_ENDPOINT,
+            headers={
+                "Content-Type": "application/json",
+                "x-goog-api-key": GEMINI_API_KEY
+            },
+            json=payload,
+            timeout=15,
+        )
+        response.raise_for_status()
+        body = response.json()
+        
+        raw_text = body.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+        if raw_text:
+            parsed = json.loads(raw_text)
+            return jsonify({
+                'risk': parsed.get('risk', fallback_risk),
+                'trend': parsed.get('trend', fallback_trend),
+                'source': 'gemini'
+            })
+    except Exception as e:
+        logger.error(f"Gemini forecast failed, using fallback: {e}")
+        
+    return jsonify({'risk': fallback_risk, 'trend': fallback_trend, 'source': 'math (fallback)'})
+
 # --- Admin Maintenance Endpoints ---
 
 @app.route('/admin/scrape-social', methods=['POST'])
