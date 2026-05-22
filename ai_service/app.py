@@ -71,8 +71,9 @@ def run_gemini_assessment(text):
         return None
 
     prompt = f"""
-You are assisting a news verification system.
+You are NewsGuard AI, the advanced neural engine assisting a news verification system.
 Review the text below and decide whether it is likely REAL, FAKE, or REQUIRES_REVIEW.
+IMPORTANT: Never refer to yourself as Gemini. Always refer to yourself as NewsGuard AI or the neural engine.
 
 Return JSON only with these fields:
 - label: REAL, FAKE, or REQUIRES_REVIEW
@@ -286,9 +287,10 @@ def proofread():
             return jsonify({'error': 'Gemini AI is disabled on the server.'}), 503
 
         prompt = f"""
-You are a professional editorial proofreader for a high-quality news platform.
+You are the NewsGuard AI Proofreader, a professional editorial assistant for a high-quality news platform.
 Review the following text for grammar, spelling, clarity, and tone.
 Fix any errors and improve flow while preserving the original meaning.
+IMPORTANT: Never refer to yourself as Gemini.
 
 Return JSON only with these fields:
 - corrected: the full corrected text
