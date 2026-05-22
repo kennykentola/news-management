@@ -1,0 +1,116 @@
+CHAPTER FOUR
+SYSTEM IMPLEMENTATION AND EVALUATION
+
+4.1 Introduction
+This chapter presents the implementation and evaluation of the News Management System (TONIA), a web-based platform developed to support news publication, editorial review, and fake news detection. The system was designed to provide a structured workflow for anonymous users, writers, editors, and administrators while also improving the reliability of published content through an AI-powered fact-checking service.
+
+The chapter discusses the development tools used in building the system, the implementation of the major user interfaces, and the testing methods carried out to ensure that the application performs correctly. It also presents an evaluation of the system based on its functionality, responsiveness, and overall usefulness in managing news content.
+
+4.2 Choice of Development Tools
+The News Management System was implemented using modern web technologies that support modular development, scalability, and responsive design. The tools used for the system are outlined below.
+
+1. Frontend Development (React, TypeScript, and Vite):
+React was used for building the user interface because it supports reusable components and efficient state management. TypeScript improved code reliability by introducing static typing, while Vite provided a fast development environment and build process.
+
+2. Backend and Database (Appwrite Cloud):
+Appwrite Cloud served as the backend platform for authentication, collection-based database operations, file management, and user metadata. It provided a convenient cloud-based structure for handling users, articles, comments, ratings, notifications, audit logs, and role-based access control.
+
+3. AI Service (Flask and Machine Learning):
+A Flask microservice was developed to power the fake news detection feature. This service loads a trained machine learning model and returns a prediction based on the text submitted by users.
+
+4. Styling (Tailwind CSS):
+Tailwind CSS was used to design the interface and ensure that the application remains responsive across desktops, tablets, and mobile devices. It also helped maintain visual consistency across different pages.
+
+5. Environment Configuration:
+The system environment was organized using configuration variables that define the Appwrite endpoint, database identifiers, and AI service URL. This made it easier to connect the frontend to external services during deployment and testing.
+
+4.3 System Implementation
+The implementation of the system was carried out in modules to ensure clarity, maintainability, and ease of expansion. The major functional areas of the application are discussed below.
+
+4.3.1 User Interface Implementation
+The user interface was developed to give different categories of users access to the appropriate features of the platform. The application includes public pages such as the home page, login page, registration page, article detail page, category page, privacy policy page, and terms page.
+
+The dashboard section contains pages for overview, submission of news, review of articles, publishing, statistics, profile management, audit logging, and administrative user management. These pages were organized so that writers, editors, and administrators can work within their respective roles.
+
+The interface was designed to be simple, responsive, and easy to navigate. Special attention was given to the protected routes so that only authenticated users could access restricted dashboard areas.
+
+Fig. 4.1 Home Page
+This interface serves as the entry point to the application. It introduces users to the platform and provides navigation to the main public sections of the system.
+
+Fig. 4.2 Login Page
+This module allows registered users to sign in to the system using their email and password credentials.
+
+Fig. 4.3 Registration Page
+This module enables new users to create accounts and gain access to the news management platform.
+
+Fig. 4.4 Dashboard Overview
+This interface provides authenticated users with a summary of their activities, recent articles, and available dashboard functions.
+
+Fig. 4.5 Submit News Interface
+This module allows writers to submit article content for review and processing within the system.
+
+Fig. 4.6 Review and Publish Interfaces
+These modules allow editors and administrators to review submitted articles, validate content, and publish approved news items.
+
+Fig. 4.7 Fake News Detection Interface
+This interface enables users to submit text to the AI service for real or fake classification.
+
+4.3.2 Backend and AI Service Implementation
+The backend logic of the application was split between Appwrite Cloud and the Flask AI service. Appwrite was used for authentication, article storage, and user-related records, while the Flask service was used for machine learning prediction.
+
+The AI service works by receiving text input from the frontend, preprocessing the text, vectorizing it using TF-IDF, and then passing it through the trained model for classification. The result is returned to the frontend as a prediction showing whether the text is likely REAL or FAKE.
+
+The backend structure improves the maintainability of the system because the AI detection module can be updated without affecting the rest of the application.
+
+4.3.3 Role Management and Access Control
+Role-based access control was implemented to separate the functions available to anonymous users, writers, editors, and administrators. This ensures that each user category can only access the features relevant to its responsibilities.
+
+Anonymous users can browse public pages and check factual content. Writers can submit articles and manage their own submissions. Editors can review and approve articles, while administrators can manage users and oversee system activities.
+
+4.4 System Testing
+System testing was conducted to verify the reliability, correctness, and usability of the application. Different testing methods were applied to both the frontend and the backend services.
+
+4.4.1 Unit Testing
+Unit testing was carried out on individual components and utility functions to ensure that each part of the system works correctly on its own.
+
+Methodology:
+The login form, registration form, article submission form, and fact-checking component were tested to confirm that they properly accepted input and displayed the correct responses.
+
+Result:
+The unit testing showed that the individual components worked as expected and handled user input properly.
+
+4.4.2 Integration Testing
+Integration testing was performed to verify communication between the frontend, Appwrite Cloud, and the AI service.
+
+Methodology:
+The testing process involved checking whether user authentication, article storage, and AI prediction requests could move successfully between the connected services.
+
+Result:
+The services interacted correctly, and submitted data was properly stored and returned without major inconsistencies.
+
+4.4.3 System Testing
+System testing was used to evaluate the complete workflow of the application from user login to article publication and fact checking.
+
+Methodology:
+A writer submitted a news article through the dashboard. The article was saved as a draft and then sent for review. The editor reviewed the content, checked the AI prediction result, and either approved or rejected the article. Approved articles were then published and made visible to users on the public interface.
+
+Result:
+The system successfully handled the entire workflow from submission to publication. The dashboard updated correctly, and the AI detection service returned results within a reasonable time.
+
+4.4.4 User Acceptance Testing
+User Acceptance Testing was carried out to evaluate the usability of the system from the perspective of intended users.
+
+Feedback:
+Writers reported that the submission page was simple to use.
+Editors indicated that the review workflow was clear and effective.
+Administrators appreciated the user management and audit features.
+Readers found the public pages and article browsing interface easy to navigate.
+
+The feedback confirmed that the system was usable and suitable for the intended news management environment.
+
+4.5 System Evaluation
+The evaluation of the News Management System shows that the platform effectively supports article handling, editorial review, and fake news detection. The integration of React, Appwrite, and Flask provided a practical structure for building a modular and scalable application.
+
+The system improves the management of news content by giving users role-specific access and by reducing the risk of publishing unreliable information. The AI-based detection feature provides an extra layer of verification, while the dashboard and notification features support efficient workflow management.
+
+Overall, the system performs well as a news management and fact-checking platform. It is responsive, functional, and well-structured for future expansion.

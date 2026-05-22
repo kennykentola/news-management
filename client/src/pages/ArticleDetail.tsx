@@ -402,7 +402,7 @@ const ArticleDetail = () => {
                 )}
 
                 <section
-                    className="article-content prose prose-2xl dark:prose-invert prose-black dark:prose-white max-w-none text-xl md:text-2xl font-medium leading-relaxed md:leading-[1.8] text-text-primary/90 space-y-8 prose-img:rounded-3xl prose-img:shadow-2xl"
+                    className="article-content prose prose-2xl dark:prose-invert prose-black dark:prose-white max-w-none text-xl md:text-2xl font-medium leading-relaxed md:leading-[1.8] text-text-primary/90 space-y-8 prose-img:rounded-3xl prose-img:shadow-2xl break-words [word-break:break-word]"
                     dangerouslySetInnerHTML={{
                         __html: normalizeHtmlContent(article.content || article.text || article.body || '')
                     }}

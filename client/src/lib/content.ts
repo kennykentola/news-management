@@ -45,6 +45,8 @@ export const normalizeHtmlForStorage = (input?: string | null) => {
 
     return normalizeHtmlNodes(input)
         .replace(/<p><br><\/p>/g, '')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&#160;/g, ' ')
         .replace(/\u00a0/g, ' ');
 };
 

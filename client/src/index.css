@@ -108,8 +108,12 @@ body {
   }
 
   /* Inline Color Sanitization for Dark Mode Integrity */
-  .dark .article-content span[style*="color"] {
+  .dark .article-content *[style*="color"] {
     color: var(--color-text-primary) !important;
+  }
+  .dark .article-content *[style*="background"] {
+    background-color: transparent !important;
+    background: transparent !important;
   }
 
   /* High-Fidelity Multimedia Alignment Macros */

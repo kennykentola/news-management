@@ -1,0 +1,297 @@
+CHAPTER 3: SYSTEM DESIGN
+
+This chapter presents the design of the News Management System (TONIA), including its architecture, functional behavior, data flow, database structure, and algorithmic logic. The system is designed as a web-based news management platform that combines content management, role-based access control, and AI-powered fake news detection. It uses a React frontend, Appwrite Cloud for authentication and database services, and a Flask-based machine learning service for fact checking.
+
+3.1 System Architecture
+
+The proposed system follows a layered architecture made up of four main parts:
+
+1. Presentation Layer: The user interface is developed with React, TypeScript, and Vite. This layer handles public pages, dashboard pages, and user interaction.
+
+2. Application and Service Layer: Appwrite Cloud manages authentication, database operations, file storage, and access permissions, while the Flask service handles fake news detection and proofreading requests.
+
+3. Data Layer: Appwrite collections store articles, comments, ratings, notifications, user metadata, and audit logs. Uploaded images are stored in an Appwrite storage bucket.
+
+4. AI Layer: A separate Flask microservice loads a trained machine learning model and returns prediction results for submitted text.
+
+System Architecture Diagram:
+
+[Frontend (React)] <--> [Appwrite Cloud] <--> [Appwrite Collections / Storage]
+     |
+     v
+[Flask AI Service] --> [Trained ML Model]
+
+3.2 Use Case Diagram
+
+Actors:
+- Anonymous User
+- Writer
+- Editor
+- Admin
+
+Use Cases:
+- Register and login
+- View published news
+- Fact check text
+- Submit news article
+- Review article
+- Approve or reject article
+- Publish article
+- Manage users
+- View dashboard and notifications
+
+Use Case Diagram (ASCII):
+
++-------------------+     +-------------------+
+| Anonymous User    |     |      Writer       |
++-------------------+     +-------------------+
+| - Register        |     | - Submit News     |
+| - Login           |     | - Edit Own Drafts  |
+| - View Articles   |     | - View Dashboard   |
+| - Fact Check      |     +-------------------+
++-------------------+             |
+          |                       |
+          v                       v
++-------------------+     +-------------------+
+|      Editor       |     |       Admin       |
++-------------------+     +-------------------+
+| - Review News     |     | - Manage Users    |
+| - Approve News    |     | - Assign Roles    |
+| - Reject News     |     | - View Audit Logs  |
+| - Publish News    |     +-------------------+
++-------------------+
+
+3.3 Class Diagram
+
+Main Classes:
+
+- AuthContext: handles login, logout, session recovery, and role synchronization
+- NotificationContext: manages notification retrieval and read status
+- Article: stores title, content, author details, status, AI fields, and counters
+- UserMetadata: stores role, interests, and bookmarks linked to the auth user
+- Comment: stores comments linked to an article and a user
+- Rating: stores user ratings for published articles
+- AuditLog: records moderation and administrative actions
+- FakeNewsDetector: communicates with the Flask AI service
+
+Class Diagram (ASCII):
+
++----------------+     +-----------------+
+| AuthContext    |     | NotificationCtx |
++----------------+     +-----------------+
+| - user         |     | - notifications |
+| - login()      |     | - addNotification() |
+| - logout()     |     | - markAsRead()  |
++----------------+     +-----------------+
+          |                       |
+          v                       v
++----------------+     +-----------------+
+|    Article     |     | FakeNewsDetector|
++----------------+     +-----------------+
+| - title        |     | - detect()      |
+| - content      |     | - proofread()   |
+| - status       |     +-----------------+
+| - aiScore      |
+| - authorId     |
++----------------+
+
+3.4 Sequence Diagram
+
+Sequence for Submitting and Reviewing News:
+
+1. Writer logs in.
+2. Writer submits an article.
+3. The system stores the article as a draft or pending item in Appwrite.
+4. The system sends the article text to the AI service for analysis.
+5. The AI service returns a credibility score and classification.
+6. The editor reviews the article and checks the AI result.
+7. The editor approves, rejects, or requests changes.
+8. Approved articles are published to the public site.
+
+Sequence Diagram (ASCII):
+
+Writer -> AuthContext: login()
+AuthContext -> Appwrite: authenticate
+Appwrite --> AuthContext: session
+AuthContext --> Writer: logged in
+
+Writer -> Dashboard: submitArticle()
+Dashboard -> Appwrite: create article
+Appwrite --> Dashboard: saved
+
+Dashboard -> Flask AI Service: POST /detect
+Flask AI Service --> Dashboard: score, label, explanation
+
+Editor -> Dashboard: review(article)
+Dashboard -> Appwrite: update status
+Appwrite --> Dashboard: updated
+
+Editor -> Dashboard: publish(article)
+Dashboard -> Appwrite: set status to PUBLISHED
+Appwrite --> Dashboard: published
+
+3.5 System Architecture Diagram
+
+Detailed Architecture:
+
+[React Frontend]
+    - Pages: Home, Login, Register, Dashboard, Article Detail, Category, Privacy, Terms
+    - Contexts: Auth, Theme, Notification
+    - Components: ProtectedRoute, LoadingScreen, NotificationCenter
+
+[Appwrite Cloud]
+    - Authentication
+    - Database collections
+    - File storage
+    - Role permissions
+
+[Flask AI Service]
+    - /detect endpoint
+    - /proofread endpoint
+    - Trained machine learning model
+
+Connections:
+Frontend <-> Appwrite Cloud (SDK/API)
+Frontend <-> Flask AI Service (HTTP POST)
+
+3.6 Data Flow Diagram (DFD)
+
+Level 0 DFD:
+
+External Entities:
+- Anonymous User
+- Writer
+- Editor
+- Admin
+- AI Service
+
+Processes:
+- P1: User Authentication
+- P2: News Submission
+- P3: Fact Checking
+- P4: News Review
+- P5: News Publishing
+
+Data Stores:
+- D1: users_metadata
+- D2: articles
+- D3: comments
+- D4: ratings
+- D5: notifications
+- D6: audit_logs
+
+Level 0 DFD (ASCII):
+
+Anonymous User --> P1 --> D1
+Writer --> P2 --> D2
+P2 --> P3 --> AI Service
+Editor --> P4 --> D2
+Admin --> P5 --> D2
+P4 --> D6
+P5 --> D5
+
+Level 1 DFD for News Submission Process (P2):
+
+Subprocesses:
+- P2.1: Validate Input
+- P2.2: Save Draft
+- P2.3: Send to Fact Check
+- P2.4: Store AI Result
+
+Data Flows:
+- Article Data
+- Validation Result
+- Fact Check Request/Response
+- AI Score and Classification
+
+Level 1 DFD (ASCII):
+
+Writer --> P2.1: Article Data
+P2.1 --> P2.2: Validated Data
+P2.2 --> D2: Save Draft
+P2.2 --> P2.3: Send to AI
+P2.3 --> AI Service: Fact Check Request
+AI Service --> P2.3: Detection Result
+P2.3 --> P2.4: AI Output
+P2.4 --> D2: Update Score and Status
+
+3.7 Entity Relationship Diagram (ERD)
+
+Entities:
+- Auth Users (id, name, email, prefs)
+- Users Metadata (id, name, email, role, interests, bookmarks, createdAt)
+- Articles (id, title, content, authorId, authorName, status, aiLabel, aiScore, createdAt, category, imageUrl, sourceUrl, editorFeedback, aiReason, aiCredibility, aiClassification, aiEdgeCases, viewsCount, sharesCount)
+- Comments (id, articleId, userId, authorName, content, createdAt)
+- Ratings (id, articleId, userId, rating, createdAt)
+- Notifications (id, userId, title, message, type, isRead, createdAt)
+- Audit Logs (id, userId, userName, action, entityId, details, timestamp)
+
+Relationships:
+- Auth User 1..1 Users Metadata
+- Auth User 1..* Articles
+- Auth User 1..* Comments
+- Auth User 1..* Ratings
+- Auth User 1..* Notifications
+- Auth User 1..* Audit Logs
+- Article 1..* Comments
+- Article 1..* Ratings
+
+ERD (ASCII):
+
++--------------+     +-------------------+     +-----------+
+| Auth User    | --> | Users Metadata    |     | Articles  |
++--------------+     +-------------------+     +-----------+
+| id           |     | id                |     | id        |
+| name         |     | name              |     | title     |
+| email        |     | email             |     | content   |
+| prefs        |     | role              |     | authorId  |
++--------------+     +-------------------+     +-----------+
+                                                  |    |
+                                                  |    v
+                                                  |  Comments
+                                                  v
+                                               Ratings
+
+3.8 Flowchart of Fake News Detection Algorithm
+
+Algorithm Steps:
+1. Receive text input
+2. Clean and preprocess the text
+3. Convert text to TF-IDF features
+4. Load the trained machine learning model
+5. Predict class label
+6. Calculate credibility score
+7. Generate explanation
+8. Return result to the frontend
+9. Save AI result in the article record
+
+Flowchart (ASCII):
+
+Start
+  |
+  v
+Receive Text
+  |
+  v
+Preprocess Text
+  |
+  v
+Extract Features (TF-IDF)
+  |
+  v
+Load Model
+  |
+  v
+Predict Class
+  |
+  v
+Calculate Score
+  |
+  v
+Generate Explanation
+  |
+  v
+Return Result
+  |
+  v
+End
