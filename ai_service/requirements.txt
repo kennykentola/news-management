@@ -13,3 +13,6 @@ appwrite
 gunicorn
 psutil
 lxml
+
+appwrite
+supabase
