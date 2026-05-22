@@ -22,6 +22,8 @@ const SubmitNews = () => {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [proofreading, setProofreading] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [aiPrompt, setAiPrompt] = useState('');
     const [message, setMessage] = useState({ type: '', text: '' });
     const quillRef = useRef<any>(null);
     const [writerStats, setWriterStats] = useState({
@@ -82,6 +84,48 @@ const SubmitNews = () => {
             alert("AI Proofreading service is currently unavailable.");
         } finally {
             setProofreading(false);
+        }
+    };
+
+    const handleAIGenerate = async () => {
+        if (!aiPrompt.trim()) return alert("Please enter a topic or prompt for the AI to write about.");
+        setIsGenerating(true);
+        const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:5000';
+        try {
+            const response = await fetch(`${AI_SERVER_URL}/generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic: aiPrompt })
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.headline && data.content) {
+                    setTitle(data.headline);
+                    setContent(data.content);
+                    setMessage({ type: 'success', text: 'AI successfully generated an article for you!' });
+                    setAiPrompt('');
+                } else {
+                    setMessage({ type: 'error', text: data.error || 'Failed to generate content.' });
+                }
+            } else {
+                let errorMsg = 'AI Service is currently unavailable.';
+                try {
+                    const errData = await response.json();
+                    if (errData.error) errorMsg = errData.error;
+                } catch (e) {}
+                
+                // If the error contains 503, it's Gemini's servers
+                if (errorMsg.includes('503') || errorMsg.includes('Service Unavailable')) {
+                    errorMsg = 'Google Gemini API is currently overloaded or unavailable. Please try again in a few moments.';
+                }
+                
+                setMessage({ type: 'error', text: errorMsg });
+            }
+        } catch (err) {
+            console.error("AI Generation failed:", err);
+            setMessage({ type: 'error', text: 'AI Service is currently unavailable.' });
+        } finally {
+            setIsGenerating(false);
         }
     };
 
@@ -324,21 +368,50 @@ const SubmitNews = () => {
                 <h2 className="text-4xl font-black mb-10 border-b-4 border-bg-tertiary pb-4 text-text-primary tracking-tighter">Submit News Article</h2>
 
                 {message.text && (
-                    <div style={{
-                        padding: '1.5rem',
-                        borderRadius: '1.5rem',
-                        marginBottom: '3rem',
-                        backgroundColor: message.type === 'success' ? '#e7ffed' : '#fee2e2',
-                        color: message.type === 'success' ? 'var(--color-primary-dark)' : 'var(--color-danger)',
-                        border: `3px solid ${message.type === 'success' ? 'var(--color-primary)' : 'var(--color-danger)'}`,
-                        fontWeight: 900,
-                        fontSize: '1.1rem'
-                    }}>
+                    <div className={`p-6 rounded-3xl mb-12 font-black text-lg border-4 ${message.type === 'success' ? 'bg-[#e7ffed] text-primary-dark border-primary' : 'bg-red-100 text-danger border-danger'}`}>
                         {message.text}
                     </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-10">
+                    
+                    {/* AI Auto-Writer Panel */}
+                    <div className="bg-primary/5 border-2 border-primary/20 rounded-3xl p-6 md:p-8 relative overflow-hidden group">
+                        <Sparkles className="absolute -bottom-4 -right-4 text-primary/10 w-48 h-48 rotate-12 transition-transform group-hover:scale-110" />
+                        <div className="relative z-10 flex flex-col md:flex-row gap-6 items-center">
+                            <div className="flex-1 w-full">
+                                <label className="block mb-2 text-primary font-black text-sm uppercase tracking-widest flex items-center gap-2">
+                                    <Zap size={16} /> NewsGuard AI Writer
+                                </label>
+                                <input
+                                    type="text"
+                                    value={aiPrompt}
+                                    onChange={(e) => setAiPrompt(e.target.value)}
+                                    placeholder="Enter a topic, fact, or prompt (e.g., 'The impact of AI on modern journalism')"
+                                    className="w-full p-4 rounded-xl bg-bg-primary border-2 border-bg-tertiary text-text-primary outline-none font-bold text-lg focus:border-primary transition-all"
+                                    disabled={isGenerating}
+                                />
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleAIGenerate}
+                                disabled={isGenerating || !aiPrompt.trim()}
+                                className="w-full md:w-auto mt-4 md:mt-0 whitespace-nowrap bg-primary text-white px-8 py-4 rounded-xl font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:hover:scale-100 shadow-xl"
+                            >
+                                {isGenerating ? (
+                                    <>
+                                        <div className="w-5 h-5 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Generating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Sparkles size={20} /> Auto-Write
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
                     <div>
                         <label className="block mb-3 text-text-primary text-xl font-black tracking-tight">Article Headline</label>
                         <input
@@ -392,6 +465,8 @@ const SubmitNews = () => {
                         <div>
                             <label className="block mb-3 text-text-primary text-xl font-black tracking-tight">Category</label>
                             <select
+                                title="Article Category"
+                                aria-label="Article Category"
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
                                 className="w-full p-5 rounded-2xl bg-bg-primary border-2 border-bg-tertiary text-text-primary outline-none font-black text-lg cursor-pointer"
@@ -420,6 +495,8 @@ const SubmitNews = () => {
                                             <>
                                                 <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                                                 <button 
+                                                    title="Remove Image"
+                                                    aria-label="Remove Image"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setImageFile(null);
@@ -444,6 +521,8 @@ const SubmitNews = () => {
                                         )}
                                         <input 
                                             id="image-upload"
+                                            title="Upload Image"
+                                            aria-label="Upload Image"
                                             type="file" 
                                             accept="image/*"
                                             className="hidden"
