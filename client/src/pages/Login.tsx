@@ -106,6 +106,8 @@ const Login = () => {
                     <div className="flex-1 h-px bg-bg-tertiary"></div>
                 </div>
 
+                {/* Google OAuth button temporarily hidden */}
+                {/*
                 <button
                     type="button"
                     onClick={() => loginWithGoogle()}
@@ -119,6 +121,8 @@ const Login = () => {
                     </svg>
                     Continue with Google
                 </button>
+                */}
+
 
                 <div className="text-center flex flex-col gap-3 text-sm">
                     <p className="text-gray-600 font-medium">
