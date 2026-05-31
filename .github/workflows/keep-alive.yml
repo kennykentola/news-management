@@ -23,3 +23,12 @@ jobs:
           
           curl -X GET "$HF_URL"
           echo "Successfully pinged Hugging Face Space: $HF_URL"
+
+      - name: Ping Supabase to prevent 7-day pause
+        run: |
+          # We ping the Supabase REST API root to register activity
+          # Using the URL and anon/service key from GitHub Secrets
+          curl -X GET "https://euikmfrcrnnkpgjyptma.supabase.co/rest/v1/" \
+            -H "apikey: ${{ secrets.SUPABASE_SERVICE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_KEY }}"
+          echo "Successfully pinged Supabase."

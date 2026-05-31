@@ -18,13 +18,39 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '').strip()
-GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash').strip()
-GEMINI_ENABLED = os.getenv('GEMINI_ENABLED', 'true').lower() in ('1', 'true', 'yes', 'on') and bool(GEMINI_API_KEY)
-GEMINI_TEMPERATURE = float(os.getenv('GEMINI_TEMPERATURE', '0.2'))
-GEMINI_ENDPOINT = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
-if GEMINI_ENABLED:
-    logger.info("Gemini support enabled with model %s", GEMINI_MODEL)
+HF_API_KEY = os.getenv('HF_API_KEY', '').strip()
+HF_MODEL = os.getenv('HF_MODEL', 'Qwen/Qwen2.5-72B-Instruct').strip()
+HF_ENABLED = bool(HF_API_KEY)
+HF_TEMPERATURE = 0.2
+
+if HF_ENABLED:
+    logger.info("Hugging Face support enabled with model %s", HF_MODEL)
+
+def run_hf_chat(prompt, temperature=0.7):
+    if not HF_ENABLED:
+        raise Exception("HF_API_KEY not configured")
+    
+    url = f"https://api-inference.huggingface.co/models/{HF_MODEL}/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {HF_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": HF_MODEL,
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": temperature,
+        "max_tokens": 1500,
+        "stream": False
+    }
+    response = requests.post(url, headers=headers, json=payload, timeout=45)
+    response.raise_for_status()
+    content = response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
+    
+    cleaned = content.strip()
+    if cleaned.startswith("```json"): cleaned = cleaned[7:]
+    elif cleaned.startswith("```"): cleaned = cleaned[3:]
+    if cleaned.endswith("```"): cleaned = cleaned[:-3]
+    return cleaned.strip()
 
 def log_memory_usage(stage):
     process = psutil.Process(os.getpid())
@@ -80,8 +106,8 @@ def load_model():
 
 load_model()
 
-def run_gemini_assessment(text):
-    if not GEMINI_ENABLED:
+def run_ai_assessment(text):
+    if not HF_ENABLED:
         return None
 
     prompt = f"""
@@ -100,75 +126,15 @@ Text:
 {text}
 """
 
-    schema = {
-        "type": "object",
-        "properties": {
-            "label": {
-                "type": "string",
-                "enum": ["REAL", "FAKE", "REQUIRES_REVIEW"]
-            },
-            "confidence": {
-                "type": "number"
-            },
-            "rationale": {
-                "type": "string"
-            },
-            "risk_signals": {
-                "type": "array",
-                "items": {
-                    "type": "string"
-                }
-            },
-            "recommendation": {
-                "type": "string"
-            }
-        },
-        "required": ["label", "confidence", "rationale", "risk_signals", "recommendation"]
-    }
-
-    payload = {
-        "contents": [
-            {
-                "role": "user",
-                "parts": [{"text": prompt}]
-            }
-        ],
-        "generationConfig": {
-            "temperature": GEMINI_TEMPERATURE,
-            "responseMimeType": "application/json",
-            "responseSchema": schema
-        }
-    }
-
     try:
-        response = requests.post(
-            GEMINI_ENDPOINT,
-            headers={
-                "Content-Type": "application/json",
-                "x-goog-api-key": GEMINI_API_KEY
-            },
-            json=payload,
-            timeout=30,
-        )
-        response.raise_for_status()
-        body = response.json()
+        raw_text = run_hf_chat(prompt, HF_TEMPERATURE)
+        parsed = json.loads(raw_text)
+        parsed["confidence"] = float(parsed.get("confidence", 0))
+        parsed["risk_signals"] = parsed.get("risk_signals", []) or []
+        return parsed
     except Exception as e:
-        logger.warning(f"Gemini API request failed: {e}")
+        logger.warning(f"HF API request failed: {e}")
         return None
-
-    raw_text = (
-        body.get("candidates", [{}])[0]
-        .get("content", {})
-        .get("parts", [{}])[0]
-        .get("text", "")
-    )
-    if not raw_text:
-        return None
-
-    parsed = json.loads(raw_text)
-    parsed["confidence"] = float(parsed.get("confidence", 0))
-    parsed["risk_signals"] = parsed.get("risk_signals", []) or []
-    return parsed
 
 @app.route('/', methods=['GET'])
 def index():
@@ -225,9 +191,9 @@ def detect():
             gemini_recommendation = None
 
             try:
-                gemini_result = run_gemini_assessment(text)
+                gemini_result = run_ai_assessment(text)
             except Exception as e:
-                logger.warning("Gemini assessment failed: %s", e)
+                logger.warning("AI assessment failed: %s", e)
 
             if gemini_result:
                 gemini_label = str(gemini_result.get('label', '')).upper()
@@ -304,8 +270,8 @@ def proofread():
         return jsonify({'error': 'No text provided'}), 400
     
     try:
-        if not GEMINI_ENABLED:
-            return jsonify({'error': 'Gemini AI is disabled on the server.'}), 503
+        if not HF_ENABLED:
+            return jsonify({'error': 'AI is disabled on the server.'}), 503
 
         prompt = f"""
 You are the NewsGuard AI Proofreader, a professional editorial assistant for a high-quality news platform.
@@ -320,45 +286,8 @@ Return JSON only with these fields:
 Text:
 {text}
 """
-        schema = {
-            "type": "object",
-            "properties": {
-                "corrected": {"type": "string"},
-                "has_changes": {"type": "boolean"}
-            },
-            "required": ["corrected", "has_changes"]
-        }
-        
-        payload = {
-            "contents": [
-                {"role": "user", "parts": [{"text": prompt}]}
-            ],
-            "generationConfig": {
-                "temperature": 0.2,
-                "responseMimeType": "application/json",
-                "responseSchema": schema
-            }
-        }
-        
         try:
-            response = requests.post(
-                GEMINI_ENDPOINT,
-                headers={
-                    "Content-Type": "application/json",
-                    "x-goog-api-key": GEMINI_API_KEY
-                },
-                json=payload,
-                timeout=30,
-            )
-            response.raise_for_status()
-            body = response.json()
-            
-            raw_text = (
-                body.get("candidates", [{}])[0]
-                .get("content", {})
-                .get("parts", [{}])[0]
-                .get("text", "")
-            )
+            raw_text = run_hf_chat(prompt, 0.2)
             if not raw_text:
                  return jsonify({'corrected': None})
                  
@@ -376,7 +305,7 @@ Text:
                     'message': 'No corrections needed'
                 })
         except Exception as api_err:
-            logger.warning(f"Gemini proofread failed, using fallback: {api_err}")
+            logger.warning(f"HF proofread failed, using fallback: {api_err}")
             return jsonify({
                 'original': text,
                 'corrected': None,
@@ -396,8 +325,8 @@ def generate_news():
         return jsonify({'error': 'No topic provided'}), 400
     
     try:
-        if not GEMINI_ENABLED:
-            return jsonify({'error': 'Gemini AI is disabled on the server.'}), 503
+        if not HF_ENABLED:
+            return jsonify({'error': 'AI is disabled on the server.'}), 503
 
         prompt = f"""
 You are the NewsGuard AI, an expert, objective journalist and editor.
@@ -410,45 +339,8 @@ Return JSON only with these fields:
 
 IMPORTANT: Never refer to yourself as Gemini. Do not include any markdown formatting outside the JSON object.
 """
-        schema = {
-            "type": "object",
-            "properties": {
-                "headline": {"type": "string"},
-                "content": {"type": "string"}
-            },
-            "required": ["headline", "content"]
-        }
-        
-        payload = {
-            "contents": [
-                {"role": "user", "parts": [{"text": prompt}]}
-            ],
-            "generationConfig": {
-                "temperature": 0.7,
-                "responseMimeType": "application/json",
-                "responseSchema": schema
-            }
-        }
-        
         try:
-            response = requests.post(
-                GEMINI_ENDPOINT,
-                headers={
-                    "Content-Type": "application/json",
-                    "x-goog-api-key": GEMINI_API_KEY
-                },
-                json=payload,
-                timeout=45,
-            )
-            response.raise_for_status()
-            body = response.json()
-            
-            raw_text = (
-                body.get("candidates", [{}])[0]
-                .get("content", {})
-                .get("parts", [{}])[0]
-                .get("text", "")
-            )
+            raw_text = run_hf_chat(prompt, 0.7)
             if not raw_text:
                  return jsonify({'error': 'No content generated by AI'}), 500
                  
@@ -458,7 +350,7 @@ IMPORTANT: Never refer to yourself as Gemini. Do not include any markdown format
                 'content': parsed.get('content')
             })
         except Exception as api_err:
-            logger.warning(f"Gemini generate failed, using fallback: {api_err}")
+            logger.warning(f"HF generate failed, using fallback: {api_err}")
             # Fallback logic for generation when Gemini is unavailable
             fallback_headline = f"Report: {topic.title()}"
             fallback_content = f"<h2>{topic.title()}</h2><p>Our advanced AI generation service is currently undergoing maintenance or unavailable. This is a temporary placeholder for the topic: <strong>{topic}</strong>.</p><p>Please use your journalistic expertise to draft the article manually using the editor.</p>"
@@ -495,7 +387,7 @@ def forecast():
     fallback_risk = 'Critical' if ratio > 0.4 else 'Moderate' if ratio > 0.2 else 'Low'
     fallback_trend = 'Ascending' if ratio > 0.3 else 'Plateau'
     
-    if not GEMINI_ENABLED:
+    if not HF_ENABLED:
         return jsonify({'risk': fallback_risk, 'trend': fallback_trend, 'source': 'math'})
 
     try:
@@ -516,46 +408,16 @@ def forecast():
         - trend
         """
         
-        schema = {
-            "type": "object",
-            "properties": {
-                "risk": { "type": "string", "enum": ["Low", "Moderate", "Critical"] },
-                "trend": { "type": "string", "enum": ["Plateau", "Ascending", "Descending"] }
-            },
-            "required": ["risk", "trend"]
-        }
-
-        payload = {
-            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-            "generationConfig": {
-                "temperature": 0.1,
-                "responseMimeType": "application/json",
-                "responseSchema": schema
-            }
-        }
-
-        response = requests.post(
-            GEMINI_ENDPOINT,
-            headers={
-                "Content-Type": "application/json",
-                "x-goog-api-key": GEMINI_API_KEY
-            },
-            json=payload,
-            timeout=15,
-        )
-        response.raise_for_status()
-        body = response.json()
-        
-        raw_text = body.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+        raw_text = run_hf_chat(prompt, 0.1)
         if raw_text:
             parsed = json.loads(raw_text)
             return jsonify({
                 'risk': parsed.get('risk', fallback_risk),
                 'trend': parsed.get('trend', fallback_trend),
-                'source': 'gemini'
+                'source': 'hf_qwen'
             })
     except Exception as e:
-        logger.error(f"Gemini forecast failed, using fallback: {e}")
+        logger.error(f"HF forecast failed, using fallback: {e}")
         
     return jsonify({'risk': fallback_risk, 'trend': fallback_trend, 'source': 'math (fallback)'})
 
