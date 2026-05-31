@@ -1,0 +1,25 @@
+name: Keep Infrastructure Awake
+
+on:
+  schedule:
+    # Run every 12 hours (prevents Appwrite 7-day pause & HuggingFace 48-hour sleep)
+    - cron: '0 */12 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  ping-services:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Appwrite to prevent 7-day pause
+        run: |
+          # We ping the health endpoint with your Project ID to register activity
+          curl -X GET "https://fra.cloud.appwrite.io/v1/health" \
+            -H "X-Appwrite-Project: 697c7f9c00327290c59b"
+
+      - name: Ping Hugging Face Space to prevent 48-hour sleep
+        run: |
+          # Pinging the direct Space URL to keep it awake
+          export HF_URL="https://kennykentola-newsguard-ai.hf.space/"
+          
+          curl -X GET "$HF_URL"
+          echo "Successfully pinged Hugging Face Space: $HF_URL"
