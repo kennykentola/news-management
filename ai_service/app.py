@@ -20,6 +20,8 @@ load_dotenv()
 
 GROQ_API_KEY = os.getenv('GROQ_API_KEY', '').strip()
 GROQ_MODEL = os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile').strip()
+if "8192" in GROQ_MODEL:
+    GROQ_MODEL = 'llama-3.3-70b-versatile'
 GROQ_ENABLED = bool(GROQ_API_KEY)
 GROQ_TEMPERATURE = 0.2
 
