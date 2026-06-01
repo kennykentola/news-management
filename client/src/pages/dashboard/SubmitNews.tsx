@@ -238,9 +238,9 @@ const SubmitNews = () => {
                     aiLabel: String(aiResult.result || 'UNKNOWN').substring(0, 50),
                     aiScore: aiResult.score,
                     createdAt: new Date().toISOString(),
-                    sourceUrl: sourceUrl,
+                    sourceUrl: sourceUrl || null,
                     category: category,
-                    imageUrl: finalImageUrl,
+                    imageUrl: finalImageUrl || null,
                     aiReason: finalAiReason,
                     aiCredibility: aiResult.credibility || (aiResult.score * 0.95), // Mock fallback
                     aiClassification: aiResult.classification || (aiResult.result === 'FAKE' ? 'FAKE' : 'REAL'),
