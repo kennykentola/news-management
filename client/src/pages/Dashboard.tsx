@@ -12,6 +12,7 @@ import RejectedNews from './dashboard/RejectedNews';
 import Overview from './dashboard/Overview';
 import Stats from './dashboard/Stats';
 import Profile from './dashboard/Profile';
+import ProtectedRoute from '../components/ProtectedRoute';
 import AIControl from './dashboard/AIControl';
 import AuditLog from './dashboard/AuditLog';
 import NotificationCenter from '../components/NotificationCenter';
@@ -274,9 +275,9 @@ const Dashboard = () => {
                         <Route path="/rejected" element={<RejectedNews />} />
                         <Route path="/publish" element={<PublishNews />} />
                         <Route path="/stats" element={<Stats />} />
-                        {SHOW_AI_CONTROL && <Route path="/ai-control" element={<AIControl />} />}
-                        <Route path="/audit" element={<AuditLog />} />
-                        <Route path="/users" element={<AdminUsers />} />
+                        {SHOW_AI_CONTROL && <Route path="/ai-control" element={<ProtectedRoute allowedRoles={['ADMIN']}><AIControl /></ProtectedRoute>} />}
+                        <Route path="/audit" element={<ProtectedRoute allowedRoles={['ADMIN']}><AuditLog /></ProtectedRoute>} />
+                        <Route path="/users" element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminUsers /></ProtectedRoute>} />
                     </Routes>
                 </div>
             </main>
