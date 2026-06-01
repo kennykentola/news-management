@@ -49,9 +49,14 @@ def run_ai_chat(prompt, temperature=0.7):
     content = response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
     
     cleaned = content.strip()
-    if cleaned.startswith("```json"): cleaned = cleaned[7:]
-    elif cleaned.startswith("```"): cleaned = cleaned[3:]
-    if cleaned.endswith("```"): cleaned = cleaned[:-3]
+    start_idx = cleaned.find('{')
+    end_idx = cleaned.rfind('}')
+    if start_idx != -1 and end_idx != -1 and end_idx >= start_idx:
+        cleaned = cleaned[start_idx:end_idx+1]
+    else:
+        if cleaned.startswith("```json"): cleaned = cleaned[7:]
+        elif cleaned.startswith("```"): cleaned = cleaned[3:]
+        if cleaned.endswith("```"): cleaned = cleaned[:-3]
     return cleaned.strip()
 
 def log_memory_usage(stage):
