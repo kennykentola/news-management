@@ -100,6 +100,8 @@ const Home = () => {
                         <Link to="/category/Politics" className="hover:text-primary transition-colors no-underline text-text-secondary">Politics</Link>
                         <Link to="/category/Technology" className="hover:text-primary transition-colors no-underline text-text-secondary">Tech</Link>
                         <Link to="/category/Health" className="hover:text-primary transition-colors no-underline text-text-secondary">Health</Link>
+                        <Link to="/category/Sports" className="hover:text-primary transition-colors no-underline text-text-secondary">Sports</Link>
+                        <Link to="/category/Education" className="hover:text-primary transition-colors no-underline text-text-secondary">Education</Link>
                     </div>
                 </div>
 
@@ -133,7 +135,9 @@ const Home = () => {
                             <Link to="/" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b border-bg-tertiary pb-4 no-underline text-text-primary">Home</Link>
                             <Link to="/category/Politics" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b border-bg-tertiary pb-4 no-underline text-text-primary">Politics</Link>
                             <Link to="/category/Technology" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b border-bg-tertiary pb-4 no-underline text-text-primary">Tech</Link>
-                            <Link to="/category/Health" onClick={() => setIsMenuOpen(false)} className="hover:text-primary pb-4 no-underline text-text-primary">Health</Link>
+                            <Link to="/category/Health" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b border-bg-tertiary pb-4 no-underline text-text-primary">Health</Link>
+                            <Link to="/category/Sports" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b border-bg-tertiary pb-4 no-underline text-text-primary">Sports</Link>
+                            <Link to="/category/Education" onClick={() => setIsMenuOpen(false)} className="hover:text-primary pb-4 no-underline text-text-primary">Education</Link>
                         </div>
                     </div>
                 )}

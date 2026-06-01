@@ -151,6 +151,7 @@ const EditArticle = () => {
                             <option value="Technology">Technology</option>
                             <option value="Health">Health</option>
                             <option value="Sports">Sports</option>
+                            <option value="Education">Education</option>
                             <option value="Entertainment">Entertainment</option>
                         </select>
                     </div>
