@@ -102,7 +102,9 @@ async function init() {
             { key: 'aiClassification', type: 'string', size: 50, required: false },
             { key: 'aiEdgeCases', type: 'string', size: 2000, required: false },
             { key: 'viewsCount', type: 'integer', required: false, default: 0 },
-            { key: 'sharesCount', type: 'integer', required: false, default: 0 }
+            { key: 'sharesCount', type: 'integer', required: false, default: 0 },
+            { key: 'editorVerified', type: 'boolean', required: false, default: false },
+            { key: 'isBreakingNews', type: 'boolean', required: false, default: false }
         ];
 
         const notificationAttrs = [

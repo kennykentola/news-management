@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import LoadingScreen from '../components/LoadingScreen';
 import Footer from '../components/Footer';
-import { Shield, Clock, User, Share2, MessageSquare, ArrowLeft, Globe, Zap, Cpu, Link as LinkIcon, XCircle, ExternalLink, Trash2, Sun, Moon, Bookmark, BookmarkCheck, Star, Facebook, MessageCircle, Eye } from 'lucide-react';
+import { Shield, Clock, User, Share2, MessageSquare, ArrowLeft, Globe, Zap, Cpu, Link as LinkIcon, XCircle, ExternalLink, Trash2, Sun, Moon, Bookmark, BookmarkCheck, Star, Facebook, MessageCircle, Eye, ShieldCheck } from 'lucide-react';
 import { normalizeHtmlContent } from '../lib/content';
 
 const ArticleDetail = () => {
@@ -298,6 +298,11 @@ const ArticleDetail = () => {
             <article className="max-w-[1000px] mx-auto pt-20 px-[5%] space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
                 <header className="space-y-8">
                     <div className="flex flex-wrap gap-4 items-center">
+                        {article.isBreakingNews && (
+                            <span className="bg-amber-500 text-white px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-amber-500/20 animate-pulse">
+                                <Star size={12} /> BREAKING NEWS
+                            </span>
+                        )}
                         <span className="bg-primary/10 text-primary-dark dark:text-primary px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-primary/20 flex items-center gap-2">
                             <Globe size={12} /> {article.category || 'General'}
                         </span>
@@ -321,11 +326,13 @@ const ArticleDetail = () => {
                                 <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">Verified Intelligence Contributor</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3 bg-bg-secondary p-4 rounded-2xl border-2 border-bg-tertiary shadow-xl">
-                            <Shield className="text-primary" size={24} />
+                        <div className={`flex items-center gap-3 p-4 rounded-2xl border-2 shadow-xl ${article.editorVerified ? 'bg-amber-50 border-amber-200' : 'bg-bg-secondary border-bg-tertiary'}`}>
+                            {article.editorVerified ? <ShieldCheck className="text-amber-500" size={24} /> : <Shield className="text-primary" size={24} />}
                             <div>
-                                <p className="text-[10px] font-black text-text-secondary uppercase tracking-widest">AI Reliability Score</p>
-                                <p className="text-xl font-black text-primary">{article.aiScore}% Safe</p>
+                                <p className="text-[10px] font-black text-text-secondary uppercase tracking-widest">{article.editorVerified ? 'Editor Status' : 'AI Reliability Score'}</p>
+                                <p className={`text-xl font-black ${article.editorVerified ? 'text-amber-600' : 'text-primary'}`}>
+                                    {article.editorVerified ? 'Human Verified: Real' : `${Math.round(article.aiScore || 0)}% Safe`}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -341,18 +348,23 @@ const ArticleDetail = () => {
                         <div className="flex flex-wrap items-center justify-between gap-6">
                             <div className="space-y-2">
                                 <div className="flex items-center gap-3">
-                                    <div className={`w-3 h-3 rounded-full animate-pulse ${article.aiLabel === 'FAKE' ? 'bg-danger' : 'bg-primary'}`}></div>
-                                    <h3 className="text-2xl font-black text-text-primary tracking-tight uppercase">AI Verification Report</h3>
+                                    <div className={`w-3 h-3 rounded-full animate-pulse ${article.editorVerified ? 'bg-amber-500' : article.aiLabel === 'FAKE' ? 'bg-danger' : 'bg-primary'}`}></div>
+                                    <h3 className="text-2xl font-black text-text-primary tracking-tight uppercase">
+                                        {article.editorVerified ? 'Human Editor Verification' : 'AI Verification Report'}
+                                    </h3>
                                 </div>
-                                <p className="text-text-secondary font-bold">Analysis performed by NewsGuard Neural Engine v4.2</p>
+                                <p className="text-text-secondary font-bold">
+                                    {article.editorVerified ? 'This article was manually reviewed and verified by an editorial team member.' : 'Analysis performed by NewsGuard Neural Engine v4.2'}
+                                </p>
                             </div>
 
                             <div className="flex flex-wrap gap-2 md:gap-4">
                                 <div className={`px-4 md:px-6 py-3 rounded-2xl border-2 font-black text-xs md:text-sm uppercase tracking-widest flex items-center gap-3 shadow-xl transition-all
-                                    ${article.aiLabel === 'FAKE' ? 'bg-danger/10 text-danger border-danger/20 shadow-danger/10' : 'bg-primary/10 text-primary border-primary/20 shadow-primary/10'}
+                                    ${article.editorVerified ? 'bg-amber-500/10 text-amber-600 border-amber-500/20 shadow-amber-500/10' :
+                                      article.aiLabel === 'FAKE' ? 'bg-danger/10 text-danger border-danger/20 shadow-danger/10' : 'bg-primary/10 text-primary border-primary/20 shadow-primary/10'}
                                 `}>
-                                    {article.aiLabel === 'FAKE' ? <XCircle size={18} /> : <Shield size={18} />}
-                                    Status: {article.aiLabel || 'VERIFIED'}
+                                    {article.editorVerified ? <ShieldCheck size={18} /> : article.aiLabel === 'FAKE' ? <XCircle size={18} /> : <Shield size={18} />}
+                                    Status: {article.editorVerified ? 'VERIFIED' : article.aiLabel || 'VERIFIED'}
                                 </div>
                                 <div className="px-6 py-3 rounded-2xl bg-text-primary text-bg-primary border-2 border-text-primary font-black text-sm uppercase tracking-widest flex items-center gap-3 shadow-xl shadow-black/20 transition-colors">
                                     <Zap size={18} className="text-primary" />

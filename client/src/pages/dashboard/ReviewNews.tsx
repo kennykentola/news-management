@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { databases, DATABASE_ID, COLLECTION_ID_ARTICLES, AUDIT_LOGS_COLLECTION_ID } from '../../lib/appwrite';
 import { Query, ID } from 'appwrite';
-import { CheckCircle, XCircle, Eye, Search, Filter, ShieldCheck, FileText, AlertTriangle, History, Trash2 } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Search, Filter, ShieldCheck, FileText, AlertTriangle, History, Trash2, Edit, Save, X, Star } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { normalizePlainText } from '../../lib/content';
 
@@ -10,6 +10,7 @@ const ReviewNews = () => {
     const [articles, setArticles] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [editingArticle, setEditingArticle] = useState<any>(null);
 
     const fetchPendingArticles = async () => {
         try {
@@ -58,6 +59,64 @@ const ReviewNews = () => {
 
             setArticles(articles.filter(a => a.$id !== id));
             alert(decision === 'APPROVED' ? 'Article Approved for Admin!' : 'Changes Requested.');
+        } catch (e) {
+            console.error(e);
+            alert('Action failed');
+        }
+    };
+
+    const handleOverrideAI = async (id: string) => {
+        try {
+            const article = articles.find(a => a.$id === id);
+            await databases.updateDocument(DATABASE_ID, COLLECTION_ID_ARTICLES, id, {
+                status: 'APPROVED',
+                editorVerified: true
+            });
+
+            if (user) {
+                await databases.createDocument(DATABASE_ID, AUDIT_LOGS_COLLECTION_ID, ID.unique(), {
+                    userId: user.$id,
+                    userName: user.name,
+                    action: 'OVERRIDE_AND_APPROVE',
+                    entityId: id,
+                    details: `Article "${article?.title}" AI flag overridden and approved by Human Editor.`,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            setArticles(articles.filter(a => a.$id !== id));
+            alert('Article Approved with AI Override!');
+        } catch (e) {
+            console.error(e);
+            alert('Action failed');
+        }
+    };
+
+    const handleEditSave = async () => {
+        if (!editingArticle) return;
+        try {
+            await databases.updateDocument(DATABASE_ID, COLLECTION_ID_ARTICLES, editingArticle.$id, {
+                title: editingArticle.title,
+                content: editingArticle.content,
+                category: editingArticle.category,
+                isBreakingNews: editingArticle.isBreakingNews || false,
+                status: 'APPROVED'
+            });
+
+            if (user) {
+                await databases.createDocument(DATABASE_ID, AUDIT_LOGS_COLLECTION_ID, ID.unique(), {
+                    userId: user.$id,
+                    userName: user.name,
+                    action: 'EDIT_AND_APPROVE',
+                    entityId: editingArticle.$id,
+                    details: `Article edited and approved by Human Editor.`,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            setArticles(articles.filter(a => a.$id !== editingArticle.$id));
+            setEditingArticle(null);
+            alert('Article Edited and Approved!');
         } catch (e) {
             console.error(e);
             alert('Action failed');
@@ -169,16 +228,33 @@ const ReviewNews = () => {
                                 <div className="flex flex-wrap gap-4 pt-4 border-t border-bg-tertiary">
                                     <button
                                         onClick={() => handleDecision(article.$id, 'APPROVED')}
-                                        className="bg-primary text-white px-8 py-3 rounded-2xl font-black flex items-center gap-2 shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all text-sm"
+                                        className="bg-primary text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all text-sm"
                                     >
-                                        <CheckCircle size={20} /> Approve Dispatch
+                                        <CheckCircle size={20} /> Approve
                                     </button>
+                                    
+                                    {article.status === 'FLAGGED' && (
+                                        <button
+                                            onClick={() => handleOverrideAI(article.$id)}
+                                            className="bg-amber-500 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-xl shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all text-sm"
+                                        >
+                                            <ShieldCheck size={20} /> Override AI & Approve
+                                        </button>
+                                    )}
+
+                                    <button
+                                        onClick={() => setEditingArticle(article)}
+                                        className="bg-bg-tertiary text-text-primary px-6 py-3 rounded-2xl font-black flex items-center gap-2 hover:scale-105 active:scale-95 transition-all text-sm shadow-sm"
+                                    >
+                                        <Edit size={20} /> Edit
+                                    </button>
+
                                     <button
                                         onClick={() => {
                                             const feedback = prompt("Reason for rejection / Changes needed:");
                                             if (feedback !== null) handleDecision(article.$id, 'REJECTED', feedback);
                                         }}
-                                        className="bg-bg-secondary text-danger px-8 py-3 rounded-2xl font-black flex items-center gap-2 border-2 border-danger/20 hover:bg-danger/10 transition-all text-sm"
+                                        className="bg-bg-secondary text-danger px-6 py-3 rounded-2xl font-black flex items-center gap-2 border-2 border-danger/20 hover:bg-danger/10 transition-all text-sm"
                                     >
                                         <XCircle size={20} /> Request Changes
                                     </button>
@@ -189,6 +265,85 @@ const ReviewNews = () => {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+            
+            {editingArticle && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-bg-primary w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-4xl border-2 border-bg-tertiary shadow-2xl p-8 space-y-6">
+                        <div className="flex justify-between items-center border-b-2 border-bg-tertiary pb-4">
+                            <h3 className="text-3xl font-black text-text-primary tracking-tight">Edit & Approve Article</h3>
+                            <button aria-label="Close edit modal" title="Close edit modal" onClick={() => setEditingArticle(null)} className="p-2 hover:bg-bg-secondary rounded-xl transition-colors">
+                                <X size={24} className="text-text-secondary" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label htmlFor="edit-headline" className="text-xs font-black text-text-secondary uppercase tracking-widest mb-2 block">Headline</label>
+                                <input
+                                    id="edit-headline"
+                                    title="Headline"
+                                    placeholder="Enter article headline"
+                                    value={editingArticle.title}
+                                    onChange={e => setEditingArticle({ ...editingArticle, title: e.target.value })}
+                                    className="w-full bg-bg-secondary text-text-primary border-2 border-bg-tertiary p-4 rounded-xl font-bold text-xl outline-none focus:border-primary transition-all"
+                                />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label htmlFor="edit-category" className="text-xs font-black text-text-secondary uppercase tracking-widest mb-2 block">Category</label>
+                                    <select
+                                        id="edit-category"
+                                        title="Category"
+                                        value={editingArticle.category || 'General'}
+                                        onChange={e => setEditingArticle({ ...editingArticle, category: e.target.value })}
+                                        className="w-full bg-bg-secondary text-text-primary border-2 border-bg-tertiary p-4 rounded-xl font-bold outline-none focus:border-primary transition-all"
+                                    >
+                                        <option value="General">General</option>
+                                        <option value="Politics">Politics</option>
+                                        <option value="Technology">Technology</option>
+                                        <option value="Entertainment">Entertainment</option>
+                                        <option value="Sports">Sports</option>
+                                        <option value="Business">Business</option>
+                                    </select>
+                                </div>
+                                <div className="flex items-end">
+                                    <label htmlFor="edit-breaking" className="flex items-center gap-3 bg-bg-secondary border-2 border-bg-tertiary p-4 rounded-xl cursor-pointer hover:border-primary transition-all w-full">
+                                        <input
+                                            id="edit-breaking"
+                                            title="Breaking News Toggle"
+                                            type="checkbox"
+                                            checked={editingArticle.isBreakingNews || false}
+                                            onChange={e => setEditingArticle({ ...editingArticle, isBreakingNews: e.target.checked })}
+                                            className="w-5 h-5 rounded accent-primary"
+                                        />
+                                        <span className="font-bold text-text-primary flex items-center gap-2"><Star size={18} className="text-amber-500" /> Breaking News</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label htmlFor="edit-content" className="text-xs font-black text-text-secondary uppercase tracking-widest mb-2 block">Content (HTML allowed)</label>
+                                <textarea
+                                    id="edit-content"
+                                    title="Article Content"
+                                    placeholder="Enter article content"
+                                    value={editingArticle.content || editingArticle.text}
+                                    onChange={e => setEditingArticle({ ...editingArticle, content: e.target.value })}
+                                    className="w-full h-64 bg-bg-secondary text-text-primary border-2 border-bg-tertiary p-4 rounded-xl font-medium outline-none focus:border-primary transition-all font-mono text-sm"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-4 pt-4 border-t-2 border-bg-tertiary">
+                            <button aria-label="Cancel editing" onClick={() => setEditingArticle(null)} className="px-6 py-3 rounded-2xl font-black bg-bg-secondary text-text-primary hover:bg-bg-tertiary transition-all">
+                                Cancel
+                            </button>
+                            <button aria-label="Save and Approve" onClick={handleEditSave} className="px-6 py-3 rounded-2xl font-black bg-primary text-white flex items-center gap-2 shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+                                <Save size={20} /> Save & Approve
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
