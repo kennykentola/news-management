@@ -19,7 +19,7 @@ const Stats = () => {
     const [trendData, setTrendData] = useState<any[]>([]);
     const [engagementData, setEngagementData] = useState<any[]>([]);
     const [activityData, setActivityData] = useState<any[]>([]);
-    const [prediction, setPrediction] = useState<{ risk: string, trend: string }>({ risk: 'Low', trend: 'Stable' });
+    const [prediction, setPrediction] = useState<{ risk: string, trend: string, confidence: number }>({ risk: 'Low', trend: 'Stable', confidence: 0 });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -186,7 +186,8 @@ const Stats = () => {
                         const forecastData = await forecastRes.json();
                         setPrediction({
                             risk: forecastData.risk || 'Low',
-                            trend: forecastData.trend || 'Plateau'
+                            trend: forecastData.trend || 'Plateau',
+                            confidence: forecastData.confidence || 85.0
                         });
                     } else {
                         throw new Error("Forecast API failed");
@@ -196,7 +197,8 @@ const Stats = () => {
                     const ratio = total > 0 ? fakeCount / total : 0;
                     setPrediction({
                         risk: ratio > 0.4 ? 'Critical' : ratio > 0.2 ? 'Moderate' : 'Low',
-                        trend: ratio > 0.3 ? 'Ascending' : 'Plateau'
+                        trend: ratio > 0.3 ? 'Ascending' : 'Plateau',
+                        confidence: total > 0 ? Math.min(95, 50 + (total * 0.5)) : 50
                     });
                 }
 
@@ -343,11 +345,11 @@ const Stats = () => {
                 </div>
                 <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
                     <div className="space-y-4">
-                        <h3 className="text-3xl font-black text-text-primary tracking-tighter">Neural Forecasting Unit</h3>
-                        <p className="text-text-secondary font-bold max-w-xl">Based on current detection frequency and linguistic propagation patterns, the AI projects the following misinformation risk for the next intelligence cycle.</p>
+                        <h3 className="text-3xl font-black text-text-primary tracking-tighter">Future Risk Prediction</h3>
+                        <p className="text-text-secondary font-bold max-w-xl">Based on how often fake news is being submitted right now, our AI predicts the following risk level for the coming week.</p>
                         <div className="flex gap-4">
-                            <span className="bg-bg-primary px-4 py-2 rounded-xl border-2 border-bg-tertiary text-[10px] font-black uppercase tracking-widest">Model: LSTM-NewsGuard v2</span>
-                            <span className="bg-bg-primary px-4 py-2 rounded-xl border-2 border-bg-tertiary text-[10px] font-black uppercase tracking-widest">Confidence: 89.4%</span>
+                            <span className="bg-bg-primary px-4 py-2 rounded-xl border-2 border-bg-tertiary text-[10px] font-black uppercase tracking-widest">Powered by NewsGuard AI</span>
+                            <span className="bg-bg-primary px-4 py-2 rounded-xl border-2 border-bg-tertiary text-[10px] font-black uppercase tracking-widest">Prediction Confidence: {prediction.confidence.toFixed(1)}%</span>
                         </div>
                     </div>
                     <div className="flex flex-col items-center justify-center p-8 bg-bg-primary rounded-3xl border-2 border-bg-tertiary shadow-xl min-w-[280px]">

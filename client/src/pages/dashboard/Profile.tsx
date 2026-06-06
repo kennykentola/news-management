@@ -116,12 +116,16 @@ const Profile = () => {
                                 )}
                             </div>
                             <button 
+                                aria-label="Upload new avatar"
+                                title="Upload new avatar"
                                 onClick={() => fileInputRef.current?.click()}
                                 className="absolute -bottom-2 -right-2 p-4 bg-primary text-white rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-all group-hover:rotate-6"
                             >
                                 <Camera size={20} />
                             </button>
                             <input 
+                                aria-label="Avatar file upload"
+                                title="Avatar file upload"
                                 type="file" 
                                 ref={fileInputRef} 
                                 className="hidden" 
@@ -148,15 +152,7 @@ const Profile = () => {
                                 <p className="text-sm font-bold text-text-primary truncate">{user.email}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-bg-primary rounded-xl flex items-center justify-center border border-bg-tertiary/50">
-                                <Hash size={18} className="text-primary" />
-                            </div>
-                            <div className="overflow-hidden">
-                                <p className="text-[10px] font-black text-text-secondary uppercase tracking-widest">System ID</p>
-                                <p className="text-xs font-mono font-bold text-text-primary truncate">{user.$id}</p>
-                            </div>
-                        </div>
+
                     </div>
                 </div>
 
@@ -173,6 +169,8 @@ const Profile = () => {
                             </div>
                             {!isEditingName ? (
                                 <button 
+                                    aria-label="Edit display name"
+                                    title="Edit display name"
                                     onClick={() => setIsEditingName(true)}
                                     className="p-3 bg-bg-primary hover:bg-bg-tertiary rounded-xl transition-colors border border-bg-tertiary/50 text-text-secondary"
                                 >
@@ -181,12 +179,16 @@ const Profile = () => {
                             ) : (
                                 <div className="flex items-center gap-2">
                                     <button 
+                                        aria-label="Save display name"
+                                        title="Save display name"
                                         onClick={handleUpdateName}
                                         className="p-3 bg-primary text-white rounded-xl shadow-lg border-2 border-primary-dark"
                                     >
                                         <Save size={18} />
                                     </button>
                                     <button 
+                                        aria-label="Cancel editing display name"
+                                        title="Cancel editing display name"
                                         onClick={() => { setIsEditingName(false); setNewName(user.name); }}
                                         className="p-3 bg-danger/10 text-danger rounded-xl border border-danger/20"
                                     >
@@ -198,8 +200,10 @@ const Profile = () => {
                         <div className="p-10">
                             {isEditingName ? (
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase text-text-secondary/50 tracking-widest">Full Display Name</label>
+                                    <label htmlFor="display-name-input" className="text-[10px] font-black uppercase text-text-secondary/50 tracking-widest">Full Display Name</label>
                                     <input 
+                                        id="display-name-input"
+                                        title="Full Display Name"
                                         type="text" 
                                         value={newName}
                                         onChange={(e) => setNewName(e.target.value)}
@@ -253,8 +257,11 @@ const Profile = () => {
                                 <form onSubmit={handleUpdatePassword} className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="md:col-span-2 space-y-2">
-                                            <label className="text-[10px] font-black uppercase text-text-secondary/50 tracking-widest">Current Password</label>
+                                            <label htmlFor="current-password-input" className="text-[10px] font-black uppercase text-text-secondary/50 tracking-widest">Current Password</label>
                                             <input 
+                                                id="current-password-input"
+                                                title="Current Password"
+                                                placeholder="Enter current password"
                                                 type="password" 
                                                 required
                                                 value={passwords.current}
@@ -263,8 +270,11 @@ const Profile = () => {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase text-text-secondary/50 tracking-widest">New Password</label>
+                                            <label htmlFor="new-password-input" className="text-[10px] font-black uppercase text-text-secondary/50 tracking-widest">New Password</label>
                                             <input 
+                                                id="new-password-input"
+                                                title="New Password"
+                                                placeholder="Enter new password"
                                                 type="password" 
                                                 required
                                                 value={passwords.new}
@@ -273,8 +283,11 @@ const Profile = () => {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase text-text-secondary/50 tracking-widest">Confirm New Password</label>
+                                            <label htmlFor="confirm-password-input" className="text-[10px] font-black uppercase text-text-secondary/50 tracking-widest">Confirm New Password</label>
                                             <input 
+                                                id="confirm-password-input"
+                                                title="Confirm New Password"
+                                                placeholder="Confirm new password"
                                                 type="password" 
                                                 required
                                                 value={passwords.confirm}

@@ -84,9 +84,7 @@ const AuditLog = () => {
                                     <Clock size={12} />
                                     {new Date(log.timestamp).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
                                 </div>
-                                <div className="text-[10px] font-bold text-text-secondary/30 flex items-center gap-1">
-                                    <Info size={10} /> Node: {log.entityId || 'SYS-KRNL'}
-                                </div>
+
                             </div>
                         </div>
                     ))

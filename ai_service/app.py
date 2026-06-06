@@ -393,6 +393,7 @@ def forecast():
     ratio = fake / total if total > 0 else 0
     fallback_risk = 'Critical' if ratio > 0.4 else 'Moderate' if ratio > 0.2 else 'Low'
     fallback_trend = 'Ascending' if ratio > 0.3 else 'Plateau'
+    fallback_confidence = min(95.0, 50.0 + (total * 0.5)) if total > 0 else 50.0
     
     if not GROQ_ENABLED:
         return jsonify({'risk': fallback_risk, 'trend': fallback_trend, 'source': 'math'})
@@ -409,10 +410,12 @@ def forecast():
         Based on the frequency of misinformation versus verified facts, determine:
         1. risk: The current threat level of misinformation spread. Must be exactly one of: "Low", "Moderate", "Critical".
         2. trend: The current direction of the threat. Must be exactly one of: "Plateau", "Ascending", "Descending".
+        3. confidence: Your confidence in this prediction as a number between 0 and 100.
 
         Return ONLY JSON with the fields:
         - risk
         - trend
+        - confidence
         """
         
         raw_text = run_ai_chat(prompt, 0.1)
@@ -421,12 +424,13 @@ def forecast():
             return jsonify({
                 'risk': parsed.get('risk', fallback_risk),
                 'trend': parsed.get('trend', fallback_trend),
+                'confidence': float(parsed.get('confidence', fallback_confidence)),
                 'source': 'groq_llama'
             })
     except Exception as e:
         logger.error(f"Groq forecast failed, using fallback: {e}")
         
-    return jsonify({'risk': fallback_risk, 'trend': fallback_trend, 'source': 'math (fallback)'})
+    return jsonify({'risk': fallback_risk, 'trend': fallback_trend, 'confidence': fallback_confidence, 'source': 'math (fallback)'})
 
 # --- Admin Maintenance Endpoints ---
 
