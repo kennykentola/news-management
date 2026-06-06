@@ -23,30 +23,61 @@ GROQ_MODEL = os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile').strip()
 if "8192" in GROQ_MODEL:
     GROQ_MODEL = 'llama-3.3-70b-versatile'
 GROQ_ENABLED = bool(GROQ_API_KEY)
+
+OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '').strip()
 GROQ_TEMPERATURE = 0.2
 
 if GROQ_ENABLED:
     logger.info("Groq support enabled with model %s", GROQ_MODEL)
 
 def run_ai_chat(prompt, temperature=0.7):
-    if not GROQ_ENABLED:
-        raise Exception("GROQ_API_KEY not configured")
-    
-    url = "https://api.groq.com/openai/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "model": GROQ_MODEL,
-        "messages": [{"role": "user", "content": prompt}],
-        "temperature": temperature,
-        "max_tokens": 1500,
-        "stream": False
-    }
-    response = requests.post(url, headers=headers, json=payload, timeout=45)
-    response.raise_for_status()
-    content = response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
+    content = ""
+    if GROQ_ENABLED:
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {GROQ_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": GROQ_MODEL,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": temperature,
+            "max_tokens": 1500,
+            "stream": False
+        }
+        try:
+            response = requests.post(url, headers=headers, json=payload, timeout=45)
+            response.raise_for_status()
+            content = response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
+        except Exception as e:
+            logger.warning(f"Groq API failed: {e}. Falling back to OpenRouter...")
+            content = ""
+
+    if not content and OPENROUTER_API_KEY:
+        url = "https://openrouter.ai/api/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "http://localhost:5000",
+            "X-Title": "NewsGuard"
+        }
+        payload = {
+            "model": "meta-llama/llama-3-8b-instruct:free",
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": temperature,
+            "max_tokens": 1500,
+            "stream": False
+        }
+        try:
+            response = requests.post(url, headers=headers, json=payload, timeout=45)
+            response.raise_for_status()
+            content = response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
+        except Exception as e:
+            logger.error(f"OpenRouter API failed as well: {e}")
+            raise Exception("All AI APIs failed")
+
+    if not content:
+        raise Exception("No AI API configured or all failed")
     
     cleaned = content.strip()
     start_idx = cleaned.find('{')
